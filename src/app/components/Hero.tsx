@@ -14,7 +14,7 @@ export default function Hero() {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link 
-              href="#contact" 
+              href="/submit-claim" 
               className="bg-[#E67635] hover:bg-[#d16426] text-white text-lg px-8 py-4 min-w-[200px] rounded-2xl transition-colors"
             >
               Submit a Claim
