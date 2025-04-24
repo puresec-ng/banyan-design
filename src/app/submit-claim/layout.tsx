@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 const steps = [
   { id: 1, title: 'Claim Type', path: '/submit-claim' },
   { id: 2, title: 'Basic Info', path: '/submit-claim/basic-info' },
-  { id: 3, title: 'Payment Model', path: '/submit-claim/payment' },
+  { id: 3, title: 'Personal Info', path: '/submit-claim/personal-info' },
   { id: 4, title: 'Requirements', path: '/submit-claim/requirements' },
   { id: 5, title: 'Documents', path: '/submit-claim/documents' },
 ];
@@ -51,11 +51,11 @@ export default function ClaimSubmissionLayout({
     <main className="min-h-screen bg-gray-50">
       {/* Navigation Bar */}
       <nav className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
-            <Link href="/" className="relative w-32 h-12">
+            <Link href="/" className="relative w-48 h-16">
               <Image
-                src="/brand/logo-tree.png"
+                src="/brand/logo-black.png"
                 alt="Banyan Claims Logo"
                 fill
                 style={{ objectFit: 'contain' }}
@@ -72,27 +72,27 @@ export default function ClaimSubmissionLayout({
       </nav>
 
       {/* Progress Tracker */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="hidden md:flex items-center justify-between">
+      <div className="bg-[#F3F4F6] py-6">
+        <div className="container mx-auto px-4">
+          <div className="hidden md:flex items-center justify-between max-w-4xl mx-auto">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border-2 
                       ${index + 1 < currentStep
                         ? 'bg-[#004D40] border-[#004D40] text-white'
                         : index + 1 === currentStep
-                        ? 'border-[#004D40] text-[#004D40]'
-                        : 'border-gray-300 text-gray-300'
+                        ? 'border-[#004D40] text-[#004D40] bg-white'
+                        : 'border-gray-300 text-gray-400 bg-white'
                     }`}
                   >
                     {index + 1 < currentStep ? (
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <span className="text-sm font-semibold">{step.id}</span>
+                      <span className="text-xs font-semibold">{step.id}</span>
                     )}
                   </div>
                   <span
@@ -104,7 +104,7 @@ export default function ClaimSubmissionLayout({
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`h-px w-full mx-4
+                    className={`h-px w-16 mx-2
                       ${index + 1 < currentStep ? 'bg-[#004D40]' : 'bg-gray-300'}`}
                   />
                 )}
@@ -122,7 +122,7 @@ export default function ClaimSubmissionLayout({
                 {steps[currentStep - 1].title}
               </span>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full">
+            <div className="h-2 bg-white rounded-full shadow-inner">
               <div
                 className="h-full bg-[#004D40] rounded-full transition-all duration-300"
                 style={{ width: `${(currentStep / steps.length) * 100}%` }}

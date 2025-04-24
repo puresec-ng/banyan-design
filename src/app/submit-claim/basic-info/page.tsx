@@ -2,193 +2,122 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
-// Mock data for insurers and incident types
-const insurers = [
-  { id: 'INS001', name: 'Leadway Assurance' },
-  { id: 'INS002', name: 'AXA Mansard' },
-  { id: 'INS003', name: 'AIICO Insurance' },
-  { id: 'INS004', name: 'Cornerstone Insurance' },
+const INSURANCE_PROVIDERS = [
+  'Allianz Insurance',
+  'AXA Insurance',
+  'Prudential Insurance',
+  'Liberty Insurance',
+  'Zurich Insurance',
+  'Other'
 ];
 
-const incidentTypes = {
-  MOTOR: [
-    { id: 'MOT001', name: 'Accident' },
-    { id: 'MOT002', name: 'Theft' },
-    { id: 'MOT003', name: 'Breakdown' },
-  ],
-  SME: [
-    { id: 'SME001', name: 'Fire Damage' },
-    { id: 'SME002', name: 'Business Interruption' },
-    { id: 'SME003', name: 'Property Damage' },
-  ],
-  GADGET: [
-    { id: 'GAD001', name: 'Screen Damage' },
-    { id: 'GAD002', name: 'Water Damage' },
-    { id: 'GAD003', name: 'Theft' },
-  ],
-  HOUSEHOLDER: [
-    { id: 'HOU001', name: 'Burglary' },
-    { id: 'HOU002', name: 'Fire Damage' },
-    { id: 'HOU003', name: 'Water Damage' },
-  ],
-  AGRO: [
-    { id: 'AGR001', name: 'Crop Loss' },
-    { id: 'AGR002', name: 'Equipment Damage' },
-    { id: 'AGR003', name: 'Livestock Loss' },
-  ],
-};
+const INCIDENT_TYPES = [
+  'Accident',
+  'Theft',
+  'Natural Disaster',
+  'Fire Damage',
+  'Water Damage',
+  'Other'
+];
 
-interface FormData {
-  insurer: string;
-  incidentType: string;
-  incidentDate: string;
-  incidentTime: string;
-  location: string;
-  description: string;
-  policyNumber: string;
-}
-
-export default function BasicInformation() {
+export default function BasicInfo() {
   const router = useRouter();
-  const [claimType, setClaimType] = useState<keyof typeof incidentTypes | ''>('');
-  const [formData, setFormData] = useState<FormData>({
-    insurer: '',
+  const [formData, setFormData] = useState({
+    insuranceProvider: '',
     incidentType: '',
     incidentDate: '',
     incidentTime: '',
-    location: '',
-    description: '',
-    policyNumber: '',
+    incidentDescription: '',
+    policyNumber: ''
   });
-  const [errors, setErrors] = useState<Partial<FormData>>({});
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const savedType = localStorage.getItem('claimType');
-    if (!savedType) {
+    // Check if user has completed previous steps
+    const selectedType = localStorage.getItem('selectedClaimType');
+    if (!selectedType) {
       router.push('/submit-claim');
       return;
     }
-    setClaimType(savedType as keyof typeof incidentTypes);
 
-    // Load saved form data if exists
+    // Load saved form data if it exists
     const savedData = localStorage.getItem('basicInfo');
     if (savedData) {
       setFormData(JSON.parse(savedData));
     }
   }, [router]);
 
-  const validateForm = () => {
-    const newErrors: Partial<FormData> = {};
-    
-    if (!formData.insurer) newErrors.insurer = 'Please select an insurer';
-    if (!formData.incidentType) newErrors.incidentType = 'Please select an incident type';
-    if (!formData.incidentDate) newErrors.incidentDate = 'Please select the incident date';
-    if (!formData.incidentTime) newErrors.incidentTime = 'Please select the incident time';
-    if (!formData.location) newErrors.location = 'Please enter the incident location';
-    if (!formData.description) {
-      newErrors.description = 'Please describe the incident';
-    } else if (formData.description.length < 50) {
-      newErrors.description = 'Description must be at least 50 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: '' }));
-
-    // Auto-save after 1 second of inactivity
-    setIsSaving(true);
-    const timer = setTimeout(() => {
-      localStorage.setItem('basicInfo', JSON.stringify({ ...formData, [name]: value }));
-      setIsSaving(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      localStorage.setItem('basicInfo', JSON.stringify(formData));
-      router.push('/submit-claim/payment');
-    }
   };
 
   const handleBack = () => {
     router.push('/submit-claim');
   };
 
+  const handleContinue = () => {
+    if (isFormValid()) {
+      localStorage.setItem('basicInfo', JSON.stringify(formData));
+      router.push('/submit-claim/personal-info');
+    }
+  };
+
+  const isFormValid = () => {
+    return formData.insuranceProvider &&
+           formData.incidentType &&
+           formData.incidentDate &&
+           formData.incidentTime &&
+           formData.incidentDescription;
+  };
+
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 font-lato">
-          Basic Information
-        </h1>
-        <p className="text-lg text-gray-600 font-roboto">
-          Please provide details about your claim
-        </p>
-      </div>
+    <div className="max-w-2xl mx-auto">
+      <form className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+        
+        <div className="space-y-6">
+          {/* Insurance Provider */}
+          <div>
+            <label htmlFor="insuranceProvider" className="block text-sm font-medium text-gray-700 mb-1">
+              Insurance Provider
+            </label>
+            <select
+              id="insuranceProvider"
+              name="insuranceProvider"
+              value={formData.insuranceProvider}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              required
+            >
+              <option value="">Select Insurance Provider</option>
+              {INSURANCE_PROVIDERS.map((provider) => (
+                <option key={provider} value={provider}>{provider}</option>
+              ))}
+            </select>
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Insurer Selection */}
-        <div>
-          <label htmlFor="insurer" className="block text-sm font-medium text-gray-700 mb-1">
-            Select Insurer
-          </label>
-          <select
-            id="insurer"
-            name="insurer"
-            value={formData.insurer}
-            onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent
-              ${errors.insurer ? 'border-red-300' : 'border-gray-300'}`}
-          >
-            <option value="">Select your insurance provider</option>
-            {insurers.map(insurer => (
-              <option key={insurer.id} value={insurer.id}>
-                {insurer.name}
-              </option>
-            ))}
-          </select>
-          {errors.insurer && (
-            <p className="mt-1 text-sm text-red-600">{errors.insurer}</p>
-          )}
-        </div>
+          {/* Incident Type */}
+          <div>
+            <label htmlFor="incidentType" className="block text-sm font-medium text-gray-700 mb-1">
+              Incident Type
+            </label>
+            <select
+              id="incidentType"
+              name="incidentType"
+              value={formData.incidentType}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              required
+            >
+              <option value="">Select Incident Type</option>
+              {INCIDENT_TYPES.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
 
-        {/* Incident Type */}
-        <div>
-          <label htmlFor="incidentType" className="block text-sm font-medium text-gray-700 mb-1">
-            Incident Type
-          </label>
-          <select
-            id="incidentType"
-            name="incidentType"
-            value={formData.incidentType}
-            onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent
-              ${errors.incidentType ? 'border-red-300' : 'border-gray-300'}`}
-          >
-            <option value="">Select the type of incident</option>
-            {claimType && incidentTypes[claimType].map(type => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
-          </select>
-          {errors.incidentType && (
-            <p className="mt-1 text-sm text-red-600">{errors.incidentType}</p>
-          )}
-        </div>
-
-        {/* Date and Time */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Incident Date */}
           <div>
             <label htmlFor="incidentDate" className="block text-sm font-medium text-gray-700 mb-1">
               Incident Date
@@ -197,17 +126,14 @@ export default function BasicInformation() {
               type="date"
               id="incidentDate"
               name="incidentDate"
-              max={new Date().toISOString().split('T')[0]}
               value={formData.incidentDate}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent
-                ${errors.incidentDate ? 'border-red-300' : 'border-gray-300'}`}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              required
             />
-            {errors.incidentDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.incidentDate}</p>
-            )}
           </div>
 
+          {/* Incident Time */}
           <div>
             <label htmlFor="incidentTime" className="block text-sm font-medium text-gray-700 mb-1">
               Incident Time
@@ -218,113 +144,62 @@ export default function BasicInformation() {
               name="incidentTime"
               value={formData.incidentTime}
               onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent
-                ${errors.incidentTime ? 'border-red-300' : 'border-gray-300'}`}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              required
             />
-            {errors.incidentTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.incidentTime}</p>
-            )}
           </div>
-        </div>
 
-        {/* Location */}
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-            Incident Location
-          </label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            placeholder="Enter the full address where the incident occurred"
-            className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent
-              ${errors.location ? 'border-red-300' : 'border-gray-300'}`}
-          />
-          {errors.location && (
-            <p className="mt-1 text-sm text-red-600">{errors.location}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Incident Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows={4}
-            placeholder="Please provide a detailed description of what happened..."
-            className={`w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent
-              ${errors.description ? 'border-red-300' : 'border-gray-300'}`}
-          />
-          <div className="mt-1 flex justify-between items-center">
-            {errors.description ? (
-              <p className="text-sm text-red-600">{errors.description}</p>
-            ) : (
-              <p className="text-sm text-gray-500">
-                {formData.description.length}/500 characters (minimum 50)
-              </p>
-            )}
+          {/* Incident Description */}
+          <div>
+            <label htmlFor="incidentDescription" className="block text-sm font-medium text-gray-700 mb-1">
+              Incident Description
+            </label>
+            <textarea
+              id="incidentDescription"
+              name="incidentDescription"
+              value={formData.incidentDescription}
+              onChange={handleChange}
+              rows={4}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              placeholder="Please provide a detailed description of the incident"
+              required
+            />
           </div>
-        </div>
 
-        {/* Policy Number */}
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <label htmlFor="policyNumber" className="block text-sm font-medium text-gray-700">
+          {/* Policy Number */}
+          <div>
+            <label htmlFor="policyNumber" className="block text-sm font-medium text-gray-700 mb-1">
               Policy Number (Optional)
             </label>
-            <button
-              type="button"
-              className="text-gray-400 hover:text-gray-500"
-              title="Where to find your policy number"
-            >
-              <QuestionMarkCircleIcon className="w-4 h-4" />
-            </button>
+            <input
+              type="text"
+              id="policyNumber"
+              name="policyNumber"
+              value={formData.policyNumber}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              placeholder="Enter your policy number if available"
+            />
           </div>
-          <input
-            type="text"
-            id="policyNumber"
-            name="policyNumber"
-            value={formData.policyNumber}
-            onChange={handleChange}
-            placeholder="Enter your policy number if available"
-            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-          />
-          <p className="mt-1 text-sm text-gray-500">
-            You can find this on your insurance documents
-          </p>
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between pt-6">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="px-6 py-3 text-[#004D40] font-medium hover:bg-gray-50 rounded-xl transition-colors"
-          >
-            Back
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-3 bg-[#004D40] text-white font-medium rounded-xl hover:bg-[#003D30] transition-colors"
-          >
-            Continue to Payment Model
-          </button>
         </div>
       </form>
 
-      {/* Auto-save Indicator */}
-      {isSaving && (
-        <div className="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
-          Saving changes...
-        </div>
-      )}
+      {/* Navigation Buttons */}
+      <div className="mt-8 flex justify-between">
+        <button
+          onClick={handleBack}
+          className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Back
+        </button>
+        <button
+          onClick={handleContinue}
+          disabled={!isFormValid()}
+          className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Continue
+        </button>
+      </div>
     </div>
   );
 } 

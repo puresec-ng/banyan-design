@@ -1,327 +1,210 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  DocumentIcon, 
-  XMarkIcon,
-  ArrowUpTrayIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from '@heroicons/react/24/outline';
+import { DocumentTextIcon, XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 
-// Required documents based on claim type
-const requiredDocuments = {
-  MOTOR: [
-    { id: 'DRIVERS_LICENSE', name: 'Driver\'s License', description: 'Valid driver\'s license of the person operating the vehicle' },
-    { id: 'POLICE_REPORT', name: 'Police Report', description: 'Official police report if the incident involved an accident' },
-    { id: 'VEHICLE_PHOTOS', name: 'Vehicle Photos', description: 'Clear photos showing the damage from multiple angles' },
-  ],
-  SME: [
-    { id: 'BUSINESS_REG', name: 'Business Registration', description: 'Valid business registration certificate' },
-    { id: 'DAMAGE_PHOTOS', name: 'Damage Photos', description: 'Clear photos of the damaged property or assets' },
-    { id: 'INVENTORY_LIST', name: 'Inventory List', description: 'List of damaged or lost inventory items' },
-  ],
-  GADGET: [
-    { id: 'PURCHASE_RECEIPT', name: 'Purchase Receipt', description: 'Original purchase receipt of the damaged device' },
-    { id: 'DEVICE_PHOTOS', name: 'Device Photos', description: 'Clear photos showing the damage to the device' },
-    { id: 'REPAIR_QUOTE', name: 'Repair Quote', description: 'Quote from an authorized repair center (if applicable)' },
-  ],
-  HOUSEHOLDER: [
-    { id: 'PROPERTY_DEED', name: 'Property Ownership', description: 'Property deed or rental agreement' },
-    { id: 'DAMAGE_PHOTOS', name: 'Damage Photos', description: 'Clear photos of the damaged property' },
-    { id: 'POLICE_REPORT', name: 'Police Report', description: 'Police report (required for theft claims)' },
-  ],
-  AGRO: [
-    { id: 'FARM_REG', name: 'Farm Registration', description: 'Farm registration or ownership documents' },
-    { id: 'DAMAGE_PHOTOS', name: 'Damage Evidence', description: 'Photos or videos showing crop/livestock damage' },
-    { id: 'ASSESSMENT_REPORT', name: 'Assessment Report', description: 'Agricultural expert assessment report' },
-  ],
-};
-
-interface UploadedFile {
+interface Document {
   id: string;
-  file: File;
-  progress: number;
-  status: 'uploading' | 'completed' | 'error';
-  documentId: string;
+  name: string;
+  file: File | null;
 }
 
 export default function DocumentUpload() {
   const router = useRouter();
-  const [claimType, setClaimType] = useState<keyof typeof requiredDocuments | ''>('');
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [draggedOver, setDraggedOver] = useState(false);
-  const [error, setError] = useState('');
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [additionalDocs, setAdditionalDocs] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load claim type and verify previous steps
-    const savedType = localStorage.getItem('claimType');
-    const paymentModel = localStorage.getItem('paymentModel');
-    
-    if (!savedType || !paymentModel) {
-      router.push('/submit-claim');
+    // Check if user has completed previous steps
+    const basicInfo = localStorage.getItem('basicInfo');
+    if (!basicInfo) {
+      router.push('/submit-claim/basic-info');
       return;
     }
-    
-    setClaimType(savedType as keyof typeof requiredDocuments);
 
-    // Load any previously uploaded files
-    const savedFiles = localStorage.getItem('uploadedDocuments');
-    if (savedFiles) {
-      setUploadedFiles(JSON.parse(savedFiles));
+    // Load required documents based on claim type
+    const requiredDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+    if (requiredDocs.length > 0) {
+      setDocuments(requiredDocs.map((doc: any) => ({
+        id: doc.id,
+        name: doc.name,
+        file: null
+      })));
     }
   }, [router]);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDraggedOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDraggedOver(false);
-  }, []);
-
-  const validateFile = (file: File, documentId: string) => {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-
-    if (!allowedTypes.includes(file.type)) {
-      return 'Only JPG, PNG, and PDF files are allowed';
-    }
-
-    if (file.size > maxSize) {
-      return 'File size must be less than 10MB';
-    }
-
-    if (uploadedFiles.some(f => f.documentId === documentId)) {
-      return 'A file has already been uploaded for this document type';
-    }
-
-    return null;
+  const handleFileChange = (docId: string, file: File | null) => {
+    setDocuments(prev => prev.map(doc => 
+      doc.id === docId ? { ...doc, file } : doc
+    ));
   };
 
-  const handleDrop = useCallback((e: React.DragEvent, documentId: string) => {
-    e.preventDefault();
-    setDraggedOver(false);
-    setError('');
-
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-
-    const validationError = validateFile(file, documentId);
-    if (validationError) {
-      setError(validationError);
-      return;
+  const handleAdditionalFiles = (files: FileList | null) => {
+    if (files) {
+      setAdditionalDocs(prev => [...prev, ...Array.from(files)]);
     }
+  };
 
-    const newFile: UploadedFile = {
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      progress: 0,
-      status: 'uploading',
-      documentId,
-    };
-
-    setUploadedFiles(prev => [...prev, newFile]);
-
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadedFiles(prev => {
-        const fileIndex = prev.findIndex(f => f.id === newFile.id);
-        if (fileIndex === -1) return prev;
-
-        const updatedFiles = [...prev];
-        if (updatedFiles[fileIndex].progress < 100) {
-          updatedFiles[fileIndex].progress += 10;
-        } else {
-          updatedFiles[fileIndex].status = 'completed';
-          clearInterval(interval);
-        }
-        return updatedFiles;
-      });
-    }, 300);
-  }, [uploadedFiles]);
-
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>, documentId: string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const validationError = validateFile(file, documentId);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    const newFile: UploadedFile = {
-      id: Math.random().toString(36).substr(2, 9),
-      file,
-      progress: 0,
-      status: 'uploading',
-      documentId,
-    };
-
-    setUploadedFiles(prev => [...prev, newFile]);
-
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadedFiles(prev => {
-        const fileIndex = prev.findIndex(f => f.id === newFile.id);
-        if (fileIndex === -1) return prev;
-
-        const updatedFiles = [...prev];
-        if (updatedFiles[fileIndex].progress < 100) {
-          updatedFiles[fileIndex].progress += 10;
-        } else {
-          updatedFiles[fileIndex].status = 'completed';
-          clearInterval(interval);
-        }
-        return updatedFiles;
-      });
-    }, 300);
-  }, []);
-
-  const removeFile = useCallback((fileId: string) => {
-    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!claimType) return;
-
-    const requiredCount = requiredDocuments[claimType].length;
-    const uploadedCount = uploadedFiles.filter(f => f.status === 'completed').length;
-
-    if (uploadedCount < requiredCount) {
-      setError('Please upload all required documents before proceeding');
-      return;
-    }
-
-    localStorage.setItem('uploadedDocuments', JSON.stringify(uploadedFiles));
-    router.push('/submit-claim/review');
+  const removeAdditionalFile = (index: number) => {
+    setAdditionalDocs(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleBack = () => {
-    router.push('/submit-claim/payment');
+    router.push('/submit-claim/requirements');
   };
 
-  if (!claimType) return null;
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      // Generate tracking number (in real app, this would come from the backend)
+      const trackingNumber = 'BC' + Date.now().toString().slice(-8);
+      
+      // Store submission details
+      const submissionDetails = {
+        trackingNumber,
+        submissionDate: new Date().toISOString(),
+        basicInfo: JSON.parse(localStorage.getItem('basicInfo') || '{}'),
+        personalInfo: JSON.parse(localStorage.getItem('personalInfo') || '{}'),
+        documents: documents.map(doc => ({ id: doc.id, name: doc.name })),
+        additionalDocuments: additionalDocs.map(file => file.name)
+      };
+      
+      localStorage.setItem('submissionDetails', JSON.stringify(submissionDetails));
+      
+      // In a real app, you would upload files to server here
+      // await uploadFiles(documents, additionalDocs);
+      
+      router.push('/submit-claim/success');
+    } catch (error) {
+      console.error('Error submitting claim:', error);
+      // Handle error appropriately
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 font-lato">
-          Required Documents
-        </h1>
-        <p className="text-lg text-gray-600 font-roboto">
-          Please upload the following documents to process your claim
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Documents</h2>
+        <p className="text-gray-600 mb-6">
+          Please upload the required documents for your claim. You can also add any supporting documents.
         </p>
+
+        {/* Required Documents */}
+        <div className="space-y-6 mb-8">
+          <h3 className="font-medium text-gray-900">Required Documents</h3>
+          <div className="space-y-6">
+            {documents.map((doc) => (
+              <div key={doc.id} className="space-y-2">
+                <h4 className="font-medium text-gray-900">{doc.name}</h4>
+                {!doc.file ? (
+                  <div 
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#004D40] transition-colors cursor-pointer"
+                    onClick={() => document.getElementById(`file-${doc.id}`)?.click()}
+                  >
+                    <ArrowUpTrayIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 mb-1">
+                      Drag and drop your file here, or click to browse
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Maximum file size: 10MB
+                    </p>
+                    <input
+                      type="file"
+                      id={`file-${doc.id}`}
+                      className="hidden"
+                      onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <DocumentTextIcon className="w-5 h-5 text-[#004D40]" />
+                        <span className="text-sm text-gray-600">{doc.file.name}</span>
+                      </div>
+                      <button
+                        onClick={() => handleFileChange(doc.id, null)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <XMarkIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Supporting Documents */}
+        <div className="space-y-4">
+          <h3 className="font-medium text-gray-900">Supporting Documents</h3>
+          <div 
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#004D40] transition-colors cursor-pointer"
+            onClick={() => document.getElementById('additional-files')?.click()}
+          >
+            <ArrowUpTrayIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-600 mb-1">
+              Drag and drop your files here, or click to browse
+            </p>
+            <p className="text-xs text-gray-500">
+              You can upload multiple files • Maximum file size: 10MB each
+            </p>
+            <input
+              type="file"
+              id="additional-files"
+              multiple
+              className="hidden"
+              onChange={(e) => handleAdditionalFiles(e.target.files)}
+              accept=".pdf,.jpg,.jpeg,.png"
+            />
+          </div>
+          
+          {/* Display Supporting Files */}
+          {additionalDocs.length > 0 && (
+            <div className="mt-4 space-y-2">
+              {additionalDocs.map((file, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <DocumentTextIcon className="w-5 h-5 text-[#004D40]" />
+                      <span className="text-sm text-gray-600">{file.name}</span>
+                    </div>
+                    <button
+                      onClick={() => removeAdditionalFile(index)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 rounded-xl flex items-center gap-3 text-red-700">
-          <ExclamationCircleIcon className="w-5 h-5" />
-          <p>{error}</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {requiredDocuments[claimType].map((doc) => {
-          const uploadedFile = uploadedFiles.find(f => f.documentId === doc.id);
-          
-          return (
-            <div
-              key={doc.id}
-              className={`border-2 rounded-xl p-6 transition-colors
-                ${draggedOver ? 'border-[#004D40] bg-[#F0F7F5]' : 'border-gray-200'}
-              `}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, doc.id)}
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-[#004D40]/10 rounded-xl">
-                  <DocumentIcon className="w-6 h-6 text-[#004D40]" />
-                </div>
-                
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {doc.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {doc.description}
-                  </p>
-
-                  {uploadedFile ? (
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm font-medium text-gray-700">
-                            {uploadedFile.file.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(uploadedFile.id)}
-                            className="text-gray-400 hover:text-gray-500"
-                          >
-                            <XMarkIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full">
-                          <div
-                            className="h-full bg-[#004D40] rounded-full transition-all duration-300"
-                            style={{ width: `${uploadedFile.progress}%` }}
-                          />
-                        </div>
-                      </div>
-                      {uploadedFile.status === 'completed' && (
-                        <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <label
-                        htmlFor={`file-${doc.id}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#004D40] text-[#004D40] rounded-lg hover:bg-[#F0F7F5] cursor-pointer transition-colors"
-                      >
-                        <ArrowUpTrayIcon className="w-5 h-5" />
-                        <span>Choose File</span>
-                      </label>
-                      <input
-                        type="file"
-                        id={`file-${doc.id}`}
-                        className="hidden"
-                        accept=".jpg,.jpeg,.png,.pdf"
-                        onChange={(e) => handleFileSelect(e, doc.id)}
-                      />
-                      <p className="mt-2 text-sm text-gray-500">
-                        or drag and drop here
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-
-        <div className="flex justify-between pt-8">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="px-6 py-3 text-[#004D40] font-medium hover:bg-gray-50 rounded-xl transition-colors"
-          >
-            Back
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-3 bg-[#004D40] text-white font-medium rounded-xl hover:bg-[#003D30] transition-colors"
-          >
-            Review Claim
-          </button>
-        </div>
-      </form>
+      {/* Navigation Buttons */}
+      <div className="mt-8 flex justify-between">
+        <button
+          onClick={handleBack}
+          className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Back
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Submitting...' : 'Submit Claim'}
+        </button>
+      </div>
     </div>
   );
 } 

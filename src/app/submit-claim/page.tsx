@@ -2,140 +2,110 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  TruckIcon,
-  BuildingOfficeIcon,
-  DevicePhoneMobileIcon,
+import Link from 'next/link';
+import { 
   HomeIcon,
   BuildingStorefrontIcon as TreeIcon,
+  TruckIcon,
+  DevicePhoneMobileIcon,
+  BuildingOfficeIcon,
+  ShieldCheckIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 
 const claimTypes = [
   {
-    id: 'MOTOR',
+    id: 'motor',
     title: 'Motor Claims',
-    description: 'Claims for vehicle damage, accidents, or theft',
+    description: 'File a claim for vehicle damage, accidents, or theft',
     icon: TruckIcon,
   },
   {
-    id: 'SME',
-    title: 'SME Claims',
-    description: 'Business insurance claims for small and medium enterprises',
+    id: 'property',
+    title: 'Property Claims',
+    description: 'Claims for home, building, or property damage',
+    icon: HomeIcon,
+  },
+  {
+    id: 'business',
+    title: 'Business Claims',
+    description: 'Claims for business interruption or commercial property',
     icon: BuildingOfficeIcon,
   },
   {
-    id: 'GADGET',
+    id: 'gadget',
     title: 'Gadget Claims',
     description: 'Claims for phones, laptops, and other electronic devices',
     icon: DevicePhoneMobileIcon,
   },
   {
-    id: 'HOUSEHOLDER',
-    title: 'Householder Claims',
-    description: 'Home insurance claims for property damage or theft',
-    icon: HomeIcon,
+    id: 'liability',
+    title: 'Liability Claims',
+    description: 'Claims related to third-party injuries or property damage',
+    icon: ShieldCheckIcon,
   },
   {
-    id: 'AGRO',
-    title: 'Agro Claims',
-    description: 'Agricultural insurance claims for crops and livestock',
+    id: 'commercial',
+    title: 'Commercial Claims',
+    description: 'Claims for commercial properties and assets',
     icon: TreeIcon,
-  },
+  }
 ];
 
 export default function ClaimTypeSelection() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  const handleNext = () => {
-    if (selectedType) {
-      // Save selection to localStorage or state management
-      localStorage.setItem('claimType', selectedType);
-      router.push('/submit-claim/basic-info');
-    }
+  const handleTypeSelect = (typeId: string) => {
+    setSelectedType(typeId);
+    localStorage.setItem('selectedClaimType', typeId);
+    router.push('/submit-claim/basic-info');
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4 font-lato">
-          Select Claim Type
-        </h1>
-        <p className="text-lg text-gray-600 font-roboto">
-          Choose the type of claim you'd like to submit
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {claimTypes.map((type) => (
-          <button
-            key={type.id}
-            onClick={() => setSelectedType(type.id)}
-            className={`relative p-6 rounded-2xl text-left transition-all duration-200 group
-              ${selectedType === type.id
-                ? 'bg-[#004D40] text-white shadow-lg scale-[1.02]'
-                : 'bg-white hover:bg-gray-50 text-gray-900 shadow-md'
-              }`}
+    <main className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Link 
+            href="/"
+            className="inline-flex items-center text-[#004D40] hover:text-[#003D30] font-medium"
           >
-            <div className="flex items-start gap-4">
-              <div
-                className={`p-3 rounded-xl
-                  ${selectedType === type.id
-                    ? 'bg-white/20'
-                    : 'bg-[#004D40]/10'
-                  }`}
-              >
-                <type.icon
-                  className={`w-6 h-6
-                    ${selectedType === type.id
-                      ? 'text-white'
-                      : 'text-[#004D40]'
-                    }`}
-                />
-              </div>
-              <div>
-                <h3 className="font-lato font-bold text-lg mb-2">{type.title}</h3>
-                <p className={`text-sm font-roboto
-                  ${selectedType === type.id
-                    ? 'text-white/90'
-                    : 'text-gray-600'
-                  }`}>
-                  {type.description}
-                </p>
-              </div>
-            </div>
-            
-            {/* Selection Indicator */}
-            <div
-              className={`absolute top-4 right-4 w-5 h-5 rounded-full border-2
-                ${selectedType === type.id
-                  ? 'border-white bg-white'
-                  : 'border-gray-300 group-hover:border-[#004D40]'
-                }`}
-            >
-              {selectedType === type.id && (
-                <svg className="w-full h-full text-[#004D40]" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              )}
-            </div>
-          </button>
-        ))}
-      </div>
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Return to Website
+          </Link>
+        </div>
 
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={handleNext}
-          disabled={!selectedType}
-          className={`px-6 py-3 rounded-xl font-medium text-white transition-all duration-200
-            ${selectedType
-              ? 'bg-[#004D40] hover:bg-[#003D30] cursor-pointer'
-              : 'bg-gray-300 cursor-not-allowed'
-            }`}
-        >
-          Continue to Basic Information
-        </button>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4 font-lato">
+            Select Claim Type
+          </h1>
+          <p className="text-lg text-gray-600 font-roboto">
+            Choose the type of claim you'd like to submit
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {claimTypes.map((type) => (
+            <button
+              key={type.id}
+              onClick={() => handleTypeSelect(type.id)}
+              className={`p-6 rounded-xl border-2 transition-all duration-200 ${
+                selectedType === type.id
+                  ? 'border-[#004D40] bg-[#E0F2F1]'
+                  : 'border-gray-200 hover:border-[#004D40] hover:bg-[#E0F2F1]/50'
+              }`}
+            >
+              <type.icon className="w-12 h-12 text-[#004D40] mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {type.title}
+              </h3>
+              <p className="text-gray-600">
+                {type.description}
+              </p>
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    </main>
   );
 } 

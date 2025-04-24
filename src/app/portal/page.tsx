@@ -5,17 +5,10 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
-  ExclamationCircleIcon,
   EyeIcon,
   EyeSlashIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-
-// Demo credentials - In a real app, this would be handled by a backend
-const DEMO_CREDENTIALS = {
-  '+2348123456789': 'demo12345',
-  '+2349876543210': 'test12345',
-};
 
 export default function ClientPortal() {
   const router = useRouter();
@@ -35,34 +28,13 @@ export default function ClientPortal() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Check demo credentials
-      if (DEMO_CREDENTIALS[formData.phone as keyof typeof DEMO_CREDENTIALS] === formData.password) {
-        // Store auth state
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userPhone', formData.phone);
-        
-        // Redirect to dashboard
-        router.push('/portal/dashboard');
-      } else {
-        // If credentials don't match, still allow login
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userPhone', formData.phone);
-        router.push('/portal/dashboard');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const useDemoCredentials = () => {
-    setFormData({
-      phone: '+2348123456789',
-      password: 'demo12345',
-    });
+    // Store auth state
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userPhone', formData.phone);
+    
+    // Redirect to dashboard
+    router.push('/portal/dashboard');
+    setIsLoading(false);
   };
 
   return (
@@ -99,31 +71,33 @@ export default function ClientPortal() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                   Phone Number
                 </label>
                 <input
+                  id="phone"
+                  name="phone"
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                   placeholder="Enter your phone number"
-                  required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <div className="mt-1 relative">
                   <input
+                    id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                     placeholder="Enter your password"
-                    required
                   />
                   <button
                     type="button"
@@ -171,13 +145,24 @@ export default function ClientPortal() {
               </button>
             </form>
 
-            <div className="mt-4 text-center">
-              <Link
-                href="/portal/register"
-                className="text-sm text-[#004D40] hover:text-[#003D30]"
-              >
-                Register on Banyan Claims
-              </Link>
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
+                </div>
+              </div>
+
+              <div className="mt-4 text-center">
+                <Link
+                  href="/portal/register"
+                  className="text-[#004D40] hover:text-[#003D30] font-medium"
+                >
+                  Register now
+                </Link>
+              </div>
             </div>
           </div>
         </div>
