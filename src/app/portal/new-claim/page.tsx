@@ -19,6 +19,7 @@ interface FormData {
   incidentType: string;
   incidentDate: string;
   incidentTime: string;
+  incidentLocation: string;
   description: string;
   policyNumber: string;
   documents: File[];
@@ -88,6 +89,7 @@ export default function NewClaim() {
     incidentType: '',
     incidentDate: '',
     incidentTime: '',
+    incidentLocation: '',
     description: '',
     policyNumber: '',
     documents: [],
@@ -304,6 +306,19 @@ export default function NewClaim() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Incident Location
+                </label>
+                <input
+                  type="text"
+                  value={formData.incidentLocation}
+                  onChange={(e) => setFormData({ ...formData, incidentLocation: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                  placeholder="Enter the location where the incident occurred"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description of Incident
                 </label>
                 <textarea
@@ -425,6 +440,12 @@ export default function NewClaim() {
                         minute: '2-digit',
                         hour12: true
                       })}
+                    </span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="block text-sm text-gray-500">Location</span>
+                    <span className="block text-base text-gray-900 mt-1">
+                      {formData.incidentLocation || 'Not specified'}
                     </span>
                   </div>
                 </div>
