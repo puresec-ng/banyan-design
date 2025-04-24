@@ -36,15 +36,25 @@ export default function PortalLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Check if we're on the login or forgot-password page
   const isLoginPage = pathname === '/portal';
   const isForgotPasswordPage = pathname === '/portal/forgot-password';
+  const isRegisterPage = pathname === '/portal/register';
 
-  // If we're on the login or forgot-password page, render only the children
-  if (isLoginPage || isForgotPasswordPage) {
+  // If we're on the login, forgot-password, or register page, render only the children
+  if (isLoginPage || isForgotPasswordPage || isRegisterPage) {
     return <>{children}</>;
   }
+
+  const handleLogout = () => {
+    // Clear auth state
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userPhone');
+    // Redirect to login
+    router.push('/portal');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,7 +119,7 @@ export default function PortalLayout({
           {/* Logout button */}
           <div className="p-4 border-t border-gray-200">
             <button
-              onClick={() => router.push('/portal')}
+              onClick={() => setShowLogoutModal(true)}
               className="flex items-center w-full px-4 py-3 text-base font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors"
             >
               <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3" />
@@ -148,6 +158,45 @@ export default function PortalLayout({
           </div>
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Confirm Logout</h2>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to logout?
+            </p>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setShowLogoutModal(false);
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

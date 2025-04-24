@@ -95,7 +95,6 @@ export default function DocumentUpload() {
 
         {/* Required Documents */}
         <div className="space-y-6 mb-8">
-          <h3 className="font-medium text-gray-900">Required Documents</h3>
           <div className="space-y-6">
             {documents.map((doc) => (
               <div key={doc.id} className="space-y-2">
@@ -143,7 +142,6 @@ export default function DocumentUpload() {
 
         {/* Supporting Documents */}
         <div className="space-y-4">
-          <h3 className="font-medium text-gray-900">Supporting Documents</h3>
           <div 
             className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#004D40] transition-colors cursor-pointer"
             onClick={() => document.getElementById('additional-files')?.click()}
