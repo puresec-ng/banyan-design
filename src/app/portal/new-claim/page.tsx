@@ -81,6 +81,7 @@ export default function NewClaim() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     type: 'MOTOR',
     insuranceProvider: '',
@@ -136,14 +137,42 @@ export default function NewClaim() {
       claims.push(newClaim);
       localStorage.setItem('claims', JSON.stringify(claims));
 
-      // Navigate back to dashboard
-      router.push('/portal/dashboard');
+      // Show success screen
+      setShowSuccess(true);
+      
+      // Wait for 5 seconds before redirecting
+      setTimeout(() => {
+        router.push('/portal/dashboard');
+      }, 5000);
     } catch (error) {
       console.error('Error submitting claim:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (showSuccess) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircleIcon className="w-10 h-10 text-green-600" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Claim Submitted Successfully!</h2>
+            <p className="text-gray-600 mb-6">
+              Your claim has been submitted and is being processed. You will be redirected to your claims dashboard in a few seconds.
+            </p>
+            <div className="text-sm text-gray-500">
+              Claim ID: {`CLM${String(JSON.parse(localStorage.getItem('claims') || '[]').length).padStart(3, '0')}`}
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">

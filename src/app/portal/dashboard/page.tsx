@@ -183,14 +183,7 @@ export default function Dashboard() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Check authentication
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (!isAuthenticated) {
-      router.push('/portal');
-    }
-  }, [router]);
+  const [statusFilter, setStatusFilter] = useState<StatusType | 'ALL'>('ALL');
 
   const handleClaimSelect = (claimId: string) => {
     setSelectedClaim(claimId === selectedClaim ? null : claimId);
@@ -206,11 +199,40 @@ export default function Dashboard() {
     });
   };
 
+  const filteredClaims = MOCK_CLAIMS.filter(claim => 
+    statusFilter === 'ALL' ? true : claim.status === statusFilter
+  );
+
   return (
     <main className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-4">Submitted Claims</h1>
+        <div className="flex justify-end">
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusType | 'ALL')}
+              className="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+            >
+              <option value="ALL">All Statuses</option>
+              {Object.keys(STATUS_BADGES).map((status) => (
+                <option key={status} value={status}>
+                  {status.replace('_', ' ')}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl shadow">
         <div className="divide-y">
-          {MOCK_CLAIMS.map((claim: Claim) => (
+          {filteredClaims.map((claim: Claim) => (
             <div key={claim.id} className="p-6">
               <div className="flex justify-between items-start">
                 <div>
@@ -231,7 +253,6 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* Claim Details */}
               {selectedClaim === claim.id && (
                 <div className="mt-6 pt-6 border-t">
                   {/* Required Documents Section */}
@@ -386,4 +407,4 @@ export default function Dashboard() {
       )}
     </main>
   );
-} 
+}
