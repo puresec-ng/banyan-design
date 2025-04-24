@@ -62,6 +62,13 @@ export default function PortalLayout({
   // Get current section name
   const currentSection = menuItems.find(item => pathname.startsWith(item.href))?.name || 'Dashboard';
 
+  // Check if we're on the login page
+  const isLoginPage = pathname === '/portal';
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Side Menu - Desktop */}

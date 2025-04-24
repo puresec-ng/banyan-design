@@ -12,80 +12,46 @@ import {
 
 // Demo credentials - In a real app, this would be handled by a backend
 const DEMO_CREDENTIALS = {
-  'demo@banyanclaims.com': 'demo12345',
-  'test@banyanclaims.com': 'test12345',
+  '+2348123456789': 'demo12345',
+  '+2349876543210': 'test12345',
 };
 
 export default function ClientPortal() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState({
-    email: '',
+    phone: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState('');
-  const [showDemoCredentials, setShowDemoCredentials] = useState(false);
-
-  const validateForm = () => {
-    const newErrors = {
-      email: '',
-      password: '',
-    };
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-
-    setErrors(newErrors);
-    return Object.values(newErrors).every(error => !error);
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: '' }));
-    setLoginError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
     setIsLoading(true);
-    setLoginError('');
 
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Check demo credentials
-      if (DEMO_CREDENTIALS[formData.email as keyof typeof DEMO_CREDENTIALS] === formData.password) {
+      if (DEMO_CREDENTIALS[formData.phone as keyof typeof DEMO_CREDENTIALS] === formData.password) {
         // Store auth state
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userEmail', formData.email);
+        localStorage.setItem('userPhone', formData.phone);
         
         // Redirect to dashboard
         router.push('/portal/dashboard');
       } else {
-        throw new Error('Invalid email or password');
+        // If credentials don't match, still allow login
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userPhone', formData.phone);
+        router.push('/portal/dashboard');
       }
-    } catch (err) {
-      setLoginError(err instanceof Error ? err.message : 'An error occurred');
-      // Show demo credentials after failed attempt
-      setShowDemoCredentials(true);
     } finally {
       setIsLoading(false);
     }
@@ -93,11 +59,9 @@ export default function ClientPortal() {
 
   const useDemoCredentials = () => {
     setFormData({
-      email: 'demo@banyanclaims.com',
+      phone: '+2348123456789',
       password: 'demo12345',
     });
-    setErrors({ email: '', password: '' });
-    setLoginError('');
   };
 
   return (
@@ -124,47 +88,21 @@ export default function ClientPortal() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-2xl sm:px-10">
-          {loginError && (
-            <div className="mb-6 p-4 bg-red-50 rounded-xl flex items-center gap-3 text-red-700">
-              <ExclamationCircleIcon className="w-5 h-5 flex-shrink-0" />
-              <p>{loginError}</p>
-            </div>
-          )}
-
-          {showDemoCredentials && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-xl text-blue-800">
-              <p className="font-medium mb-2">Demo Credentials</p>
-              <p className="text-sm mb-1">Email: demo@banyanclaims.com</p>
-              <p className="text-sm mb-3">Password: demo12345</p>
-              <button
-                type="button"
-                onClick={useDemoCredentials}
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                Use demo credentials
-              </button>
-            </div>
-          )}
-
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone Number
               </label>
               <div className="mt-1">
                 <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  value={formData.email}
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={formData.phone}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm
-                    ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm"
                 />
-                {errors.email && (
-                  <p className="mt-2 text-sm text-red-600">{errors.email}</p>
-                )}
               </div>
             </div>
 
@@ -180,8 +118,7 @@ export default function ClientPortal() {
                   autoComplete="current-password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`appearance-none block w-full px-3 py-2 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm
-                    ${errors.password ? 'border-red-300' : 'border-gray-300'}`}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm"
                 />
                 <button
                   type="button"
@@ -194,9 +131,6 @@ export default function ClientPortal() {
                     <EyeIcon className="h-5 w-5" />
                   )}
                 </button>
-                {errors.password && (
-                  <p className="mt-2 text-sm text-red-600">{errors.password}</p>
-                )}
               </div>
             </div>
 
@@ -249,7 +183,7 @@ export default function ClientPortal() {
                 href="/portal/register"
                 className="font-medium text-[#004D40] hover:text-[#003D30]"
               >
-                Register for Client Portal
+                Register on Banyan Claims
               </Link>
             </div>
           </div>
