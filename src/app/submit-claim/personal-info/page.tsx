@@ -20,6 +20,13 @@ export default function PersonalInfo() {
       router.push('/submit-claim/basic-info');
       return;
     }
+
+    // Load saved personal info if it exists
+    const savedPersonalInfo = localStorage.getItem('personalInfo');
+    console.log('savedPersonalInfo____', savedPersonalInfo);
+    if (savedPersonalInfo) {
+      setFormData(JSON.parse(savedPersonalInfo));
+    }
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,15 +47,15 @@ export default function PersonalInfo() {
 
   const isFormValid = () => {
     return formData.firstName &&
-           formData.lastName &&
-           formData.phoneNumber;
+      formData.lastName &&
+      formData.phoneNumber;
   };
 
   return (
     <div className="max-w-2xl mx-auto">
       <form className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h2>
-        
+
         <div className="space-y-6">
           {/* First Name */}
           <div>
