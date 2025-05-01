@@ -64,7 +64,13 @@ export default function BasicInfo() {
 
   const handleContinue = () => {
     if (isFormValid()) {
-      localStorage.setItem('basicInfo', JSON.stringify(formData));
+      const insurer = insurers?.find((i: Insurer) => i.name === formData.insuranceProvider);
+      const incidentType = incidentTypes?.find((t: IncidentType) => t.name === formData.incidentType);
+      localStorage.setItem('basicInfo', JSON.stringify({
+        ...formData,
+        insurer_id: insurer?.id,
+        incident_type: incidentType?.id
+      }));
       router.push('/submit-claim/personal-info');
     }
   };

@@ -15,6 +15,7 @@ export default function DocumentRequirements() {
   const [documents, setDocuments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
   const { data: incidentTypes } = useQuery<IncidentType[]>({
     queryKey: ['incidentTypes'],
     queryFn: getIncidentTypes,
@@ -63,16 +64,18 @@ export default function DocumentRequirements() {
         phone: personalInfo.phoneNumber,
         email: personalInfo.email,
         claim_type: selectedClaimType,
-        incident_type: basicInfo.incidentType,
-        incident_date: basicInfo.incidentDate,
+        incident_type: basicInfo.incident_type,
+        incident_date: `${basicInfo.incidentDate} ${basicInfo.incidentTime}:00`,
         incident_location: basicInfo.incidentLocation,
         description: basicInfo.incidentDescription,
         policy_number: basicInfo.policyNumber,
-        insurer_id: basicInfo.insuranceProvider,
+        insurer_id: basicInfo.insurer_id,
         payment_model: 1
       }
 
-      // Prepare the claim payload
+      console.log(samplePayload, 'samplePayload');
+
+      // // Prepare the claim payload
       const claimPayload = {
         // ...personalInfo,
         // ...basicInfo,
@@ -81,19 +84,32 @@ export default function DocumentRequirements() {
       };
 
       // Submit the claim
-      await submitClaim(claimPayload);
+      const response = await submitClaim(claimPayload);
+      console.log(response, 'response_____');
+      const getSubmissionDetails = await localStorage.getItem('submissionDetails');
+      localStorage.setItem('submissionDetails', JSON.stringify({
+        ...JSON.parse(getSubmissionDetails || '{}'),
+        trackingNumber: response.data.claim_number
+      }));
 
       // Store empty documents array to indicate user skipped
       localStorage.setItem('documents', JSON.stringify([]));
+      emptyStoredData();
 
       // Navigate to success page
       router.push('/submit-claim/success');
-    } catch (error) {
-      showToast('Failed to submit claim. Please try again.', 'error');
+    } catch (error: any) {
+      showToast(error.response.data.message || 'Failed to submit claim. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const emptyStoredData = () => {
+    localStorage.removeItem('personalInfo');
+    localStorage.removeItem('basicInfo');
+    localStorage.removeItem('selectedClaimType');
+  }
 
   return (
     <div className="max-w-2xl mx-auto">

@@ -57,7 +57,7 @@ export const getIncidentTypes = (): Promise<IncidentTypeResponse> => Http.get(`/
 export const getInsurers = (): Promise<InsurerResponse> => Http.get(`/public/insurers`);
 
 // public/sumbit-claim
-export const submitClaim = (payload: any) => Http.post(`/public/sumbit-claim`, payload);
+export const submitClaim = (payload: any) => Http.post(`/public/submit-claim`, payload);
 // /upload-document
 export const uploadDocument = (payload: any) => Http.post(`/upload-document`, payload);
 
