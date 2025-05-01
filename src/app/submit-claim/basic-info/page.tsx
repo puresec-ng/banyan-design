@@ -2,27 +2,32 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const INSURANCE_PROVIDERS = [
-  'Allianz Insurance',
-  'AXA Insurance',
-  'Prudential Insurance',
-  'Liberty Insurance',
-  'Zurich Insurance',
-  'Other'
-];
-
-const INCIDENT_TYPES = [
-  'Accident',
-  'Theft',
-  'Natural Disaster',
-  'Fire Damage',
-  'Water Damage',
-  'Other'
-];
+import { getInsurers, Insurer, getIncidentTypes, IncidentType } from '../../services/public';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '../../context/ToastContext';
+import Image from 'next/image';
 
 export default function BasicInfo() {
   const router = useRouter();
+  const { data: insurers, isLoading, error } = useQuery({
+    queryKey: ['insurers'],
+    queryFn: getInsurers,
+  });
+
+  const { data: incidentTypes } = useQuery<IncidentType[]>({
+    queryKey: ['incidentTypes'],
+    queryFn: getIncidentTypes,
+  });
+
+  useEffect(() => {
+    if (insurers) {
+      console.log('Insurers data:', insurers);
+    }
+    if (incidentTypes) {
+      console.log('Incident Types data:', incidentTypes);
+    }
+  }, [insurers, incidentTypes]);
+
   const [formData, setFormData] = useState({
     insuranceProvider: '',
     incidentType: '',
@@ -66,18 +71,18 @@ export default function BasicInfo() {
 
   const isFormValid = () => {
     return formData.insuranceProvider &&
-           formData.incidentType &&
-           formData.incidentDate &&
-           formData.incidentTime &&
-           formData.incidentLocation &&
-           formData.incidentDescription;
+      formData.incidentType &&
+      formData.incidentDate &&
+      formData.incidentTime &&
+      formData.incidentLocation &&
+      formData.incidentDescription;
   };
 
   return (
     <div className="max-w-2xl mx-auto">
       <form className="bg-white rounded-xl shadow-sm p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
-        
+
         <div className="space-y-6">
           {/* Insurance Provider */}
           <div>
@@ -93,10 +98,26 @@ export default function BasicInfo() {
               required
             >
               <option value="">Select Insurance Provider</option>
-              {INSURANCE_PROVIDERS.map((provider) => (
-                <option key={provider} value={provider}>{provider}</option>
+              {insurers?.map((insurer: Insurer) => (
+                <option key={insurer.id} value={insurer.name}>
+                  {insurer.name}
+                </option>
               ))}
             </select>
+            {formData.insuranceProvider && insurers && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                {insurers.find((i: Insurer) => i.name === formData.insuranceProvider)?.special_instructions && (
+                  <p className="text-sm text-gray-600 mb-2">
+                    <span className="font-medium">Special Instructions:</span>{' '}
+                    {insurers.find((i: Insurer) => i.name === formData.insuranceProvider)?.special_instructions}
+                  </p>
+                )}
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Contact:</span>{' '}
+                  {insurers.find((i: Insurer) => i.name === formData.insuranceProvider)?.contact_phone}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Incident Type */}
@@ -113,10 +134,24 @@ export default function BasicInfo() {
               required
             >
               <option value="">Select Incident Type</option>
-              {INCIDENT_TYPES.map((type) => (
-                <option key={type} value={type}>{type}</option>
+              {incidentTypes?.map((type) => (
+                <option key={type.id} value={type.name}>
+                  {type.name}
+                </option>
               ))}
             </select>
+            {formData.incidentType && incidentTypes && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600 mb-2">
+                  <span className="font-medium">Description:</span>{' '}
+                  {incidentTypes.find((t) => t.name === formData.incidentType)?.description}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Required Documents:</span>{' '}
+                  {JSON.parse(incidentTypes.find((t) => t.name === formData.incidentType)?.required_documents || '[]').join(', ')}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Incident Date */}

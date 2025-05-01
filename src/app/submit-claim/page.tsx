@@ -1,60 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
+import {
   HomeIcon,
   BuildingStorefrontIcon as TreeIcon,
   TruckIcon,
   DevicePhoneMobileIcon,
   BuildingOfficeIcon,
   ShieldCheckIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
+import { getClaimTypes } from '../services/public';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '../context/ToastContext';
 
-const claimTypes = [
-  {
-    id: 'motor',
-    title: 'Motor Claims',
-    description: 'File a claim for vehicle damage, accidents, or theft',
-    icon: TruckIcon,
-  },
-  {
-    id: 'property',
-    title: 'Property Claims',
-    description: 'Claims for home, building, or property damage',
-    icon: HomeIcon,
-  },
-  {
-    id: 'business',
-    title: 'Business Claims',
-    description: 'Claims for business interruption or commercial property',
-    icon: BuildingOfficeIcon,
-  },
-  {
-    id: 'gadget',
-    title: 'Gadget Claims',
-    description: 'Claims for phones, laptops, and other electronic devices',
-    icon: DevicePhoneMobileIcon,
-  },
-  {
-    id: 'liability',
-    title: 'Liability Claims',
-    description: 'Claims related to third-party injuries or property damage',
-    icon: ShieldCheckIcon,
-  },
-  {
-    id: 'commercial',
-    title: 'Commercial Claims',
-    description: 'Claims for commercial properties and assets',
-    icon: TreeIcon,
-  }
-];
 
 export default function ClaimTypeSelection() {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [claimTypes, setClaimTypes] = useState<any[]>([]);
+  const { showToast } = useToast();
+
+  const { data: claimTypesData } = useQuery({
+    queryKey: ['claimTypes'],
+    queryFn: getClaimTypes,
+  });
+
+  const getIconForClaimType = (code: string) => {
+    switch (code) {
+      case 'MOTOR':
+        return TruckIcon;
+      case 'HOME':
+        return HomeIcon;
+      case 'PROPERTY':
+        return HomeIcon;
+      case 'SME':
+        return BuildingOfficeIcon;
+      case 'LIABILITY':
+        return ShieldCheckIcon;
+      case 'COMMERCIAL':
+        return TreeIcon;
+      case 'GADGET':
+        return DevicePhoneMobileIcon;
+      default:
+        return QuestionMarkCircleIcon;
+    }
+  };
+
+  useEffect(() => {
+    if (claimTypesData) {
+      const formattedClaimTypes = claimTypesData.map(type => ({
+        id: type.id.toString(),
+        title: type.name,
+        description: type.description,
+        icon: getIconForClaimType(type.code),
+        code: type.code,
+        tracking_prefix: type.tracking_prefix,
+        required_documents: JSON.parse(type.required_documents),
+        processing_time_estimate: type.processing_time_estimate
+      }));
+      setClaimTypes(formattedClaimTypes);
+    }
+  }, [claimTypesData]);
 
   const handleTypeSelect = (typeId: string) => {
     setSelectedType(typeId);
@@ -62,11 +72,13 @@ export default function ClaimTypeSelection() {
     router.push('/submit-claim/basic-info');
   };
 
+
+
   return (
     <main className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <Link 
+          <Link
             href="/"
             className="inline-flex items-center text-[#004D40] hover:text-[#003D30] font-medium"
           >
@@ -89,11 +101,10 @@ export default function ClaimTypeSelection() {
             <button
               key={type.id}
               onClick={() => handleTypeSelect(type.id)}
-              className={`p-6 rounded-xl border-2 transition-all duration-200 ${
-                selectedType === type.id
-                  ? 'border-[#004D40] bg-[#E0F2F1]'
-                  : 'border-gray-200 hover:border-[#004D40] hover:bg-[#E0F2F1]/50'
-              }`}
+              className={`p-6 rounded-xl border-2 transition-all duration-200 ${selectedType === type.id
+                ? 'border-[#004D40] bg-[#E0F2F1]'
+                : 'border-gray-200 hover:border-[#004D40] hover:bg-[#E0F2F1]/50'
+                }`}
             >
               <type.icon className="w-12 h-12 text-[#004D40] mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">

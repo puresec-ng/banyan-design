@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Lato, Roboto, Montserrat } from "next/font/google";
 import "./globals.css";
+import ReactQueryProvider from "./utils/ReactQueryProvider";
+import { ToastProvider } from "./context/ToastContext";
+
 
 const lato = Lato({
   subsets: ["latin"],
@@ -33,7 +36,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${lato.variable} ${roboto.variable} ${montserrat.variable} font-roboto`}>
-        {children}
+        <ReactQueryProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

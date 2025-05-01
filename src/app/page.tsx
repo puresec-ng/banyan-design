@@ -1,6 +1,7 @@
+'use client'
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
+import {
   BuildingOfficeIcon,
   BuildingStorefrontIcon as TreeIcon,
   TruckIcon,
@@ -15,6 +16,8 @@ import {
 } from '@heroicons/react/24/outline';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import { contactUs } from './services/public';
+import { useState } from 'react';
 
 // Add social icons import
 import {
@@ -39,16 +42,49 @@ const navigation: NavigationItem[] = [
 ];
 
 export default function Home() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+
+  // handle contact us
+  const handleContactUs = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+
+    try {
+      const formData = new FormData(e.target as HTMLFormElement);
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: formData.get('message'),
+      };
+
+      await contactUs(payload);
+      setSubmitStatus({
+        type: 'success',
+        message: 'Thank you for your message. We will get back to you soon!'
+      });
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Failed to send message. Please try again later.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="min-h-screen">
       <Navbar />
       <Hero />
-      
+
       {/* Divider */}
       <div className="w-full max-w-6xl mx-auto px-4">
         <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
       </div>
-      
+
       {/* Services Section */}
       <section id="services" className="section bg-white">
         <div className="container">
@@ -59,7 +95,7 @@ export default function Home() {
               and support throughout the entire process.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service) => (
               <div
@@ -178,7 +214,13 @@ export default function Home() {
               </div>
             </div>
             <div className="bg-white rounded-xl p-8 shadow-lg">
-              <form className="space-y-6">
+              <form onSubmit={handleContactUs} className="space-y-6">
+                {submitStatus.type && (
+                  <div className={`p-4 rounded-lg ${submitStatus.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}>
+                    {submitStatus.message}
+                  </div>
+                )}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
@@ -186,6 +228,8 @@ export default function Home() {
                   <input
                     type="text"
                     id="name"
+                    name="name"
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -196,6 +240,8 @@ export default function Home() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
@@ -205,12 +251,18 @@ export default function Home() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
+                    required
                     rows={4}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                   ></textarea>
                 </div>
-                <button type="submit" className="btn-primary w-full">
-                  Send Message
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -264,37 +316,37 @@ export default function Home() {
             <div>
               <h4 className="text-lg font-bold mb-4">Connect With Us</h4>
               <div className="flex space-x-4">
-                <a 
-                  href="https://linkedin.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
                 >
                   <span className="sr-only">LinkedIn</span>
                   <FaLinkedin className="w-6 h-6" />
                 </a>
-                <a 
-                  href="https://twitter.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Twitter</span>
                   <FaTwitter className="w-6 h-6" />
                 </a>
-                <a 
-                  href="https://instagram.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Instagram</span>
                   <FaInstagram className="w-6 h-6" />
                 </a>
-                <a 
-                  href="https://facebook.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
                 >
                   <span className="sr-only">Facebook</span>
