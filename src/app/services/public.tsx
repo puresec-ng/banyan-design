@@ -59,7 +59,13 @@ export const getInsurers = (): Promise<InsurerResponse> => Http.get(`/public/ins
 // public/sumbit-claim
 export const submitClaim = (payload: any) => Http.post(`/public/submit-claim`, payload);
 // /upload-document
-export const uploadDocument = (payload: any) => Http.post(`/upload-document`, payload);
+export const uploadDocument = (payload: FormData) => {
+    return Http.post(`/upload-document`, payload, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
 
 // public/contact-us
 export const contactUs = (payload: any) => Http.post(`/public/contact-us`, payload);
