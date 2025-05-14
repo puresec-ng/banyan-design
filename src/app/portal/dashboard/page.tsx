@@ -25,13 +25,18 @@ import {
   ExclamationCircleIcon,
   PaperClipIcon,
 } from '@heroicons/react/24/outline';
-import { getSubmitedClaims, ClaimData } from '../../services/dashboard';
+import { getSubmitedClaims, ClaimData, uploadClaimDocument } from '../../services/dashboard';
+import { uploadDocument, } from '@/app/services/public';
+
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
 
 
 
 // Add these type definitions after the imports and before MOCK_CLAIMS
+interface UploadDocumentResponse {
+  image_url: string;
+}
 
 interface Document {
   name: string;
@@ -255,7 +260,9 @@ export default function Dashboard() {
   const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string>('');
 
   const handleClaimSelect = (claimId: string) => {
     setSelectedClaim(claimId === selectedClaim ? null : claimId);
@@ -270,6 +277,40 @@ export default function Dashboard() {
       minute: '2-digit',
     });
   };
+
+  const handleUploadDocument = async (file: File | null) => {
+    try {
+      if (!selectedDocumentId || !file) {
+        showToast("Please select a document to upload", "error");
+        return;
+      }
+      setUploadingDocument(true);
+      console.log(selectedDocumentId, 'selectedDocument_______');
+      // const resp = await uploadDocument(selectedDocument, file);
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('document_type', selectedDocumentId);
+
+      const response = await uploadDocument(uploadFormData);
+      const responseData = response as unknown as UploadDocumentResponse;
+
+      const uploadClaimDocumentResponse = await uploadClaimDocument(selectedDocumentId, responseData.image_url);
+
+      console.log(uploadClaimDocumentResponse, 'uploadClaimDocumentResponse');
+      console.log(responseData, 'responseData');
+
+
+
+      // console.log(response, 'resp______');
+      showToast("Document uploaded successfully", "success");
+      setUploadingDocument(false);
+      window.location.reload();
+    } catch (error: any) {
+      setUploadingDocument(false);
+      console.log(error, 'error______');
+      showToast(error?.response?.data?.message || "Error uploading document", "error");
+    }
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -345,12 +386,13 @@ export default function Dashboard() {
                             <div key={index} className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <DocumentTextIcon className="w-5 h-5 text-gray-400" />
-                                <span className="text-gray-700">{doc.name}</span>
+                                <span className="text-gray-700">{doc.document_type}</span>
                               </div>
-                              {doc.status === 'PENDING' ? (
+                              {!doc.document_uploaded ? (
                                 <button
                                   onClick={() => {
-                                    setSelectedDocument(doc.name);
+                                    setSelectedDocument(doc.document_type);
+                                    setSelectedDocumentId(doc?.id.toString() || '');
                                     setShowUploadModal(true);
                                   }}
                                   className="text-sm px-3 py-1 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
@@ -437,6 +479,7 @@ export default function Dashboard() {
                 className="hidden"
                 id="document-upload"
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                onChange={(e) => handleUploadDocument(e?.target?.files?.[0] || null)}
               />
               <label
                 htmlFor="document-upload"
@@ -457,7 +500,7 @@ export default function Dashboard() {
               <button
                 className="px-4 py-2 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30]"
               >
-                Upload Document
+                {uploadingDocument ? 'Uploading...' : 'Upload Document'}
               </button>
             </div>
           </div>

@@ -249,7 +249,7 @@ export default function TrackClaim() {
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <DocumentTextIcon className="w-5 h-5 text-gray-400" />
-                        <span className="text-gray-700">{doc.name}</span>
+                        <span className="text-gray-700">{doc.document_type}</span>
                       </div>
                       <span className={`text-sm font-medium ${doc.status === 'UPLOADED' ? 'text-green-600' : 'text-orange-600'
                         }`}>

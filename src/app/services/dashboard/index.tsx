@@ -20,7 +20,10 @@ interface Document {
     created_at: string;
     updated_at: string;
     status: string;
-    name: string;
+    // name: string;
+    document_uploaded: boolean;
+    // created_at: string;
+    // updated_at: string;
 }
 interface questions {
     id: number;
@@ -95,3 +98,14 @@ export const getPendingClaims = () => Http.get(`/claims/pending`);
 //claims/track-claim
 export const trackClaim = (claimId: string): Promise<TrackClaimResponse> => Http.post(`/claims/track-claim`, { claim_number: claimId });
 
+// claims/upload-document/{{id}}
+export const uploadClaimDocument = (id: string, fileUrl: string): Promise<any> => {
+
+    return Http.post(`/claims/upload-document/${id}`, { file_url: fileUrl });
+};
+// export const uploadClaimDocument = (id: string, file: File): Promise<any> => {
+//     const formData = new FormData();
+//     formData.append('file', file);
+//     formData.append('document_type', id);
+//     return Http.post(`/claims/upload-document/${id}`, formData);
+// };
