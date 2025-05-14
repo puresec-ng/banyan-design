@@ -11,6 +11,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
+import { trackClaim, ClaimData } from '@/app/services/dashboard';
 
 // Using the same types from dashboard
 type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'PENDING_RESPONSE';
@@ -112,7 +113,9 @@ const StatusBadge = ({ status }: { status: StatusType }) => {
 export default function TrackClaim() {
   const router = useRouter();
   const [claimId, setClaimId] = useState('');
-  const [claim, setClaim] = useState<Claim | null>(null);
+  const [claim, setClaim] = useState<ClaimData | null>(null);
+  // const [claim, setClaim] = useState<ClaimData[]>([]);
+
   const [error, setError] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
@@ -123,24 +126,37 @@ export default function TrackClaim() {
     }
   }, [router]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSearching(true);
+    try {
+      const response = await trackClaim(claimId);
+      console.log(response?.data, 'response_____');
+      setClaim(response.data);
+      // Simulate API call delay
+      // setTimeout(() => {
+      //   const formattedClaimId = claimId.trim().toUpperCase();
+      //   const foundClaim = MOCK_CLAIMS[formattedClaimId];
 
-    // Simulate API call delay
-    setTimeout(() => {
-      const formattedClaimId = claimId.trim().toUpperCase();
-      const foundClaim = MOCK_CLAIMS[formattedClaimId];
-
-      if (foundClaim) {
-        setClaim(foundClaim);
-      } else {
-        setError('No claim found with this ID. Please check the ID and try again.');
-        setClaim(null);
-      }
+      //   if (foundClaim) {
+      //     setClaim(foundClaim);
+      //   } else {
+      //     setError('No claim found with this ID. Please check the ID and try again.');
+      //     setClaim(null);
+      //   }
+      //   setIsSearching(false);
+      // }, 1000);
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'No claim found with this ID. Please check the ID and try again.');
+      setClaim(null);
+      console.log(error, 'error_____');
+    } finally {
       setIsSearching(false);
-    }, 1000);
+    }
+
+
+
   };
 
   const formatDate = (dateString: string) => {
@@ -201,26 +217,26 @@ export default function TrackClaim() {
             <div className="p-6 border-b">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <span className="font-medium text-gray-900">{claim.id}</span>
-                  <StatusBadge status={claim.status} />
+                  <span className="font-medium text-gray-900">{claim?.claim_number}</span>
+                  <StatusBadge status={claim?.status?.toString().toUpperCase() as StatusType} />
                 </div>
                 <span className="text-gray-500 text-sm">
-                  Last updated: {formatDate(claim.updatedAt)}
+                  Last updated: {formatDate(claim?.created_at)}
                 </span>
               </div>
               <div className="space-y-3">
                 <div>
                   <span className="text-sm text-gray-500">Type</span>
-                  <p className="font-medium text-gray-900">{claim.type}</p>
+                  <p className="font-medium text-gray-900">{claim?.claim_type?.name}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Description</span>
-                  <p className="text-gray-900">{claim.description}</p>
+                  <p className="text-gray-900">{claim?.description}</p>
                 </div>
-                <div>
+                {/* <div>
                   <span className="text-sm text-gray-500">Amount</span>
-                  <p className="font-medium text-gray-900">₦{claim.amount.toLocaleString()}</p>
-                </div>
+                  <p className="font-medium text-gray-900">₦{claim?.amount.toLocaleString()}</p>
+                </div> */}
               </div>
             </div>
 
@@ -229,15 +245,14 @@ export default function TrackClaim() {
               <div className="p-6 border-b">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Required Documents</h3>
                 <div className="space-y-3">
-                  {claim.requiredDocuments.map((doc, index) => (
+                  {claim?.documents?.map((doc, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <DocumentTextIcon className="w-5 h-5 text-gray-400" />
                         <span className="text-gray-700">{doc.name}</span>
                       </div>
-                      <span className={`text-sm font-medium ${
-                        doc.status === 'UPLOADED' ? 'text-green-600' : 'text-orange-600'
-                      }`}>
+                      <span className={`text-sm font-medium ${doc.status === 'UPLOADED' ? 'text-green-600' : 'text-orange-600'
+                        }`}>
                         {doc.status}
                       </span>
                     </div>
@@ -247,45 +262,55 @@ export default function TrackClaim() {
             )}
 
             {/* Questions Section */}
-            {'questions' in claim && claim.questions && (
-              <div className="p-6 border-b">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Questions</h3>
-                <div className="space-y-4">
-                  {claim.questions.map((q) => (
-                    <div key={q.id} className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-800 mb-2">{q.question}</p>
-                      <span className={`text-sm font-medium ${
-                        q.status === 'ANSWERED' ? 'text-green-600' : 'text-orange-600'
-                      }`}>
-                        {q.status}
-                      </span>
+            {
+              claim?.questions && (
+                <div>
+                  {claim?.questions && (
+                    <div className="p-6 border-b">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Questions</h3>
+                      <div className="space-y-4">
+                        {claim.questions.map((q) => (
+                          <div key={q.id} className="bg-gray-50 rounded-lg p-4">
+                            <p className="text-gray-800 mb-2">{q.question}</p>
+                            <span className={`text-sm font-medium ${q.status?.toString().toUpperCase() === 'ANSWERED' ? 'text-green-600' : 'text-orange-600'
+                              }`}>
+                              {q.status}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  )}
+
+                </div>)
+            }
+
 
             {/* Claim History */}
             <div className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Claim History</h3>
               <div className="relative">
                 <div className="absolute top-0 bottom-0 left-2 w-0.5 bg-gray-200"></div>
-                <div className="space-y-6">
-                  {claim.history.map((event, index) => (
-                    <div key={index} className="relative flex gap-4">
-                      <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status].color} ring-4 ring-white`}></div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {event.status.replace('_', ' ')}
-                        </p>
-                        <p className="text-gray-600 text-sm">{event.note}</p>
-                        <p className="text-gray-500 text-sm mt-1">
-                          {formatDate(event.date)}
-                        </p>
-                      </div>
+                {
+                  claim.claim_history.length > 0 && (
+                    <div className="space-y-6">
+                      {claim?.claim_history?.map((event, index) => (
+                        <div key={index} className="relative flex gap-4">
+                          <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status?.toString().toUpperCase() as StatusType].color} ring-4 ring-white`}></div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {event.status.replace('_', ' ')}
+                            </p>
+                            <p className="text-gray-600 text-sm">{event.description}</p>
+                            <p className="text-gray-500 text-sm mt-1">
+                              {formatDate(event.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )
+                }
               </div>
             </div>
           </div>

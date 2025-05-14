@@ -25,6 +25,11 @@ import {
   ExclamationCircleIcon,
   PaperClipIcon,
 } from '@heroicons/react/24/outline';
+import { getSubmitedClaims, ClaimData } from '../../services/dashboard';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '@/app/context/ToastContext';
+
+
 
 // Add these type definitions after the imports and before MOCK_CLAIMS
 
@@ -52,6 +57,65 @@ interface BaseClaimType {
     status: StatusType;
     note: string;
   }>;
+}
+
+const responseDataSample = {
+  "data": {
+    "data": [
+
+      {
+        "claim_number": "MTR-2025-00006",
+        "incident_location": "IDOW",
+        "incident_date": "2025-05-29 20:12:00",
+        "description": "IDOW",
+        "status": "submitted",
+        "claim_history": [
+          {
+            "id": 1,
+            "claim_id": 6,
+            "description": "Claim submitted successfully",
+            "status": "submitted",
+            "meta": null,
+            "created_at": "2025-05-14T14:13:18.000000Z",
+            "updated_at": "2025-05-14T14:13:18.000000Z"
+          }
+        ],
+        "documents": []
+      }
+    ],
+    "links": {
+      "first": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims?page=1",
+      "last": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims?page=1",
+      "prev": null,
+      "next": null
+    },
+    "meta": {
+      "current_page": 1,
+      "from": 1,
+      "last_page": 1,
+      "links": [
+        {
+          "url": null,
+          "label": "&laquo; Previous",
+          "active": false
+        },
+        {
+          "url": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims?page=1",
+          "label": "1",
+          "active": true
+        },
+        {
+          "url": null,
+          "label": "Next &raquo;",
+          "active": false
+        }
+      ],
+      "path": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims",
+      "per_page": 15,
+      "to": 2,
+      "total": 2
+    }
+  }
 }
 
 interface DocumentClaim extends BaseClaimType {
@@ -179,11 +243,19 @@ const MOCK_USER = {
 
 export default function Dashboard() {
   const router = useRouter();
+  const { showToast } = useToast();
+
+  const [statusFilter, setStatusFilter] = useState<StatusType | 'ALL'>('ALL');
+
+  const { data: claims, isLoading } = useQuery({
+    queryKey: ['claims', statusFilter],
+    queryFn: () => getSubmitedClaims(statusFilter === 'ALL' ? 'all' : statusFilter.toLowerCase()),
+  });
+
   const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<StatusType | 'ALL'>('ALL');
 
   const handleClaimSelect = (claimId: string) => {
     setSelectedClaim(claimId === selectedClaim ? null : claimId);
@@ -198,10 +270,6 @@ export default function Dashboard() {
       minute: '2-digit',
     });
   };
-
-  const filteredClaims = MOCK_CLAIMS.filter(claim => 
-    statusFilter === 'ALL' ? true : claim.status === statusFilter
-  );
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -231,106 +299,130 @@ export default function Dashboard() {
       </div>
 
       <div className="bg-white rounded-xl shadow">
-        <div className="divide-y">
-          {filteredClaims.map((claim: Claim) => (
-            <div key={claim.id} className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-medium text-gray-900">{claim.id}</span>
-                    <StatusBadge status={claim.status as StatusType} />
-                  </div>
-                  <p className="text-gray-600 mb-2">{claim.description}</p>
-                  <p className="text-sm text-gray-500">
-                    Submitted on {formatDate(claim.submittedAt)}
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleClaimSelect(claim.id)}
-                  className="text-[#004D40] hover:text-[#003D30]"
-                >
-                  <ChevronRightIcon className={`w-6 h-6 transition-transform ${selectedClaim === claim.id ? 'rotate-90' : ''}`} />
-                </button>
-              </div>
-
-              {selectedClaim === claim.id && (
-                <div className="mt-6 pt-6 border-t">
-                  {/* Required Documents Section */}
-                  {'requiredDocuments' in claim && (
-                    <div className="mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">Required Documents</h3>
-                      <div className="space-y-3">
-                        {claim.requiredDocuments.map((doc, index) => (
-                          <div key={index} className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <DocumentTextIcon className="w-5 h-5 text-gray-400" />
-                              <span className="text-gray-700">{doc.name}</span>
-                            </div>
-                            {doc.status === 'PENDING' ? (
-                              <button
-                                onClick={() => {
-                                  setSelectedDocument(doc.name);
-                                  setShowUploadModal(true);
-                                }}
-                                className="text-sm px-3 py-1 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
-                              >
-                                Upload
-                              </button>
-                            ) : (
-                              <span className="text-sm text-green-600 font-medium">Uploaded</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Questions Section */}
-                  {'questions' in claim && (
-                    <div className="mb-6">
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">Questions Requiring Response</h3>
-                      <div className="space-y-4">
-                        {claim.questions.map((q) => (
-                          <div key={q.id} className="bg-orange-50 rounded-lg p-4">
-                            <p className="text-gray-800 mb-2">{q.question}</p>
-                            <button
-                              onClick={() => setShowResponseModal(true)}
-                              className="text-sm px-3 py-1 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
-                            >
-                              Provide Response
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Claim History */}
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Claim History</h3>
-                  <div className="relative">
-                    <div className="absolute top-0 bottom-0 left-2 w-0.5 bg-gray-200"></div>
-                    <div className="space-y-6">
-                      {claim.history.map((event, index) => (
-                        <div key={index} className="relative flex gap-4">
-                          <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status as StatusType].color} ring-4 ring-white`}></div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {event.status.replace('_', ' ')}
-                            </p>
-                            <p className="text-gray-600 text-sm">{event.note}</p>
-                            <p className="text-gray-500 text-sm mt-1">
-                              {formatDate(event.date)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
+        {isLoading ? (
+          <div className="p-6 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004D40]"></div>
+          </div>
+        ) : claims?.data.data.length === 0 ? (
+          <div className="p-6 text-center">
+            <div className="mb-4">
+              <ClipboardDocumentListIcon className="w-12 h-12 text-gray-400 mx-auto" />
             </div>
-          ))}
-        </div>
+            <p className="text-gray-600 text-lg">No claims found</p>
+            <p className="text-gray-500 mt-2">There are no claims matching your selected status.</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {claims?.data.data?.map((claim: ClaimData) => (
+              <div key={claim.claim_number} className="p-6">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="font-medium text-gray-900">{claim.claim_number}</span>
+                      <StatusBadge status={claim.status.toString().toUpperCase() as StatusType} />
+                    </div>
+                    <p className="text-gray-600 mb-2">{claim.description}</p>
+                    <p className="text-sm text-gray-500">
+                      Submitted on {formatDate(claim.incident_date)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleClaimSelect(claim.claim_number)}
+                    className="text-[#004D40] hover:text-[#003D30]"
+                  >
+                    <ChevronRightIcon className={`w-6 h-6 transition-transform ${selectedClaim === claim.claim_number ? 'rotate-90' : ''}`} />
+                  </button>
+                </div>
+
+                {selectedClaim === claim.claim_number && (
+                  <div className="mt-6 pt-6 border-t">
+                    {/* Required Documents Section */}
+                    {claim.documents.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Required Documents</h3>
+                        <div className="space-y-3">
+                          {claim.documents.map((doc, index) => (
+                            <div key={index} className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <DocumentTextIcon className="w-5 h-5 text-gray-400" />
+                                <span className="text-gray-700">{doc.name}</span>
+                              </div>
+                              {doc.status === 'PENDING' ? (
+                                <button
+                                  onClick={() => {
+                                    setSelectedDocument(doc.name);
+                                    setShowUploadModal(true);
+                                  }}
+                                  className="text-sm px-3 py-1 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
+                                >
+                                  Upload
+                                </button>
+                              ) : (
+                                <span className="text-sm text-green-600 font-medium">Uploaded</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Questions Section */}
+                    {
+                      claim?.questions && (
+                        <div>
+                          {claim?.questions?.length > 0 && (
+                            <div className="mb-6">
+                              <h3 className="text-lg font-medium text-gray-900 mb-4">Questions Requiring Response</h3>
+                              <div className="space-y-4">
+                                {claim?.questions?.map((q) => (
+                                  <div key={q.id} className="bg-orange-50 rounded-lg p-4">
+                                    <p className="text-gray-800 mb-2">{q.question}</p>
+                                    <button
+                                      onClick={() => setShowResponseModal(true)}
+                                      className="text-sm px-3 py-1 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
+                                    >
+                                      Provide Response
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    }
+
+                    {/* Claim History */}
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Claim History</h3>
+                    <div className="relative">
+                      <div className="absolute top-0 bottom-0 left-2 w-0.5 bg-gray-200"></div>
+                      {
+                        claim.claim_history.length > 0 && (
+                          <div className="space-y-6">
+                            {claim.claim_history.map((event, index) => (
+                              <div key={index} className="relative flex gap-4">
+                                <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status?.toString().toUpperCase() as StatusType].color} ring-4 ring-white`}></div>
+                                <div>
+                                  <p className="font-medium text-gray-900">
+                                    {event.status.replace('_', ' ')}
+                                  </p>
+                                  <p className="text-gray-600 text-sm">{event.description}</p>
+                                  <p className="text-gray-500 text-sm mt-1">
+                                    {formatDate(event.created_at)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      }
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Document Upload Modal */}

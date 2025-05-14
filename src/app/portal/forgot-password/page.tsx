@@ -4,19 +4,23 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
+import {
   ArrowLeftIcon,
   CheckCircleIcon,
   EyeIcon,
   EyeSlashIcon,
 } from '@heroicons/react/24/outline';
+import { useToast } from '../../context/ToastContext';
+import { requestVerificationCode,resetPassword, forgotPassword } from '../../services/auth';
 
-type Step = 'phone' | 'verify' | 'success';
+
+type Step = 'email' | 'verify' | 'success';
 
 export default function ForgotPassword() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<Step>('phone');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const { showToast } = useToast();
+  const [currentStep, setCurrentStep] = useState<Step>('email');
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -46,16 +50,19 @@ export default function ForgotPassword() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       // Simulate API call to send OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await forgotPassword({ email });
       setCurrentStep('verify');
       setCountdown(300);
       setCanResend(false);
+      showToast('OTP sent successfully', 'success');  
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error sending OTP', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -67,9 +74,12 @@ export default function ForgotPassword() {
 
     try {
       // Simulate API call to resend OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await requestVerificationCode({ email });
       setCountdown(300);
       setCanResend(false);
+      showToast('OTP sent successfully', 'success');
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error sending OTP', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -81,41 +91,43 @@ export default function ForgotPassword() {
 
     try {
       // Simulate API call to verify OTP and reset password
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await resetPassword({ reset_id:email, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
       setCurrentStep('success');
-      
+      showToast('Password reset successfully', 'success');
       // Auto-redirect to dashboard after success
       setTimeout(() => {
         // Set authentication state
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userPhone', phoneNumber);
+        // localStorage.setItem('isAuthenticated', 'true');
+        // localStorage.setItem('userEmail', email);
         // Redirect to dashboard
-        router.push('/portal/dashboard');
-      }, 5000);
+        router.push('/portal');
+      }, 1000);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error resetting password', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const renderPhoneStep = () => (
+  const renderEmailStep = () => (
     <div className="bg-white py-8 px-4 shadow-lg sm:rounded-2xl sm:px-10">
-      <form onSubmit={handlePhoneSubmit} className="space-y-6">
+      <form onSubmit={handleEmailSubmit} className="space-y-6">
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-            Phone Number
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            Email Address
           </label>
           <p className="mt-1 text-sm text-gray-500">
-            Enter your registered phone number. We'll send you an OTP to reset your password.
+            Enter your registered email address. We'll send you an OTP to reset your password.
           </p>
           <div className="mt-2">
             <input
-              id="phone"
-              name="phone"
-              type="tel"
-              autoComplete="tel"
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
               required
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm"
             />
           </div>
@@ -123,7 +135,7 @@ export default function ForgotPassword() {
 
         <button
           type="submit"
-          disabled={isLoading || !phoneNumber}
+          disabled={isLoading || !email}
           className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-[#004D40] hover:bg-[#003D30] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? 'Sending OTP...' : 'Send OTP'}
@@ -145,8 +157,8 @@ export default function ForgotPassword() {
   const renderVerifyStep = () => (
     <div className="bg-white py-8 px-4 shadow-lg sm:rounded-2xl sm:px-10">
       <div className="flex items-center gap-2 mb-6">
-        <button 
-          onClick={() => setCurrentStep('phone')}
+        <button
+          onClick={() => setCurrentStep('email')}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <ArrowLeftIcon className="w-5 h-5 text-gray-500" />
@@ -160,7 +172,7 @@ export default function ForgotPassword() {
             Enter OTP
           </label>
           <p className="mt-1 text-sm text-gray-500">
-            Enter the 6-digit code sent to {phoneNumber}
+            Enter the 6-digit code sent to {email}
           </p>
           <div className="mt-2">
             <input
@@ -182,11 +194,10 @@ export default function ForgotPassword() {
               type="button"
               onClick={handleResendOTP}
               disabled={!canResend || isLoading}
-              className={`font-medium ${
-                canResend && !isLoading
-                  ? 'text-[#004D40] hover:text-[#003D30]'
-                  : 'text-gray-400 cursor-not-allowed'
-              }`}
+              className={`font-medium ${canResend && !isLoading
+                ? 'text-[#004D40] hover:text-[#003D30]'
+                : 'text-gray-400 cursor-not-allowed'
+                }`}
             >
               {isLoading ? 'Sending...' : 'Resend OTP'}
             </button>
@@ -294,7 +305,7 @@ export default function ForgotPassword() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        {currentStep === 'phone' && renderPhoneStep()}
+        {currentStep === 'email' && renderEmailStep()}
         {currentStep === 'verify' && renderVerifyStep()}
         {currentStep === 'success' && renderSuccessStep()}
       </div>

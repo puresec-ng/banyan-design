@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '../../context/ToastContext';
+import { register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
+import cookie from '@/app/utils/cookie';
 
 interface FormData {
   firstName: string;
@@ -14,8 +18,48 @@ interface FormData {
   confirmPassword: string;
 }
 
+interface PasswordValidation {
+  hasMinLength: boolean;
+  hasUpperCase: boolean;
+  hasLowerCase: boolean;
+  hasNumber: boolean;
+  hasSpecialChar: boolean;
+  matches: boolean;
+}
+
+interface PhoneValidation {
+  hasValidPrefix: boolean;
+  hasValidLength: boolean;
+  hasValidFormat: boolean;
+}
+
+const validateNigerianPhoneNumber = (phone: string): PhoneValidation => {
+  // Remove any spaces, dashes, or parentheses
+  const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+  return {
+    hasValidPrefix: cleanedPhone.startsWith('+234') || cleanedPhone.startsWith('0'),
+    hasValidLength: (cleanedPhone.startsWith('+234') && cleanedPhone.length === 14) ||
+      (cleanedPhone.startsWith('0') && cleanedPhone.length === 11),
+    hasValidFormat: /^(\+234[0-9]{10}|0[0-9]{10})$/.test(cleanedPhone)
+  };
+};
+
+const validatePassword = (password: string, confirmPassword: string): PasswordValidation => {
+  return {
+    hasMinLength: password.length >= 8,
+    hasUpperCase: /[A-Z]/.test(password),
+    hasLowerCase: /[a-z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+    hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    matches: password === confirmPassword
+  };
+};
+
 export default function Register() {
   const router = useRouter();
+  const { showToast } = useToast();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -33,24 +77,86 @@ export default function Register() {
     password: '',
     confirmPassword: '',
   });
+  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+    matches: false
+  });
+  const [phoneValidation, setPhoneValidation] = useState<PhoneValidation>({
+    hasValidPrefix: false,
+    hasValidLength: false,
+    hasValidFormat: false
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+
+      // Update password validation when password or confirmPassword changes
+      if (name === 'password' || name === 'confirmPassword') {
+        setPasswordValidation(validatePassword(
+          name === 'password' ? value : prev.password,
+          name === 'confirmPassword' ? value : prev.confirmPassword
+        ));
+      }
+
+      // Update phone validation when phone number changes
+      if (name === 'phoneNumber') {
+        setPhoneValidation(validateNigerianPhoneNumber(value));
+      }
+
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    // Validate phone number
+    if (!phoneValidation.hasValidPrefix || !phoneValidation.hasValidLength || !phoneValidation.hasValidFormat) {
+      showToast('Please enter a valid Nigerian phone number starting with +234 or 0', 'error');
+      return;
+    }
+
+    // Validate password
+    const validation = validatePassword(formData.password, formData.confirmPassword);
+    if (!Object.values(validation).every(Boolean)) {
+      showToast('Please ensure your password meets all requirements', 'error');
+      return;
+    }
 
     try {
+      setIsLoading(true);
+      const payload = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phoneNumber,
+        password: formData.password,
+        accept_tc: 'yes',
+        referral_code: '',
+        password_confirmation: formData.confirmPassword,
+      }
+      const response = await register(payload);
+      console.log(response);
+      const savedResponse = {
+        token: response.token,
+        user: response.user,
+      };
+      cookie().setCookie('token', response.token);
+      cookie().setCookie('user', JSON.stringify(response.user));
+
       // Store form data in localStorage for the next steps
-      localStorage.setItem('registrationData', JSON.stringify(formData));
-      
+      localStorage.setItem('registrationData', JSON.stringify(savedResponse));
+
       // Move to OTP verification step
       setCurrentStep(2);
-    } catch (error) {
-      console.error('Error during registration:', error);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error during registration', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -68,11 +174,17 @@ export default function Register() {
     return () => clearInterval(timer);
   }, [countdown, canResend]);
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     // Simulate resending OTP
     setCountdown(300);
     setCanResend(false);
     // In a real app, you would make an API call to resend OTP
+    try {
+      await requestVerificationCode({ email: formData.email });
+      showToast('Verification code sent successfully', 'success');
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Failed to send verification code', 'error');
+    }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
@@ -81,12 +193,17 @@ export default function Register() {
 
     try {
       // Simulate OTP verification
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const response = await verifyEmail({
+        email: formData.email,
+        otp: otp,
+        otp_type: 'email'
+      });
+      console.log(response);
+
       // Move to PIN creation step
       setCurrentStep(3);
-    } catch (error) {
-      console.error('Error verifying OTP:', error);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error verifying OTP', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -98,17 +215,21 @@ export default function Register() {
 
     try {
       // Simulate PIN creation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const response = await createPin({
+        pin: pin,
+        pin_confirmation: confirmPin
+      });
+      console.log(response);
+
       // Move to success screen
       setCurrentStep(4);
-      
+
       // Redirect to dashboard after 5 seconds
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
-    } catch (error) {
-      console.error('Error creating PIN:', error);
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Error creating PIN', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -160,8 +281,29 @@ export default function Register() {
             type="tel"
             value={formData.phoneNumber}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+            placeholder="+234XXXXXXXXXX or 0XXXXXXXXXX"
+            className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.phoneNumber ?
+              (phoneValidation.hasValidFormat ? 'border-green-500' : 'border-red-500') :
+              'border-gray-300'
+              }`}
           />
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-gray-500">Phone number must:</p>
+            <ul className="text-sm space-y-1">
+              <li className={`flex items-center ${phoneValidation.hasValidPrefix ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{phoneValidation.hasValidPrefix ? '✓' : '○'}</span>
+                Start with +234 or 0
+              </li>
+              <li className={`flex items-center ${phoneValidation.hasValidLength ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{phoneValidation.hasValidLength ? '✓' : '○'}</span>
+                Have correct length (11 digits for 0 prefix, 14 digits for +234)
+              </li>
+              <li className={`flex items-center ${phoneValidation.hasValidFormat ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{phoneValidation.hasValidFormat ? '✓' : '○'}</span>
+                Contain only valid digits
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div>
@@ -203,6 +345,31 @@ export default function Register() {
               )}
             </button>
           </div>
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-gray-500">Password must contain:</p>
+            <ul className="text-sm space-y-1">
+              <li className={`flex items-center ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{passwordValidation.hasMinLength ? '✓' : '○'}</span>
+                At least 8 characters
+              </li>
+              <li className={`flex items-center ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{passwordValidation.hasUpperCase ? '✓' : '○'}</span>
+                One uppercase letter
+              </li>
+              <li className={`flex items-center ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{passwordValidation.hasLowerCase ? '✓' : '○'}</span>
+                One lowercase letter
+              </li>
+              <li className={`flex items-center ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{passwordValidation.hasNumber ? '✓' : '○'}</span>
+                One number
+              </li>
+              <li className={`flex items-center ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                <span className="mr-2">{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>
+                One special character
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div>
@@ -216,7 +383,10 @@ export default function Register() {
               type={showConfirmPassword ? 'text' : 'password'}
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.confirmPassword ?
+                (passwordValidation.matches ? 'border-green-500' : 'border-red-500') :
+                'border-gray-300'
+                }`}
             />
             <button
               type="button"
@@ -230,6 +400,9 @@ export default function Register() {
               )}
             </button>
           </div>
+          {formData.confirmPassword && !passwordValidation.matches && (
+            <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+          )}
         </div>
 
         <button

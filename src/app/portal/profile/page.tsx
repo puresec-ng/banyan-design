@@ -3,21 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserCircleIcon, BanknotesIcon, CheckCircleIcon, XCircleIcon, ArrowLeftIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import cookie from '@/app/utils/cookie';
+import { useToast } from '@/app/context/ToastContext';
+import { getProfile, storeBankAccount, updateProfile, setBvnVerificationMethod, validateBvnOtp, bvnLookup, updateBvn, updateEmail, verifyEmail, verifyPhone } from '@/app/services/dashboard/user-management';
+import { useQuery } from "@tanstack/react-query";
 
-// Mock user data - In a real app, this would come from your auth system
-const MOCK_USER = {
-  firstName: 'John',
-  lastName: 'Doe',
-  phoneNumber: '+234 801 234 5678',
-  email: 'john@example.com',
-  bvn: '12345678901',
-  isBvnVerified: false,
-  bankDetails: {
-    accountName: 'John Doe',
-    accountNumber: '0123456789',
-    bankName: 'Access Bank',
-  },
-};
+
+
 
 // Mock BVN lookup response
 const MOCK_BVN_DETAILS = {
@@ -26,6 +18,9 @@ const MOCK_BVN_DETAILS = {
   firstName: 'John',
   lastName: 'Doe',
 };
+
+const BANKS = [{ "code": "044", "name": "Access Bank" }, { "code": "035A", "name": "ALAT by WEMA" }, { "code": "401", "name": "ASO Savings and Loans" }, { "code": "50931", "name": "Bowen Microfinance Bank" }, { "code": "50823", "name": "CEMCS Microfinance Bank" }, { "code": "023", "name": "Citi bank Nigeria" }, { "code": "050", "name": "Ecobank Nigeria" }, { "code": "562", "name": "Ekondo Microfinance Bank" }, { "code": "070", "name": "Fidelity Bank" }, { "code": "011", "name": "First Bank of Nigeria" }, { "code": "214", "name": "First City Monument Bank" }, { "code": "00103", "name": "Globus Bank" }, { "code": "058", "name": "Guaranty Trust Bank" }, { "code": "50383", "name": "Hasal Microfinance Bank" }, { "code": "030", "name": "Heritage Bank" }, { "code": "301", "name": "Jaiz Bank" }, { "code": "082", "name": "Keystone Bank" }, { "code": "50211", "name": "Kuda Bank" }, { "code": "565", "name": "One Finance" }, { "code": "327", "name": "Paga" }, { "code": "526", "name": "Parallex Bank" }, { "code": "100004", "name": "Paycom(Opay)" }, { "code": "076", "name": "Polaris Bank" }, { "code": "101", "name": "Providus Bank" }, { "code": "125", "name": "Rubies MFB" }, { "code": "51310", "name": "Sparkle Microfinance Bank" }, { "code": "221", "name": "Stanbic IBTC Bank" }, { "code": "068", "name": "Standard Chartered Bank" }, { "code": "232", "name": "Sterling Bank" }, { "code": "100", "name": "Suntrust Bank" }, { "code": "302", "name": "TAJ Bank" }, { "code": "51211", "name": "TCF MFB" }, { "code": "102", "name": "Titan Trust Bank" }, { "code": "032", "name": "Union Bank of Nigeria" }, { "code": "033", "name": "United Bank For Africa" }, { "code": "215", "name": "Unity Bank" }, { "code": "566", "name": "VFD" }, { "code": "035", "name": "Wema Bank" }, { "code": "057", "name": "Zenith Bank" }, { "code": "120001", "name": "9mobile 9Payment Service Bank" }, { "code": "404", "name": "Abbey Mortgage Bank" }, { "code": "51204", "name": "Above Only MFB" }, { "code": "602", "name": "Accion Microfinance Bank" }, { "code": "50036", "name": "Ahmadu Bello University Microfinance Bank" }, { "code": "120004", "name": "Airtel Smartcash PSB" }, { "code": "51336", "name": "AKU Microfinance Bank" }, { "code": "90561", "name": "Akuchukwu Microfinance Bank Limited" }, { "code": "90629", "name": "Amegy Microfinance Bank" }, { "code": "50926", "name": "Amju Unique MFB" }, { "code": "51341", "name": "AMPERSAND MICROFINANCE BANK" }, { "code": "50083", "name": "Aramoko MFB" }, { "code": "MFB50094", "name": "Astrapolaris MFB LTD" }, { "code": "90478", "name": "AVUENEGBE MICROFINANCE BANK" }, { "code": "51229", "name": "Bainescredit MFB" }, { "code": "50117", "name": "Banc Corp Microfinance Bank" }, { "code": "50123", "name": "Beststar Microfinance Bank" }, { "code": "FC40163", "name": "Branch International Financial Services Limited" }, { "code": "565", "name": "Carbon" }, { "code": "865", "name": "CASHCONNECT MFB" }, { "code": "50171", "name": "Chanelle Microfinance Bank Limited" }, { "code": "312", "name": "Chikum Microfinance bank" }, { "code": "70027", "name": "CITYCODE MORTAGE BANK" }, { "code": "50910", "name": "Consumer Microfinance Bank" }, { "code": "50204", "name": "Corestep MFB" }, { "code": "559", "name": "Coronation Merchant Bank" }, { "code": "FC40128", "name": "County Finance Limited" }, { "code": "51297", "name": "Crescent MFB" }, { "code": "90560", "name": "Crust Microfinance Bank" }, { "code": "51334", "name": "Davenport MICROFINANCE BANK" }, { "code": "50162", "name": "Dot Microfinance Bank" }, { "code": "50263", "name": "Ekimogun MFB" }, { "code": "90678", "name": "EXCEL FINANCE BANK" }, { "code": "50126", "name": "Eyowo" }, { "code": "51318", "name": "Fairmoney Microfinance Bank" }, { "code": "50298", "name": "Fedeth MFB" }, { "code": "51314", "name": "Firmus MFB" }, { "code": "90164", "name": "FIRST ROYAL MICROFINANCE BANK" }, { "code": "413", "name": "FirstTrust Mortgage Bank Nigeria" }, { "code": "50315", "name": "FLOURISH MFB" }, { "code": "501", "name": "FSDH Merchant Bank Limited" }, { "code": "832", "name": "FUTMINNA MICROFINANCE BANK" }, { "code": "812", "name": "Gateway Mortgage Bank LTD" }, { "code": "90574", "name": "Goldman MFB" }, { "code": "100022", "name": "GoMoney" }, { "code": "90664", "name": "GOOD SHEPHERD MICROFINANCE BANK" }, { "code": "50739", "name": "Goodnews Microfinance Bank" }, { "code": "562", "name": "Greenwich Merchant Bank" }, { "code": "51251", "name": "Hackman Microfinance Bank" }, { "code": "120002", "name": "HopePSB" }, { "code": "51244", "name": "Ibile Microfinance Bank" }, { "code": "50439", "name": "Ikoyi Osun MFB" }, { "code": "50442", "name": "Ilaro Poly Microfinance Bank" }, { "code": "50453", "name": "Imowo MFB" }, { "code": "PMB90058", "name": "IMPERIAL HOMES MORTAGE BANK" }, { "code": "50457", "name": "Infinity MFB" }, { "code": "50502", "name": "Kadpoly MFB" }, { "code": "51308", "name": "KANOPOLY MFB" }, { "code": "50200", "name": "Kredi Money MFB LTD" }, { "code": "90052", "name": "Lagos Building Investment Company Plc." }, { "code": "50549", "name": "Links MFB" }, { "code": "31", "name": "Living Trust Mortgage Bank" }, { "code": "50491", "name": "LOMA MFB" }, { "code": "303", "name": "Lotus Bank" }, { "code": "90171", "name": "MAINSTREET MICROFINANCE BANK" }, { "code": "50563", "name": "Mayfair MFB" }, { "code": "50304", "name": "Mint MFB" }, { "code": "946", "name": "Money Master PSB" }, { "code": "50515", "name": "Moniepoint MFB" }, { "code": "120003", "name": "MTN Momo PSB" }, { "code": "90190", "name": "MUTUAL BENEFITS MICROFINANCE BANK" }, { "code": "90679", "name": "NDCC MICROFINANCE BANK" }, { "code": "50629", "name": "NPF MICROFINANCE BANK" }, { "code": "107", "name": "Optimus Bank Limited" }, { "code": "999991", "name": "PalmPay" }, { "code": "311", "name": "Parkway - ReadyCash" }, { "code": "90680", "name": "PATHFINDER MICROFINANCE BANK LIMITED" }, { "code": "100039", "name": "Paystack-Titan" }, { "code": "50743", "name": "Peace Microfinance Bank" }, { "code": "51146", "name": "Personal Trust MFB" }, { "code": "50746", "name": "Petra Mircofinance Bank Plc" }, { "code": "50021", "name": "PFI FINANCE COMPANY LIMITED" }, { "code": "268", "name": "Platinum Mortgage Bank" }, { "code": "716", "name": "Pocket App" }, { "code": "50864", "name": "Polyunwana MFB" }, { "code": "105", "name": "PremiumTrust Bank" }, { "code": "50023", "name": "PROSPERIS FINANCE LIMITED" }, { "code": "51293", "name": "QuickFund MFB" }, { "code": "502", "name": "Rand Merchant Bank" }, { "code": "90496", "name": "RANDALPHA MICROFINANCE BANK" }, { "code": "90067", "name": "Refuge Mortgage Bank" }, { "code": "50994", "name": "Rephidim Microfinance Bank" }, { "code": "51286", "name": "Rigo Microfinance Bank Limited" }, { "code": "50767", "name": "ROCKSHIELD MICROFINANCE BANK" }, { "code": "51113", "name": "Safe Haven MFB" }, { "code": "951113", "name": "Safe Haven Microfinance Bank Limited" }, { "code": "40165", "name": "SAGE GREY FINANCE LIMITED" }, { "code": "50582", "name": "Shield MFB" }, { "code": "106", "name": "Signature Bank Ltd" }, { "code": "51062", "name": "Solid Allianze MFB" }, { "code": "50800", "name": "Solid Rock MFB" }, { "code": "90162", "name": "STANFORD MICROFINANCE BANK" }, { "code": "51253", "name": "Stellas MFB" }, { "code": "50968", "name": "Supreme MFB" }, { "code": "51269", "name": "Tangerine Money" }, { "code": "50840", "name": "U&C Microfinance Bank Ltd (U AND C MFB)" }, { "code": "51322", "name": "Uhuru MFB" }, { "code": "50870", "name": "Unaab Microfinance Bank Limited" }, { "code": "50871", "name": "Unical MFB" }, { "code": "51316", "name": "Unilag Microfinance Bank" }, { "code": "50894", "name": "Uzondu Microfinance Bank Awka Anambra State" }, { "code": "50020", "name": "Vale Finance Limited" }, { "code": "51355", "name": "Waya Microfinance Bank" }].sort((a, b) => a.name.localeCompare(b.name))
+
 
 type VerificationMethod = 'email' | 'phone' | 'new-phone';
 
@@ -50,18 +45,30 @@ const Snackbar = ({ message, onClose }: { message: string; onClose: () => void }
 
 export default function Profile() {
   const router = useRouter();
+  // const userCookie = cookie().getCookie('user');
+  const { data: user, isLoading: isUserLoading } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => getProfile(),
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const [email, setEmail] = useState(MOCK_USER.email);
-  const [bankDetails, setBankDetails] = useState(MOCK_USER.bankDetails);
-  const [bvn, setBvn] = useState(MOCK_USER.bvn);
-  const [isBvnVerified, setIsBvnVerified] = useState(MOCK_USER.isBvnVerified);
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState(user?.email);
+  const [bankDetails, setBankDetails] = useState({
+    bankName: user?.bank_name || '',
+    accountNumber: user?.bank_account_number || '',
+    accountName: user?.bank_account_name || '',
+  });
+  const [bvn, setBvn] = useState('');
+  const [isBvnVerified, setIsBvnVerified] = useState(user?.bvn_verified ? true : false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationStep, setVerificationStep] = useState<'bvn' | 'method' | 'new-phone' | 'otp' | 'success'>('bvn');
   const [bvnDetails, setBvnDetails] = useState<typeof MOCK_BVN_DETAILS | null>(null);
   const [alternativePhone, setAlternativePhone] = useState('');
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isUpdatingBankDetails, setIsUpdatingBankDetails] = useState(false);
   const [verificationError, setVerificationError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<VerificationMethod | null>(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -72,36 +79,92 @@ export default function Profile() {
     if (!isAuthenticated) {
       router.push('/portal');
     }
-  }, [router]);
+    if (user) {
+      console.log(user, 'user111');
+      setEmail(user?.email);
+      setBankDetails({
+        bankName: user?.bank_name,
+        accountNumber: user?.bank_account_number,
+        accountName: user?.bank_account_name,
+      });
+      // setBvn(user?.bvn);
+      setIsBvnVerified(user?.bvn_verified ? true : false);
+    }
+  }, [router, isUserLoading, user]);
 
   const showSuccessMessage = (message: string) => {
     setSnackbarMessage(message);
     setShowSnackbar(true);
   };
 
-  const handleEmailSave = () => {
-    setIsEditing(false);
-    showSuccessMessage('Email updated successfully');
+  const handleEmailSave = async () => {
+    if (!isEditing) {
+      setIsEditing(true);
+      return;
+    } else {
+      try {
+
+        setIsLoading(true);
+        await updateProfile({ email });
+        // setIsEditing(false);
+        // showSuccessMessage('Email updated successfully');
+      } catch (error) {
+        setEmailError('An error occurred during email update. Please try again.');
+      } finally {
+        setIsLoading(false);
+        // setIsEditing(false);
+      }
+
+    }
+
   };
 
-  const handleBankDetailsSave = () => {
+  const handleBankDetailsSave = async () => {
+    try {
+      setIsUpdatingBankDetails(true)
+      // const resp = await updateProfile({
+      //   bank_name: bankDetails.bankName,
+      //   bank_account_number: bankDetails.accountNumber,
+      //   bank_account_name: bankDetails.accountName
+      // })
+      const resp2 = await storeBankAccount({
+        bank_name: bankDetails.bankName,
+        account_number: bankDetails.accountNumber,
+        bank_account_name: bankDetails.accountName,
+        bank_code: BANKS.find(bank => bank.name === bankDetails.bankName)?.code
+      })
+      console.log(resp2, 'resp______');
+      setIsUpdatingBankDetails(false)
+      showSuccessMessage('Bank details updated successfully');
+
+
+    } catch (error) {
+      setIsUpdatingBankDetails(false)
+
+    }
     // In a real app, this would make an API call to update bank details
-    showSuccessMessage('Bank details updated successfully');
   };
 
   const handleBvnLookup = async () => {
     try {
       setIsVerifying(true);
       setVerificationError('');
-      
-      // Simulate API call to lookup BVN
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
+
+      const response = await bvnLookup({ bvn });
+      console.log(response, 'response______');
+
       // Mock BVN lookup result
-      setBvnDetails(MOCK_BVN_DETAILS);
+      // setBvnDetails(MOCK_BVN_DETAILS);
+      setBvnDetails({
+        email: user?.email || '',
+        phoneNumber: user?.phone || '',
+        firstName: user?.first_name || '',
+        lastName: user?.last_name || '',
+      });
       setVerificationStep('method');
-    } catch (error) {
-      setVerificationError('An error occurred during BVN lookup. Please try again.');
+    } catch (error: any) {
+      setVerificationError(error?.message || 'An error occurred during BVN lookup. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -112,14 +175,19 @@ export default function Profile() {
       setIsVerifying(true);
       setVerificationError('');
       setSelectedMethod(method);
-      
-      if (method === 'new-phone') {
-        setVerificationStep('new-phone');
-        return;
-      }
-      
-      // Simulate sending OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // if (method === 'new-phone') {
+      //   setVerificationStep('new-phone');
+      //   return;
+      // }
+
+      const response = await setBvnVerificationMethod({
+        request_id: "74c8fe70-ea2c-458e-a99f-3f7a6061632c",
+        otp_method: method === "new-phone" ? "phone" : method,
+        ...(method === "new-phone" && { phone: alternativePhone }),
+      });
+      console.log(response, 'response______');
+
       setVerificationStep('otp');
     } catch (error) {
       setVerificationError('An error occurred. Please try again.');
@@ -132,22 +200,22 @@ export default function Profile() {
     try {
       setIsVerifying(true);
       setVerificationError('');
-      
+
       // Simulate OTP verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock verification result
-      const isVerified = Math.random() > 0.5; // 50% chance of success for demo
-      
-      if (isVerified) {
-        setIsBvnVerified(true);
-        setVerificationStep('success');
-        showSuccessMessage('BVN verified successfully');
-      } else {
-        setVerificationError('Invalid OTP. Please try again.');
-      }
-    } catch (error) {
-      setVerificationError('An error occurred during verification. Please try again.');
+      // await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await validateBvnOtp({
+        request_id: "74c8fe70-ea2c-458e-a99f-3f7a6061632c",
+        otp: otp,
+      });
+      console.log(response, 'response______');
+
+
+      setIsBvnVerified(true);
+      setVerificationStep('success');
+      showSuccessMessage('BVN verified successfully');
+
+    } catch (error: any) {
+      setVerificationError(error?.message || 'An error occurred during verification. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -249,6 +317,7 @@ export default function Profile() {
                 <input
                   type="tel"
                   value={alternativePhone}
+                  maxLength={11}
                   onChange={(e) => setAlternativePhone(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                   placeholder="Enter alternative phone number"
@@ -272,11 +341,12 @@ export default function Profile() {
   const renderOtpStep = () => (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-500 hover:text-gray-700 cursor-pointer mb-4" onClick={() => {
-        if (selectedMethod === 'new-phone') {
-          setVerificationStep('new-phone');
-        } else {
-          setVerificationStep('method');
-        }
+        // if (selectedMethod === 'new-phone') {
+        //   setVerificationStep('new-phone');
+        // } else {
+        //   setVerificationStep('method');
+        // }
+        setVerificationStep('method');
       }}>
         <ArrowLeftIcon className="w-4 h-4" />
         <span className="text-sm">Back to {selectedMethod === 'new-phone' ? 'Phone Number' : 'Methods'}</span>
@@ -287,8 +357,8 @@ export default function Profile() {
         <p className="text-sm text-gray-500">
           We sent a verification code to{' '}
           {selectedMethod === 'email' ? bvnDetails?.email :
-           selectedMethod === 'phone' ? bvnDetails?.phoneNumber :
-           alternativePhone}
+            selectedMethod === 'phone' ? bvnDetails?.phoneNumber :
+              alternativePhone}
         </p>
       </div>
 
@@ -335,6 +405,14 @@ export default function Profile() {
     </div>
   );
 
+  if (isUserLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004D40]"></div>
+      </div>
+    );
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -344,26 +422,32 @@ export default function Profile() {
             <UserCircleIcon className="w-6 h-6 text-gray-400" />
             <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
           </div>
-          
+
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">First Name</label>
-                <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{MOCK_USER.firstName}</p>
+                <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{user?.first_name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-1">Last Name</label>
-                <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{MOCK_USER.lastName}</p>
+                <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{user?.last_name}</p>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
-              <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{MOCK_USER.phoneNumber}</p>
+              <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{user?.phone}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              {emailError && (
+                <div className="flex items-center gap-2 mb-4 text-red-600">
+                  <XCircleIcon className="w-5 h-5" />
+                  <span className="text-sm">{emailError}</span>
+                </div>
+              )}
               <div className="flex gap-2">
                 {isEditing ? (
                   <input
@@ -375,11 +459,15 @@ export default function Profile() {
                 ) : (
                   <p className="flex-1 text-gray-900 p-2 bg-gray-50 rounded-lg">{email}</p>
                 )}
+
                 <button
-                  onClick={() => isEditing ? handleEmailSave() : setIsEditing(true)}
+                  onClick={() => {
+                    // isEditing ? handleEmailSave() : setIsEditing(true)
+                    handleEmailSave()
+                  }}
                   className="px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
                 >
-                  {isEditing ? 'Save' : 'Edit'}
+                  {isLoading ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
                 </button>
               </div>
             </div>
@@ -421,13 +509,18 @@ export default function Profile() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
-              <input
-                type="text"
+              <select
                 value={bankDetails.bankName}
                 onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                placeholder="Enter bank name"
-              />
+              >
+                <option value="">Select a bank</option>
+                {BANKS.map((bank) => (
+                  <option key={bank.code} value={bank.name}>
+                    {bank.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
@@ -455,7 +548,7 @@ export default function Profile() {
                 onClick={handleBankDetailsSave}
                 className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
               >
-                Save Changes
+                {isUpdatingBankDetails ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

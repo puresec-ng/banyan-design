@@ -1,8 +1,10 @@
 import Cookie from "js-cookie";
 
-const cookie = () => {
-  const dev = process.env.NODE_ENV === "development";
+const dev = true;
+// const dev = process.env.NODE_ENV === "development";
+const parentDomain = dev ? "localhost" : "banyan.ricive.com";
 
+const cookie = () => {
   /**
    * use to set cookie
    * @param {*} key
@@ -12,7 +14,9 @@ const cookie = () => {
     return Cookie.set(key, value, {
       path: "/",
       expires: 2,
-      domain: process.env.REACT_APP_PARENT_DOMAIN,
+      domain: parentDomain,
+      secure: !dev,
+      sameSite: 'strict'
     });
   };
 
@@ -31,52 +35,14 @@ const cookie = () => {
   const deleteCookie = (key) => {
     return Cookie.remove(key, {
       path: "/",
-      domain: process.env.REACT_APP_PARENT_DOMAIN,
+      domain: parentDomain,
+      secure: !dev,
+      sameSite: 'strict'
     });
   };
 
   return { setCookie, getCookie, deleteCookie };
 };
-
-
-/**
- * use to set cookie
- * @param {*} key
- * @param {*} value
- */
- const setCookie = (key, value) => {
-  return Cookie.set(key, value, {
-    path: "/",
-    expires: 2,
-    domain: process.env.REACT_APP_PARENT_DOMAIN || undefined,
-  });
-};
-
-/**
- * use to get cookie
- * @param {*} key
- */
-const getCookie = (key) => {
-  return Cookie.get(key);
-};
-
-/**
- * use to delete cookie
- * @param {*} key
- */
-const deleteCookie = (key) => {
-  return Cookie.remove(key, {
-    path: "/",
-    domain: process.env.REACT_APP_PARENT_DOMAIN,
-  });
-};
-
-export  {
-  setCookie,
-  getCookie,
-  deleteCookie,
-};
-
 
 export default cookie;
 

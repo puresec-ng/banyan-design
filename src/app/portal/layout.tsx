@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
+import {
   HomeIcon,
   UserIcon,
   DocumentTextIcon,
@@ -17,6 +17,7 @@ import {
   MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
+import cookie from '@/app/utils/cookie';
 
 const menuItems = [
   { name: 'Submitted Claims', href: '/portal/dashboard', icon: DocumentTextIcon },
@@ -37,6 +38,13 @@ export default function PortalLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const registrationData = localStorage.getItem('registrationData');
+    const userData = JSON.parse(registrationData || '{}')?.user || {};
+    setUserName(`${userData.first_name || ''} ${userData.last_name || ''}`);
+  }, []);
 
   // Check if we're on the login or forgot-password page
   const isLoginPage = pathname === '/portal';
@@ -52,6 +60,9 @@ export default function PortalLayout({
     // Clear auth state
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userPhone');
+    localStorage.removeItem('registrationData');
+    cookie().deleteCookie('token');
+    cookie().deleteCookie('user');
     // Redirect to login
     router.push('/portal');
   };
@@ -60,7 +71,7 @@ export default function PortalLayout({
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-gray-900/50 z-20 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -76,9 +87,8 @@ export default function PortalLayout({
       </button>
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 w-64 transform transition-transform duration-200 ease-in-out ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 z-30`}>
+      <div className={`fixed top-0 left-0 w-64 transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 z-30`}>
         <div className="flex flex-col h-screen bg-white border-r border-gray-200">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
@@ -103,11 +113,10 @@ export default function PortalLayout({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors ${
-                    isActive
-                      ? 'bg-[#004D40] text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors ${isActive
+                    ? 'bg-[#004D40] text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                    }`}
                 >
                   <item.icon className="w-5 h-5 mr-3" />
                   {item.name}
@@ -145,7 +154,7 @@ export default function PortalLayout({
             </div>
             <div className="flex items-center">
               <span className="text-base font-medium text-gray-900">
-                John Doe
+                {userName}
               </span>
             </div>
           </div>

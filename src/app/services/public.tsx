@@ -36,6 +36,7 @@ export interface IncidentType {
     code: string;
     description: string;
     applicable_claim_types: string;
+    // required_documents: any[];
     required_documents: string;
     active: number;
     created_at: string;
@@ -58,6 +59,7 @@ export const getInsurers = (): Promise<InsurerResponse> => Http.get(`/public/ins
 
 // public/sumbit-claim
 export const submitClaim = (payload: any) => Http.post(`/public/submit-claim`, payload);
+export const authSubmitClaim = (payload: any) => Http.post(`/claims/submit`, payload);
 // /upload-document
 export const uploadDocument = (payload: FormData) => {
     return Http.post(`/upload-document`, payload, {

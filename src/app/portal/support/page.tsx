@@ -39,9 +39,9 @@ export default function Support() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   const contactInfo = {
-    phone: '+234 800 123 4567',
-    whatsapp: '+234 800 123 4567',
-    email: 'support@banyan.com'
+    phone: '020 133 06325',
+    whatsapp: '020 133 06325',
+    email: 'enquiries@banyanclaims.com'
   };
 
   const showSuccessMessage = (message: string) => {
@@ -77,7 +77,7 @@ export default function Support() {
         {/* Contact Support Section */}
         <div className="bg-white rounded-xl shadow p-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-6">Contact Support</h1>
-          
+
           <div className="space-y-6">
             {/* Phone Call */}
             <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer" onClick={handlePhoneCall}>
@@ -141,7 +141,7 @@ export default function Support() {
         {/* FAQ Section */}
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Frequently Asked Questions</h2>
-          
+
           <div className="space-y-4">
             {faqs.map((faq, index) => (
               <div key={index} className="border border-gray-200 rounded-lg">

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  BanknotesIcon, 
-  ArrowDownTrayIcon, 
+import {
+  BanknotesIcon,
+  ArrowDownTrayIcon,
   ArrowUpTrayIcon,
   XMarkIcon,
   CheckCircleIcon,
@@ -12,6 +12,10 @@ import {
   MagnifyingGlassIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
+import { getProfile, getTransactionHistory, TransactionHistory, withdraw } from '@/app/services/dashboard/user-management';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '@/app/context/ToastContext';
+
 
 // Mock data - In a real app, this would come from your API
 const MOCK_WALLET = {
@@ -51,6 +55,21 @@ const MOCK_WALLET = {
 
 export default function Wallet() {
   const router = useRouter();
+  const { showToast } = useToast();
+
+  const { data: user, isLoading: isUserLoading } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => getProfile(),
+  });
+
+  const { data: transactionHistory, isLoading: isTransactionHistoryLoading } = useQuery({
+    queryKey: ['transactionHistory'],
+    queryFn: () => getTransactionHistory(),
+  });
+
+  console.log(transactionHistory?.data?.data, 'transactionHistory______');
+  console.log(user, 'user______');
+
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const [redirectCount, setRedirectCount] = useState(10);
@@ -66,7 +85,7 @@ export default function Wallet() {
     endDate: '',
     transactionType: 'all'
   });
-  const [selectedTransaction, setSelectedTransaction] = useState<typeof MOCK_WALLET.transactions[0] | null>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionHistory | null>(null);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -95,7 +114,7 @@ export default function Wallet() {
     setTimeout(() => setShowSnackbar(false), 3000);
   };
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (!withdrawAmount || !pin) {
       showSuccessMessage('Please fill in all fields');
       return;
@@ -107,7 +126,7 @@ export default function Wallet() {
       return;
     }
 
-    if (amount > MOCK_WALLET.balance) {
+    if (amount > Number(user?.account_balance)) {
       showSuccessMessage('Insufficient balance');
       return;
     }
@@ -117,13 +136,20 @@ export default function Wallet() {
       return;
     }
 
-    setIsProcessing(true);
-    // Simulate withdrawal processing
-    setTimeout(() => {
+    try {
+      setIsProcessing(true);
+      const data = {
+        amount: withdrawAmount,
+        pin: pin
+      }
+      const response = await withdraw(data);
       setIsProcessing(false);
       setWithdrawSuccess(true);
       setRedirectCount(10);
-    }, 2000);
+      showToast('Withdrawal successful', 'success');
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'An error occurred', 'error');
+    }
   };
 
   const resetWithdrawModal = () => {
@@ -145,30 +171,31 @@ export default function Wallet() {
     });
   };
 
-  const applyFilters = (transactions: typeof MOCK_WALLET.transactions) => {
+  const applyFilters = (transactions: TransactionHistory[]) => {
     return transactions.filter(transaction => {
       // Search filter
-      const matchesSearch = searchQuery === '' || 
+      const matchesSearch = searchQuery === '' ||
         transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         transaction.amount.toString().includes(searchQuery);
 
       // Date range filter
-      const transactionDate = new Date(transaction.date);
+      const transactionDate = new Date(transaction.created_at);
       const startDate = filters.startDate ? new Date(filters.startDate) : null;
       const endDate = filters.endDate ? new Date(filters.endDate) : null;
-      
-      const matchesDate = (!startDate || transactionDate >= startDate) && 
-                         (!endDate || transactionDate <= endDate);
+
+      const matchesDate = (!startDate || transactionDate >= startDate) &&
+        (!endDate || transactionDate <= endDate);
 
       // Transaction type filter
-      const matchesType = filters.transactionType === 'all' || 
-                         transaction.type === filters.transactionType;
+      const matchesType = filters.transactionType === 'all' ||
+        transaction.type === filters.transactionType;
 
       return matchesSearch && matchesDate && matchesType;
     });
   };
 
-  const filteredTransactions = applyFilters(MOCK_WALLET.transactions);
+  const filteredTransactions = applyFilters(transactionHistory?.data?.data || []);
+  // const filteredTransactions = applyFilters(MOCK_WALLET.transactions);
 
   const hasActiveFilters = () => {
     return filters.startDate !== '' || filters.endDate !== '' || filters.transactionType !== 'all';
@@ -195,6 +222,14 @@ export default function Wallet() {
     });
   };
 
+  if (isUserLoading || isTransactionHistoryLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004D40]"></div>
+      </div>
+    );
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -219,7 +254,7 @@ export default function Wallet() {
               </div>
               <div className="mt-0.5">
                 <div className="text-3xl font-bold text-gray-900">
-                  ₦{MOCK_WALLET.balance.toLocaleString()}
+                  ₦{user?.account_balance}
                 </div>
               </div>
             </div>
@@ -229,7 +264,7 @@ export default function Wallet() {
         {/* Transaction History */}
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Transaction History</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="relative flex-1">
@@ -283,45 +318,57 @@ export default function Wallet() {
 
             {/* Transaction List */}
             <div className="space-y-4">
-              {filteredTransactions.map((transaction) => (
-                <div 
-                  key={transaction.id} 
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${
-                      transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
-                    }`}>
-                      {transaction.type === 'credit' ? (
-                        <ArrowUpTrayIcon className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <ArrowDownTrayIcon className="w-5 h-5 text-red-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{transaction.description}</p>
-                      <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
-                    </div>
+              {filteredTransactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <BanknotesIcon className="w-8 h-8 text-gray-400" />
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className={`font-medium ${
-                      transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.type === 'credit' 
-                        ? `₦${transaction.amount.toLocaleString()}`
-                        : `-₦${transaction.amount.toLocaleString()}`
-                      }
-                    </div>
-                    <button
-                      onClick={() => setSelectedTransaction(transaction)}
-                      className="p-2 text-[#004D40] hover:bg-[#004D40] hover:text-white rounded-lg transition-colors"
-                      title="View transaction details"
-                    >
-                      <EyeIcon className="w-5 h-5" />
-                    </button>
-                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">No transactions found</h3>
+                  <p className="text-gray-500">
+                    {hasActiveFilters()
+                      ? "Try adjusting your filters or search criteria"
+                      : "Your transaction history will appear here"}
+                  </p>
                 </div>
-              ))}
+              ) : (
+                filteredTransactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${transaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
+                        }`}>
+                        {transaction.type === 'credit' ? (
+                          <ArrowUpTrayIcon className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <ArrowDownTrayIcon className="w-5 h-5 text-red-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{transaction.description}</p>
+                        <p className="text-sm text-gray-500">{formatDate(transaction.created_at)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className={`font-medium ${transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                        {transaction.type === 'credit'
+                          ? `₦${transaction.amount.toLocaleString()}`
+                          : `-₦${transaction.amount.toLocaleString()}`
+                        }
+                      </div>
+                      <button
+                        onClick={() => setSelectedTransaction(transaction)}
+                        className="p-2 text-[#004D40] hover:bg-[#004D40] hover:text-white rounded-lg transition-colors"
+                        title="View transaction details"
+                      >
+                        <EyeIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -343,9 +390,8 @@ export default function Wallet() {
 
             <div className="space-y-6">
               <div className="flex items-center justify-center">
-                <div className={`p-4 rounded-full ${
-                  selectedTransaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
-                }`}>
+                <div className={`p-4 rounded-full ${selectedTransaction.type === 'credit' ? 'bg-green-100' : 'bg-red-100'
+                  }`}>
                   {selectedTransaction.type === 'credit' ? (
                     <ArrowUpTrayIcon className="w-8 h-8 text-green-600" />
                   ) : (
@@ -355,9 +401,8 @@ export default function Wallet() {
               </div>
 
               <div className="text-center">
-                <div className={`text-2xl font-bold ${
-                  selectedTransaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <div className={`text-2xl font-bold ${selectedTransaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                  }`}>
                   {selectedTransaction.type === 'credit'
                     ? `₦${selectedTransaction.amount.toLocaleString()}`
                     : `-₦${selectedTransaction.amount.toLocaleString()}`
@@ -373,7 +418,7 @@ export default function Wallet() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Date</span>
-                  <span className="font-medium">{formatDate(selectedTransaction.date)}</span>
+                  <span className="font-medium">{formatDate(selectedTransaction.created_at)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Transaction ID</span>
@@ -409,7 +454,7 @@ export default function Wallet() {
                   {/* Wallet Balance Display */}
                   <div className="bg-gray-50 p-4 rounded-lg mb-6">
                     <div className="text-sm text-gray-600 mb-1">Available Balance</div>
-                    <div className="text-2xl font-bold text-gray-900">₦{MOCK_WALLET.balance.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-gray-900">₦{user?.account_balance}</div>
                   </div>
 
                   {/* Settlement Account Details */}
@@ -420,7 +465,7 @@ export default function Wallet() {
                         <label className="block text-sm text-gray-500 mb-1">Bank Name</label>
                         <input
                           type="text"
-                          value={MOCK_WALLET.bankDetails.bankName}
+                          value={user?.bank_name}
                           disabled
                           className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
                         />
@@ -429,7 +474,7 @@ export default function Wallet() {
                         <label className="block text-sm text-gray-500 mb-1">Account Number</label>
                         <input
                           type="text"
-                          value={MOCK_WALLET.bankDetails.accountNumber}
+                          value={user?.bank_account_number}
                           disabled
                           className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
                         />
@@ -438,7 +483,7 @@ export default function Wallet() {
                         <label className="block text-sm text-gray-500 mb-1">Account Name</label>
                         <input
                           type="text"
-                          value={MOCK_WALLET.bankDetails.accountName}
+                          value={user?.bank_account_name}
                           disabled
                           className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700"
                         />

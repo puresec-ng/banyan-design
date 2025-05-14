@@ -11,6 +11,7 @@ import {
   ArrowLeftOnRectangleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import cookie from '@/app/utils/cookie';
 
 export default function Sidebar() {
   const router = useRouter();
@@ -20,6 +21,9 @@ export default function Sidebar() {
     // Clear auth state
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userPhone');
+    localStorage.removeItem('registrationData');
+    cookie().deleteCookie('token');
+    cookie().deleteCookie('user');
     // Redirect to login
     router.push('/portal');
   };

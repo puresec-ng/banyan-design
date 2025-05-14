@@ -1,19 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
+import {
   EyeIcon,
   EyeSlashIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '../context/ToastContext';
+import { login } from '../services/auth';
+import cookie from '../utils/cookie';
 
 export default function ClientPortal() {
   const router = useRouter();
+  const { showToast } = useToast();
+
   const [formData, setFormData] = useState({
-    phone: '',
+    email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -26,16 +32,46 @@ export default function ClientPortal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
+      const response = await login(formData);
+      console.log('Login response:', response);
 
-    // Store auth state
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userPhone', formData.phone);
-    
-    // Redirect to dashboard
-    router.push('/portal/dashboard');
-    setIsLoading(false);
+      const savedResponse = {
+        token: response.token,
+        user: response.user,
+      };
+      localStorage.setItem('registrationData', JSON.stringify(savedResponse));
+      // Store auth state
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userPhone', formData.email);
+
+      // Set cookies with debug logging
+      console.log('Setting cookies...');
+      cookie().setCookie('token', response.token);
+      cookie().setCookie('user', JSON.stringify(response.user));
+      console.log('Cookies after setting:', document.cookie);
+
+      // Redirect to dashboard
+      router.push('/portal/dashboard');
+
+    } catch (error: any) {
+      console.log('Login error:', error);
+      showToast(error.response?.data?.message || 'Invalid email or password', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    console.log('Checking cookies on mount...');
+    const token = cookie().getCookie('token');
+    console.log('Current cookies:', document.cookie);
+    console.log('Token from cookie:', token);
+    if (token) {
+      router.push('/portal/dashboard');
+    }
+  }, []);
 
   return (
     <main className="min-h-screen bg-white flex flex-col">
@@ -55,7 +91,7 @@ export default function ClientPortal() {
           </div>
 
           <div className="mb-4">
-            <Link 
+            <Link
               href="/"
               className="inline-flex items-center text-[#004D40] hover:text-[#003D30] font-medium"
             >
@@ -71,17 +107,17 @@ export default function ClientPortal() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
                 </label>
                 <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  placeholder="Enter your phone number"
+                  placeholder="Enter your email"
                 />
               </div>
 

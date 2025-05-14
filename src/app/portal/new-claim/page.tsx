@@ -9,9 +9,16 @@ import {
   CheckCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  XMarkIcon, ArrowUpTrayIcon,
 } from '@heroicons/react/24/outline';
+import cookie from '@/app/utils/cookie';
 
-type ClaimType = 'MOTOR' | 'GADGET' | 'PROPERTY' | 'BUSINESS';
+import { getClaimTypes, authSubmitClaim, getInsurers, Insurer, getIncidentTypes, IncidentType, uploadDocument, submitClaim } from '@/app/services/public';
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from '@/app/context/ToastContext';
+
+// type ClaimType = 'MOTOR' | 'GADGET' | 'PROPERTY' | 'BUSINESS';
+type ClaimType = string;
 
 interface FormData {
   type: ClaimType;
@@ -22,69 +29,31 @@ interface FormData {
   incidentLocation: string;
   description: string;
   policyNumber: string;
-  documents: File[];
+  documents: { name: string, id: string, file: File | null }[];
   additionalInfo: string;
 }
 
-const CLAIM_TYPES = [
-  { id: 'MOTOR', name: 'Motor Insurance', description: 'Claims for vehicle damage or accidents' },
-  { id: 'GADGET', name: 'Gadget Insurance', description: 'Claims for electronic devices and gadgets' },
-  { id: 'PROPERTY', name: 'Property Insurance', description: 'Claims for property damage or loss' },
-  { id: 'BUSINESS', name: 'Business Insurance', description: 'Claims for business-related incidents' },
-];
+interface UploadedDocument {
+  id: string;
+  name: string;
+  file: string;
+}
+interface UploadDocumentResponse {
+  image_url: string;
+}
 
-const INSURANCE_PROVIDERS = [
-  'AXA Mansard Insurance',
-  'Leadway Assurance',
-  'AIICO Insurance',
-  'Cornerstone Insurance',
-  'NEM Insurance',
-  'Mutual Benefits Assurance',
-  'Other',
-];
-
-const INCIDENT_TYPES = {
-  MOTOR: [
-    'Accident',
-    'Theft',
-    'Fire Damage',
-    'Natural Disaster',
-    'Vandalism',
-    'Mechanical Breakdown',
-  ],
-  GADGET: [
-    'Accidental Damage',
-    'Liquid Damage',
-    'Theft',
-    'Loss',
-    'Mechanical Failure',
-    'Screen Damage',
-  ],
-  PROPERTY: [
-    'Fire Damage',
-    'Water Damage',
-    'Burglary',
-    'Natural Disaster',
-    'Structural Damage',
-    'Vandalism',
-  ],
-  BUSINESS: [
-    'Property Damage',
-    'Business Interruption',
-    'Equipment Breakdown',
-    'Theft',
-    'Employee Injury',
-    'Professional Liability',
-  ],
-};
 
 export default function NewClaim() {
   const router = useRouter();
+  const userCookie = cookie().getCookie('user');
+  const user = JSON.parse(userCookie || '{}');
+  const { showToast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    type: 'MOTOR',
+    type: '',
     insuranceProvider: '',
     incidentType: '',
     incidentDate: '',
@@ -95,6 +64,27 @@ export default function NewClaim() {
     documents: [],
     additionalInfo: '',
   });
+  const [imageURL, setImageURL] = useState<UploadedDocument[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [claimTypes, setClaimTypes] = useState<any[]>([]);
+
+  const { data: claimTypesData, isLoading: claimTypesLoading } = useQuery({
+    queryKey: ['claimTypes'],
+    queryFn: getClaimTypes,
+  });
+
+  const { data: insurers, isLoading, error } = useQuery({
+    queryKey: ['insurers'],
+    queryFn: getInsurers,
+  });
+
+  const { data: incidentTypes } = useQuery<IncidentType[]>({
+    queryKey: ['incidentTypes'],
+    queryFn: getIncidentTypes,
+  });
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -104,7 +94,59 @@ export default function NewClaim() {
   }, [router]);
 
   const handleNext = () => {
-    setCurrentStep(currentStep + 1);
+    // if (formData.type !== '' && currentStep === 1) {
+    //   setCurrentStep(currentStep + 1);
+    // } else {
+    //  setCurrentStep(currentStep);
+    // }
+    if (currentStep === 1) {
+      if (formData.type !== '') {
+        setCurrentStep(currentStep + 1);
+      } else {
+        showToast('Please select a claim type', 'error');
+      }
+    }
+    if (currentStep === 2) {
+      // Validate all required fields
+      if (!formData.insuranceProvider) {
+        showToast('Please select an insurance provider', 'error');
+        return;
+      }
+      if (!formData.incidentType) {
+        showToast('Please select an incident type', 'error');
+        return;
+      }
+      if (!formData.incidentDate) {
+        showToast('Please select an incident date', 'error');
+        return;
+      }
+      if (!formData.incidentTime) {
+        showToast('Please select an incident time', 'error');
+        return;
+      }
+      if (!formData.incidentLocation) {
+        showToast('Please enter the incident location', 'error');
+        return;
+      }
+      if (!formData.description) {
+        showToast('Please provide a description of the incident', 'error');
+        return;
+      }
+
+      const selectedIncidentType = incidentTypes?.find(t => t.name === formData.incidentType);
+      console.log(JSON.parse(selectedIncidentType?.required_documents || '[]'), 'selectedIncidentType');
+      if (selectedIncidentType) {
+        setFormData({ ...formData, documents: JSON.parse(selectedIncidentType?.required_documents || '[]')?.map((doc: any, index: number) => ({ name: doc, id: index.toString() })) || [] });
+      }
+      setCurrentStep(currentStep + 1);
+    }
+    if (currentStep === 3) {
+      // if (formData.documents.length === 0) {
+      //   showToast('Please upload at least one document', 'error');
+      //   return;
+      // }
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const handleBack = () => {
@@ -116,32 +158,55 @@ export default function NewClaim() {
     try {
       // Here you would typically send the form data to your API
       console.log('Submitting claim:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const selectedIncidentType = incidentTypes?.find(t => t.name === formData.incidentType);
+      const selectedIncidentTypeId = selectedIncidentType?.id;
+      const insurerId = insurers?.find(i => i.name === formData.insuranceProvider)?.id;
+      // const selectedClaimType = claimTypesData?.find(t => t.id === formData.type);
+      // const selectedClaimTypeId = selectedClaimType?.id;
+      const samplePayload = {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone: user.phone,
+        email: user.email,
+        claim_type: formData.type,
+        incident_type: selectedIncidentTypeId,
+        incident_date: `${formData.incidentDate} ${formData.incidentTime}:00`,
+        incident_location: formData.incidentLocation,
+        description: formData.description,
+        policy_number: formData.policyNumber,
+        insurer_id: insurerId,
+        payment_model: 1,
+        file_url: imageURL.map((doc: any) => doc.file)
+      }
+      console.log(samplePayload, 'samplePayload');
+
+
+      const response = await authSubmitClaim(samplePayload);
+      setTrackingNumber(response.data.claim_number);
+      console.log(response, 'response_____');
+
       // Store claim data in localStorage for demo purposes
-      const claims = JSON.parse(localStorage.getItem('claims') || '[]');
-      const newClaim = {
-        ...formData,
-        id: `CLM${String(claims.length + 1).padStart(3, '0')}`,
-        status: 'SUBMITTED',
-        submittedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        history: [
-          {
-            date: new Date().toISOString(),
-            status: 'SUBMITTED',
-            note: 'Claim submitted successfully'
-          }
-        ]
-      };
-      claims.push(newClaim);
-      localStorage.setItem('claims', JSON.stringify(claims));
+      // const claims = JSON.parse(localStorage.getItem('claims') || '[]');
+      // const newClaim = {
+      //   ...formData,
+      //   id: `CLM${String(claims.length + 1).padStart(3, '0')}`,
+      //   status: 'SUBMITTED',
+      //   submittedAt: new Date().toISOString(),
+      //   updatedAt: new Date().toISOString(),
+      //   history: [
+      //     {
+      //       date: new Date().toISOString(),
+      //       status: 'SUBMITTED',
+      //       note: 'Claim submitted successfully'
+      //     }
+      //   ]
+      // };
+      // claims.push(newClaim);
+      // localStorage.setItem('claims', JSON.stringify(claims));
 
       // Show success screen
       setShowSuccess(true);
-      
+
       // Wait for 5 seconds before redirecting
       setTimeout(() => {
         router.push('/portal/dashboard');
@@ -152,6 +217,62 @@ export default function NewClaim() {
       setIsSubmitting(false);
     }
   };
+
+  const handleFileChange = async (docId: string, file: File | null) => {
+    try {
+      if (!file) {
+        // If no file is provided, just update the state
+        setFormData({
+          ...formData, documents: formData.documents.map(doc =>
+            doc.id === docId ? { ...doc, file: null } : doc
+          )
+        })
+
+
+        setImageURL(prev => prev.filter((doc: any) => doc.id !== docId));
+        return;
+      }
+      setUploading(true);
+
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('document_type', formData.documents.find(doc => doc.id === docId)?.name || '');
+
+      const response = await uploadDocument(uploadFormData);
+      const responseData = response as unknown as UploadDocumentResponse;
+      console.log(responseData.image_url, 'response');
+      const checkImageURL = imageURL.find((doc: any) => doc.id === docId);
+      if (checkImageURL) {
+        setImageURL(prev => prev.map((doc: any) =>
+          doc.id === docId ? { ...doc, file: responseData.image_url, name: file.name, id: docId } : doc
+        ));
+      } else {
+        setImageURL([...imageURL, { id: docId, file: responseData.image_url, name: file.name }]);
+      }
+
+      setFormData({
+        ...formData, documents: formData.documents.map(doc =>
+          doc.id === docId ? { ...doc, file } : doc
+        )
+      })
+      showToast('File uploaded successfully', 'success');
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Failed to upload file. Please try again.', 'error');
+      console.error('Error uploading file:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileClick = (id: string) => {
+    console.log(id, 'id');
+    const findFile = imageURL.find((doc: any) => doc.id === id);
+    if (findFile) {
+      window.open(findFile?.file, '_blank');
+    } else {
+      showToast('File not uploaded', 'error');
+    }
+  }
 
   if (showSuccess) {
     return (
@@ -168,7 +289,7 @@ export default function NewClaim() {
               Your claim has been submitted and is being processed. You will be redirected to your claims dashboard in a few seconds.
             </p>
             <div className="text-sm text-gray-500">
-              Claim ID: {`CLM${String(JSON.parse(localStorage.getItem('claims') || '[]').length).padStart(3, '0')}`}
+              Claim ID: {trackingNumber}
             </div>
           </div>
         </div>
@@ -186,9 +307,8 @@ export default function NewClaim() {
             {[1, 2, 3, 4].map((step) => (
               <div
                 key={step}
-                className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                  step <= currentStep ? 'bg-[#004D40] text-white' : 'bg-gray-200 text-gray-500'
-                }`}
+                className={`flex items-center justify-center w-8 h-8 rounded-full ${step <= currentStep ? 'bg-[#004D40] text-white' : 'bg-gray-200 text-gray-500'
+                  }`}
               >
                 {step < currentStep ? (
                   <CheckCircleIcon className="w-5 h-5" />
@@ -210,31 +330,40 @@ export default function NewClaim() {
         {currentStep === 1 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Claim Type</h2>
-            <div className="grid gap-4">
-              {CLAIM_TYPES.map((type) => (
-                <label
-                  key={type.id}
-                  className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${
-                    formData.type === type.id
+            {claimTypesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <svg className="animate-spin h-8 w-8 text-[#004D40]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="ml-3 text-gray-600">Loading claim types...</span>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {claimTypesData?.map((type) => (
+                  <label
+                    key={type.id}
+                    className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${formData.type === type.id?.toString()
                       ? 'border-[#004D40] bg-green-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="claimType"
-                    value={type.id}
-                    checked={formData.type === type.id}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as ClaimType })}
-                    className="sr-only"
-                  />
-                  <div>
-                    <div className="font-medium text-gray-900">{type.name}</div>
-                    <div className="text-sm text-gray-500 mt-1">{type.description}</div>
-                  </div>
-                </label>
-              ))}
-            </div>
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      name="claimType"
+                      value={type.id?.toString()}
+                      checked={formData.type === type.id?.toString()}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value as ClaimType })}
+                      className="sr-only"
+                    />
+                    <div>
+                      <div className="font-medium text-gray-900">{type.name}</div>
+                      <div className="text-sm text-gray-500 mt-1">{type.description}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -253,9 +382,9 @@ export default function NewClaim() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                 >
                   <option value="">Select Insurance Provider</option>
-                  {INSURANCE_PROVIDERS.map((provider) => (
-                    <option key={provider} value={provider}>
-                      {provider}
+                  {insurers?.map((provider: Insurer) => (
+                    <option key={provider.id} value={provider.name}>
+                      {provider.name}
                     </option>
                   ))}
                 </select>
@@ -271,9 +400,9 @@ export default function NewClaim() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                 >
                   <option value="">Select Incident Type</option>
-                  {INCIDENT_TYPES[formData.type].map((type) => (
-                    <option key={type} value={type}>
-                      {type}
+                  {incidentTypes?.map((type) => (
+                    <option key={type.id} value={type.name}>
+                      {type.name}
                     </option>
                   ))}
                 </select>
@@ -350,7 +479,60 @@ export default function NewClaim() {
         {currentStep === 3 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Documents</h2>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+            {uploading && <div className='flex items-center gap-2 mb-4'>
+              <svg className="animate-spin h-5 w-5 text-[#004D40]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Uploading...
+            </div>}
+            <div className="space-y-6">
+              {formData.documents.map((doc) => (
+                <div key={doc.id} className="space-y-2">
+
+                  <h4 className="font-medium text-gray-900">{doc.name}</h4>
+                  {!doc.file ? (
+                    <div
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#004D40] transition-colors cursor-pointer"
+                      onClick={() => document.getElementById(`file-${doc.id}`)?.click()}
+                    >
+                      <ArrowUpTrayIcon className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                      <p className="text-sm text-gray-600 mb-1">
+                        Drag and drop your file here, or click to browse
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Maximum file size: 10MB
+                      </p>
+
+                      <input
+                        type="file"
+                        id={`file-${doc.id}`}
+                        className="hidden"
+                        onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <DocumentTextIcon className="w-5 h-5 text-[#004D40]" />
+                          <span className="text-sm text-gray-600">{doc?.file?.name}</span>
+                        </div>
+                        <button
+                          onClick={() => handleFileChange(doc.id, null)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <XMarkIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
               <input
                 type="file"
                 multiple
@@ -358,7 +540,7 @@ export default function NewClaim() {
                 id="document-upload"
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
-                  setFormData({ ...formData, documents: files });
+                  // setFormData({ ...formData, documents: files });
                 }}
               />
               <label
@@ -371,8 +553,8 @@ export default function NewClaim() {
                   Drag and drop files here, or click to select files
                 </p>
               </label>
-            </div>
-            {formData.documents.length > 0 && (
+            </div> */}
+            {/* {formData.documents.length > 0 && (
               <div className="mt-6">
                 <h3 className="font-medium text-gray-900 mb-3">Uploaded Files</h3>
                 <ul className="space-y-2">
@@ -384,7 +566,7 @@ export default function NewClaim() {
                   ))}
                 </ul>
               </div>
-            )}
+            )} */}
           </div>
         )}
 
@@ -392,7 +574,7 @@ export default function NewClaim() {
         {currentStep === 4 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Your Claim</h2>
-            
+
             {/* Claim Information Section */}
             <div className="space-y-6">
               <div className="border-b pb-6">
@@ -401,7 +583,7 @@ export default function NewClaim() {
                   <div>
                     <span className="block text-sm text-gray-500">Claim Type</span>
                     <span className="block text-base text-gray-900 mt-1">
-                      {CLAIM_TYPES.find(type => type.id === formData.type)?.name}
+                      {claimTypesData?.find(type => type.id?.toString() === formData.type)?.name}
                     </span>
                   </div>
                   <div>
@@ -464,12 +646,13 @@ export default function NewClaim() {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <ul className="space-y-3">
                       {formData.documents.map((file, index) => (
-                        <li key={index} className="flex items-center gap-3 text-gray-700">
+                        <li onClick={() => handleFileClick(file.id)} key={index} className="flex items-center gap-3 text-gray-700 cursor-pointer">
                           <DocumentTextIcon className="w-5 h-5 text-gray-500" />
                           <div>
                             <span className="font-medium">{file.name}</span>
                             <span className="text-sm text-gray-500 ml-2">
-                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                              {/* ({(file.size / 1024 / 1024).toFixed(2)} MB) */}
+                              1mb
                             </span>
                           </div>
                         </li>

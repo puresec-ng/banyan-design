@@ -2,16 +2,49 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  KeyIcon, 
-  LockClosedIcon, 
+import {
+  KeyIcon,
+  LockClosedIcon,
   ArrowPathIcon,
   XMarkIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import { changePassword, updatePin } from '@/app/services/dashboard/user-management';
+import { useToast } from '@/app/context/ToastContext';
+
+const validatePassword = (password: string) => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const errors = [];
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
+  }
+  if (!hasUpperCase) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+  if (!hasLowerCase) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+  if (!hasNumbers) {
+    errors.push('Password must contain at least one number');
+  }
+  if (!hasSpecialChar) {
+    errors.push('Password must contain at least one special character');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
 
 export default function Settings() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [activeModal, setActiveModal] = useState<'password' | 'pin' | 'reset-pin' | null>(null);
@@ -32,24 +65,60 @@ export default function Settings() {
     setTimeout(() => setShowSnackbar(false), 3000);
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (formData.newPassword !== formData.confirmPassword) {
-      showSuccessMessage('Passwords do not match');
+      showToast('Passwords do not match', 'error');
       return;
     }
-    showSuccessMessage('Password changed successfully');
-    setActiveModal(null);
-    setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
+
+    const validation = validatePassword(formData.newPassword);
+    if (!validation.isValid) {
+      showToast(validation.errors.join('\n'), 'error');
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const data = {
+        old_password: formData.currentPassword,
+        password: formData.newPassword,
+        password_confirmation: formData.newPassword
+      }
+      const response = await changePassword(data);
+      showToast('Password changed successfully', 'success');
+      setActiveModal(null);
+      setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'An error occurred', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handlePinChange = () => {
+  const handlePinChange = async () => {
     if (formData.newPin !== formData.confirmPin) {
       showSuccessMessage('PINs do not match');
       return;
     }
-    showSuccessMessage('PIN changed successfully');
-    setActiveModal(null);
-    setFormData({ ...formData, currentPin: '', newPin: '', confirmPin: '' });
+    try {
+      setIsProcessing(true);
+      const data = {
+
+
+        current_pin: formData.currentPin,
+        new_pin: formData.newPin,
+        new_pin_confirmation: formData.newPin
+      }
+      const response = await updatePin(data);
+      console.log(response, 'response______');
+      showToast('PIN changed successfully', 'success');
+      setActiveModal(null);
+      setFormData({ ...formData, currentPin: '', newPin: '', confirmPin: '' });
+    } catch (error: any) {
+      showToast(error?.response?.data?.message || 'An error occurred', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleResetPin = () => {
@@ -115,6 +184,9 @@ export default function Settings() {
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
@@ -127,9 +199,10 @@ export default function Settings() {
               </div>
               <button
                 onClick={handlePasswordChange}
-                className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
+                disabled={isProcessing}
+                className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Change Password
+                {isProcessing ? 'Changing Password...' : 'Change Password'}
               </button>
             </div>
           )}
@@ -170,7 +243,7 @@ export default function Settings() {
                 onClick={handlePinChange}
                 className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
               >
-                Change PIN
+                {isProcessing ? 'Changing PIN...' : 'Change PIN'}
               </button>
             </div>
           )}
@@ -234,10 +307,10 @@ export default function Settings() {
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-xl shadow p-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-6">Security Settings</h1>
-          
+
           <div className="space-y-6">
             {/* Change Password */}
-            <div 
+            <div
               className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer"
               onClick={() => setActiveModal('password')}
             >
@@ -256,7 +329,7 @@ export default function Settings() {
             </div>
 
             {/* Change PIN */}
-            <div 
+            <div
               className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer"
               onClick={() => setActiveModal('pin')}
             >
@@ -275,7 +348,7 @@ export default function Settings() {
             </div>
 
             {/* Reset PIN */}
-            <div 
+            {/* <div 
               className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer"
               onClick={() => {
                 setActiveModal('reset-pin');
@@ -294,7 +367,8 @@ export default function Settings() {
               <div className="text-[#004D40]">
                 <ArrowPathIcon className="w-5 h-5" />
               </div>
-            </div>
+            </div> */}
+
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ export default function PersonalInfo() {
     phoneNumber: '',
     email: ''
   });
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     // Check if user has completed previous steps
@@ -29,9 +30,33 @@ export default function PersonalInfo() {
     }
   }, [router]);
 
+  const validateNigerianPhone = (phone: string) => {
+    // Remove any spaces or special characters
+    const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
+
+    // Check for Nigerian phone number patterns
+    const patterns = [
+      /^0[789][01]\d{8}$/,  // 11 digits starting with 0
+      /^\+234[789][01]\d{8}$/  // 13 digits starting with +234
+    ];
+
+    return patterns.some(pattern => pattern.test(cleanedPhone));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Validate phone number when it changes
+    if (name === 'phoneNumber') {
+      if (!value) {
+        setPhoneError('');
+      } else if (!validateNigerianPhone(value)) {
+        setPhoneError('Please enter a valid Nigerian phone number');
+      } else {
+        setPhoneError('');
+      }
+    }
   };
 
   const handleBack = () => {
@@ -48,7 +73,8 @@ export default function PersonalInfo() {
   const isFormValid = () => {
     return formData.firstName &&
       formData.lastName &&
-      formData.phoneNumber;
+      formData.phoneNumber &&
+      !phoneError;
   };
 
   return (
@@ -102,10 +128,13 @@ export default function PersonalInfo() {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-              placeholder="Enter your phone number"
+              className={`w-full px-4 py-2 border ${phoneError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent`}
+              placeholder="Enter your Nigerian phone number (e.g., 08012345678)"
               required
             />
+            {phoneError && (
+              <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+            )}
           </div>
 
           {/* Email Address */}

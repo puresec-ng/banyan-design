@@ -1,29 +1,97 @@
 import { Http } from "../../utils/http";
 
-export const getCurrencies = (isCrypto: boolean) =>
-  Http.get(`/currencies?isCrypto=${isCrypto}`);
+type ClaimStatus = 'submitted' | 'documents_verified' | 'in_review' | 'approved' | 'rejected' | 'pending_documents' | 'document_requested' | 'pending_response';
 
-export const getExchangeRates = (fromCurrency: string, toCurrency: string) => {
-  if (fromCurrency && toCurrency) {
-    return Http.get(
-      `/exchange-rates?fromCurrency=${fromCurrency}&toCurrency=${toCurrency}`
-    );
-  }
-  return Http.get(
-    `/exchange-rates`
-  );
+interface ClaimHistory {
+    id: number;
+    claim_id: number;
+    description: string;
+    status: ClaimStatus;
+    meta: null;
+    created_at: string;
+    updated_at: string;
+}
 
+interface Document {
+    id: number;
+    claim_id: number;
+    document_type: string;
+    document_url: string;
+    created_at: string;
+    updated_at: string;
+    status: string;
+    name: string;
+}
+interface questions {
+    id: number;
+    claim_id: number;
+    question: string;
+    answer: string;
+    status: string;
+    created_at: string;
+    updated_at: string;
+}
+interface ClaimType {
+    id: number;
+    name: string;
+    code: string;
+    tracking_prefix: string;
+    description: string;
+    required_documents: string;
+    active: number;
+    processing_time_estimate: number;
+    created_at: string;
+    updated_at: string;
+}
+export interface ClaimData {
+    claim_number: string;
+    incident_location: string;
+    incident_date: string;
+    description: string;
+    claim_type: ClaimType;
+    status: string;
+    created_at: string;
+    claim_history: ClaimHistory[];
+    documents: Document[];
+    questions?: questions[];
+}
+interface Link {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+}
+
+interface Meta {
+    current_page: number;
+    from: number;
+    last_page: number;
+    links: Link[];
+    path: string;
 }
 
 
-export const getBusiness = () => Http.get(`/business`);
 
 
-export const editPayment = (payload: any): Promise<any> =>
-  Http.patch(`settings/payment`, payload);
+interface TrackClaimResponse {
+    data: ClaimData;
+}
+interface ClaimResponse {
+    data: {
+        data: ClaimData[];
+        links: Link;
+        meta: Meta;
+    }
+}
 
-export const inviteAdmin = (payload: any) =>
-  Http.post("/business/invite-admin", payload);
 
-export const acceptInvite = (payload: any, token: string) =>
-  Http.post(`business/accept-admin/${token}`, payload);
+// getsubmited claims
+export const getSubmitedClaims = (status?: string): Promise<ClaimResponse> => Http.get(`/claims?status=${status}`);
+// export const getSubmitedClaims = (status: string) => Http.get(`/claims/submitted?status=${status}`);
+
+// get pending claims
+export const getPendingClaims = () => Http.get(`/claims/pending`);
+
+//claims/track-claim
+export const trackClaim = (claimId: string): Promise<TrackClaimResponse> => Http.post(`/claims/track-claim`, { claim_number: claimId });
+

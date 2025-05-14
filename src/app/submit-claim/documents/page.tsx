@@ -37,7 +37,6 @@ export default function DocumentUpload() {
   });
 
   useEffect(() => {
-    console.log("came here_____");
 
     // Check if user has completed previous steps
     const basicInfo = localStorage.getItem('basicInfo');
@@ -55,12 +54,6 @@ export default function DocumentUpload() {
     // Load required documents based on claim type
     const { incidentType } = JSON.parse(basicInfo);
     if (incidentType && incidentTypes) {
-      console.log("got here_____");
-      console.log("got here_____");
-      console.log("got here_____");
-      console.log("got here_____");
-      console.log("got here_____");
-
       const selectedIncidentType = incidentTypes.find(t => t.name === incidentType);
       console.log(selectedIncidentType, 'selectedIncidentType');
       if (selectedIncidentType) {
