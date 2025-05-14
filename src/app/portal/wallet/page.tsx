@@ -67,9 +67,6 @@ export default function Wallet() {
     queryFn: () => getTransactionHistory(),
   });
 
-  console.log(transactionHistory?.data?.data, 'transactionHistory______');
-  console.log(user, 'user______');
-
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const [redirectCount, setRedirectCount] = useState(10);
