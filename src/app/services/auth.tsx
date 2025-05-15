@@ -23,10 +23,10 @@ interface RegisterResponse {
 }
 
 export const requestVerificationCode = (payload: { email: string }) =>
-  Http.post(`/auth/verify-account`, payload);
+  Http.post(`/auth/resend-otp`, payload);
 
 export const verifyEmail = (payload: VerifyEmailPayload) =>
-  Http.post(`/auth/verify-email`, payload);
+  Http.post(`/auth/verify-account`, payload);
 
 export const setPassword = (payload: {
   signUpToken: string;
