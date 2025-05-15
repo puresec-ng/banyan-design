@@ -25,10 +25,8 @@ interface RegisterResponse {
 export const requestVerificationCode = (payload: { email: string }) =>
   Http.post(`/auth/resend-otp`, payload);
 
-export const verifyEmail = (payload: VerifyEmailPayload, token?: string) =>
-  Http.post(`/auth/verify-account`, payload, {
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined
-  });
+export const verifyEmail = (payload: VerifyEmailPayload) =>
+  Http.post(`/auth/verify-account`, payload);
 
 export const setPassword = (payload: {
   signUpToken: string;
