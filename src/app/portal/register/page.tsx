@@ -279,6 +279,7 @@ export default function Register() {
             id="phoneNumber"
             name="phoneNumber"
             type="tel"
+            maxLength={14}
             value={formData.phoneNumber}
             onChange={handleChange}
             placeholder="+234XXXXXXXXXX or 0XXXXXXXXXX"

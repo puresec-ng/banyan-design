@@ -1,6 +1,6 @@
 import Cookie from "js-cookie";
 
-const dev = true;
+const dev = false;
 // const dev = process.env.NODE_ENV === "development";
 const parentDomain = dev ? "localhost" : "banyan.ricive.com";
 

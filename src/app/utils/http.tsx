@@ -16,6 +16,7 @@ export const Http = axios.create({
 Http.interceptors.request.use((config: any) => {
   const token = cookie().getCookie("token");
   const userType = cookie().getCookie("userType");
+  console.log(token, 'token______');
   // const apiKey = cookie().getCookie("API_KEY");
 
 
