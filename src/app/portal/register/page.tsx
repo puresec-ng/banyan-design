@@ -6,8 +6,17 @@ import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outlin
 import Link from 'next/link';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
-import { register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
+import { register, requestVerificationCode, verifyEmail, createPin, checkEmail, checkPhone } from '../../services/auth';
 import cookie from '@/app/utils/cookie';
+
+// Add debounce function
+const debounce = (func: Function, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
 
 interface FormData {
   firstName: string;
@@ -91,6 +100,36 @@ export default function Register() {
     hasValidFormat: false
   });
 
+  // Add debounced email check
+  const debouncedEmailCheck = debounce(async (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(email)) {
+      try {
+        await checkEmail({ email });
+        // Email is available
+        // showToast('Email is available', 'success');
+      } catch (error) {
+        // Email is already registered
+        showToast('This email is already registered', 'error');
+      }
+    }
+  }, 1000); // Wait for 1 second after user stops typing
+
+  // Add debounced phone check
+  const debouncedPhoneCheck = debounce(async (phone: string) => {
+    const validation = validateNigerianPhoneNumber(phone);
+    if (validation.hasValidFormat) {
+      try {
+        await checkPhone({ phone });
+        // Phone is available
+        // showToast('Phone number is available', 'success');
+      } catch (error) {
+        // Phone is already registered
+        showToast('This phone number is already registered', 'error');
+      }
+    }
+  }, 1000); // Wait for 1 second after user stops typing
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => {
@@ -107,6 +146,14 @@ export default function Register() {
       // Update phone validation when phone number changes
       if (name === 'phoneNumber') {
         setPhoneValidation(validateNigerianPhoneNumber(value));
+        if (value) {
+          debouncedPhoneCheck(value);
+        }
+      }
+
+      // Check email availability when email changes
+      if (name === 'email' && value) {
+        debouncedEmailCheck(value);
       }
 
       return newData;

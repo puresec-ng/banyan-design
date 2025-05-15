@@ -78,3 +78,10 @@ export const createPin = (payload: {
   pin_confirmation: string;
 }) => Http.post(`/auth/create-pin`, payload);
 
+// check email
+export const checkEmail = (payload: any) =>
+  Http.post(`/auth/check-user`, payload);
+
+// check phone
+export const checkPhone = (payload: any) =>
+  Http.post(`/auth/check-user`, payload);
