@@ -192,12 +192,13 @@ export default function Register() {
     setIsLoading(true);
 
     try {
+      const token = cookie().getCookie('token');
       // Simulate OTP verification
       const response = await verifyEmail({
         email: formData.email,
         otp: otp,
         otp_type: 'email'
-      });
+      }, token);
       console.log(response);
 
       // Move to PIN creation step
