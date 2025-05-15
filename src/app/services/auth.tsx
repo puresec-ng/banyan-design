@@ -23,7 +23,7 @@ interface RegisterResponse {
 }
 
 export const requestVerificationCode = (payload: { email: string }) =>
-  Http.post(`/auth/request-verification-code`, payload);
+  Http.post(`/auth/verify-account`, payload);
 
 export const verifyEmail = (payload: VerifyEmailPayload) =>
   Http.post(`/auth/verify-email`, payload);
