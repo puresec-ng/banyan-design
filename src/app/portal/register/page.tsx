@@ -362,6 +362,7 @@ export default function Register() {
             id="email"
             name="email"
             type="email"
+            autoComplete="new-email"
             value={formData.email}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
@@ -377,6 +378,7 @@ export default function Register() {
               id="password"
               name="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
               className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
