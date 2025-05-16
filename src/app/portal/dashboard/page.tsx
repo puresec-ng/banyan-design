@@ -30,6 +30,7 @@ import { uploadDocument, } from '@/app/services/public';
 
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
+import cookie from '@/app/utils/cookie';
 
 
 
@@ -311,6 +312,15 @@ export default function Dashboard() {
       showToast(error?.response?.data?.message || "Error uploading document", "error");
     }
   }
+
+  useEffect(() => {
+
+    const token = cookie().getCookie('token');
+   
+    if (!token) {
+      router.push('/portal');
+    }
+  }, [router]);
 
   return (
     <main className="container mx-auto px-4 py-8">

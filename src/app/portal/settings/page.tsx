@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   KeyIcon,
@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { changePassword, updatePin } from '@/app/services/dashboard/user-management';
 import { useToast } from '@/app/context/ToastContext';
-
+import cookie from '@/app/utils/cookie';
 const validatePassword = (password: string) => {
   const minLength = 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -58,6 +58,15 @@ export default function Settings() {
   });
   const [otp, setOtp] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+
+    const token = cookie().getCookie('token');
+
+    if (!token) {
+      router.push('/portal');
+    }
+  }, [router]);
 
   const showSuccessMessage = (message: string) => {
     setSnackbarMessage(message);

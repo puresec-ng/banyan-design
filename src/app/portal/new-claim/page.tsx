@@ -87,8 +87,9 @@ export default function NewClaim() {
   });
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (!isAuthenticated) {
+
+    const token = cookie().getCookie('token');
+    if (!token) {
       router.push('/portal');
     }
   }, [router]);

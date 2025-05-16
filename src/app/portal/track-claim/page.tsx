@@ -12,6 +12,7 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { trackClaim, ClaimData } from '@/app/services/dashboard';
+import cookie from '@/app/utils/cookie';
 
 // Using the same types from dashboard
 type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'PENDING_RESPONSE';
@@ -120,8 +121,9 @@ export default function TrackClaim() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (!isAuthenticated) {
+
+    const token = cookie().getCookie('token');
+    if (!token) {
       router.push('/portal');
     }
   }, [router]);

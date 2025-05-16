@@ -15,6 +15,7 @@ import {
 import { getProfile, getTransactionHistory, TransactionHistory, withdraw } from '@/app/services/dashboard/user-management';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
+import cookie from '@/app/utils/cookie';
 
 
 // Mock data - In a real app, this would come from your API
@@ -104,6 +105,16 @@ export default function Wallet() {
       if (timer) clearInterval(timer);
     };
   }, [withdrawSuccess, router]);
+
+
+  useEffect(() => {
+
+    const token = cookie().getCookie('token');
+  
+    if (!token) {
+      router.push('/portal');
+    }
+  }, [router]);
 
   const showSuccessMessage = (message: string) => {
     setSnackbarMessage(message);

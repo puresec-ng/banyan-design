@@ -75,10 +75,11 @@ export default function Profile() {
 
   useEffect(() => {
     // Check authentication
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
-    if (!isAuthenticated) {
+    const token = cookie().getCookie('token');
+    if (!token) {
       router.push('/portal');
     }
+
     if (user) {
       console.log(user, 'user111');
       setEmail(user?.email);
