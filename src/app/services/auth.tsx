@@ -76,7 +76,7 @@ export const editProfile = (payload: any) =>
 export const createPin = (payload: {
   pin: string;
   pin_confirmation: string;
-}) => Http.post(`/auth/create-pin`, payload);
+}) => Http.post(`/profile/create-pin`, payload);
 
 // check email
 export const checkEmail = (payload: any) =>
