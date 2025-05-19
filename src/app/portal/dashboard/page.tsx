@@ -258,6 +258,8 @@ export default function Dashboard() {
     queryFn: () => getSubmitedClaims(statusFilter === 'ALL' ? 'all' : statusFilter.toLowerCase()),
   });
 
+  console.log(claims, 'claims_________');
+
   const [selectedClaim, setSelectedClaim] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
@@ -316,7 +318,7 @@ export default function Dashboard() {
   useEffect(() => {
 
     const token = cookie().getCookie('token');
-   
+
     if (!token) {
       router.push('/portal');
     }
@@ -372,6 +374,7 @@ export default function Dashboard() {
                       <span className="font-medium text-gray-900">{claim.claim_number}</span>
                       <StatusBadge status={claim.status.toString().toUpperCase() as StatusType} />
                     </div>
+                    <p className="text-gray-600 mb-2">{claim?.claim_type_details?.name || claim?.claim_type?.name}</p>
                     <p className="text-gray-600 mb-2">{claim.description}</p>
                     <p className="text-sm text-gray-500">
                       Submitted on {formatDate(claim.incident_date)}
@@ -455,7 +458,7 @@ export default function Dashboard() {
                               <div key={index} className="relative flex gap-4">
                                 <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status?.toString().toUpperCase() as StatusType].color} ring-4 ring-white`}></div>
                                 <div>
-                                  <p className="font-medium text-gray-900">
+                                  <p className="font-medium text-gray-900 capitalize">
                                     {event.status.replace('_', ' ')}
                                   </p>
                                   <p className="text-gray-600 text-sm">{event.description}</p>

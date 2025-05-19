@@ -229,7 +229,7 @@ export default function TrackClaim() {
               <div className="space-y-3">
                 <div>
                   <span className="text-sm text-gray-500">Type</span>
-                  <p className="font-medium text-gray-900">{claim?.claim_type?.name}</p>
+                  <p className="font-medium text-gray-900">{claim?.claim_type?.name || claim?.claim_type_details?.name}</p>
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Description</span>

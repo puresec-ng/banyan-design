@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserCircleIcon, BanknotesIcon, CheckCircleIcon, XCircleIcon, ArrowLeftIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon as XMarkIconSolid } from '@heroicons/react/24/solid';
 import cookie from '@/app/utils/cookie';
 import { useToast } from '@/app/context/ToastContext';
-import { getProfile, storeBankAccount, updateProfile, setBvnVerificationMethod, validateBvnOtp, bvnLookup, updateBvn, updateEmail, verifyEmail, verifyPhone } from '@/app/services/dashboard/user-management';
+import { getProfile, lookupBankAccount, storeBankAccount, updateProfile, setBvnVerificationMethod, validateBvnOtp, bvnLookup, } from '@/app/services/dashboard/user-management';
 import { useQuery } from "@tanstack/react-query";
+import { checkEmail, } from '../../services/auth';
 
-
-
+interface EmailCheckResponse {
+  exists: boolean;
+}
 
 // Mock BVN lookup response
 const MOCK_BVN_DETAILS = {
@@ -72,6 +75,10 @@ export default function Profile() {
   const [selectedMethod, setSelectedMethod] = useState<VerificationMethod | null>(null);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [isEmailAvailable, setIsEmailAvailable] = useState(false);
+  const [isLookingUpAccount, setIsLookingUpAccount] = useState(false);
+  const [accountLookupError, setAccountLookupError] = useState('');
 
   useEffect(() => {
     // Check authentication
@@ -98,6 +105,39 @@ export default function Profile() {
     setShowSnackbar(true);
   };
 
+  const handleEmailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    setEmailError('');
+    setIsEmailAvailable(false);
+
+    if (newEmail === user?.email) {
+      return;
+    }
+
+    if (newEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      setIsCheckingEmail(true);
+      try {
+        const { data: response } = await checkEmail(newEmail);
+        console.log(response, 'response______');
+        // if (response.exists) {
+        //   setEmailError('This email address is already taken');
+        //   setIsEmailAvailable(false);
+        // } else {
+        //   setIsEmailAvailable(true);
+        // }
+        setIsEmailAvailable(true);
+      } catch (error: any) {
+        setEmailError(error?.message || 'Error checking email availability');
+        setIsEmailAvailable(false);
+      } finally {
+        setIsCheckingEmail(false);
+      }
+    } else if (newEmail) {
+      setEmailError('Please enter a valid email address');
+    }
+  };
+
   const handleEmailSave = async () => {
     if (!isEditing) {
       setIsEditing(true);
@@ -108,9 +148,9 @@ export default function Profile() {
         setIsLoading(true);
         await updateProfile({ email });
         // setIsEditing(false);
-        // showSuccessMessage('Email updated successfully');
-      } catch (error) {
-        setEmailError('An error occurred during email update. Please try again.');
+        showSuccessMessage('Email updated successfully');
+      } catch (error: any) {
+        setEmailError(error?.message || 'An error occurred during email update. Please try again.');
       } finally {
         setIsLoading(false);
         // setIsEditing(false);
@@ -118,6 +158,41 @@ export default function Profile() {
 
     }
 
+  };
+
+  const handleAccountNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const accountNumber = e.target.value;
+    setBankDetails({ ...bankDetails, accountNumber });
+    setAccountLookupError('');
+
+    // Only lookup if account number is 10 digits and bank is selected
+    if (accountNumber.length === 10 && bankDetails.bankName) {
+      try {
+        setIsLookingUpAccount(true);
+        const bankCode = BANKS.find(bank => bank.name === bankDetails.bankName)?.code;
+        if (!bankCode) {
+          throw new Error('Invalid bank selected');
+        }
+
+        const response = await lookupBankAccount({
+          account_number: accountNumber,
+          bank_code: bankCode
+        });
+
+        setBankDetails(prev => ({
+          ...prev,
+          accountName: response.account_name
+        }));
+      } catch (error: any) {
+        setAccountLookupError(error?.message || 'Failed to lookup account. Please verify the details.');
+        setBankDetails(prev => ({
+          ...prev,
+          accountName: ''
+        }));
+      } finally {
+        setIsLookingUpAccount(false);
+      }
+    }
   };
 
   const handleBankDetailsSave = async () => {
@@ -145,6 +220,8 @@ export default function Profile() {
     }
     // In a real app, this would make an API call to update bank details
   };
+
+
 
   const handleBvnLookup = async () => {
     try {
@@ -443,30 +520,49 @@ export default function Profile() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              {emailError && (
-                <div className="flex items-center gap-2 mb-4 text-red-600">
-                  <XCircleIcon className="w-5 h-5" />
-                  <span className="text-sm">{emailError}</span>
-                </div>
-              )}
-              <div className="flex gap-2">
+              <div className="relative">
                 {isEditing ? (
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  />
+                  <>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={handleEmailChange}
+                      className={`w-full p-2 pr-10 border ${emailError ? 'border-red-500' : isEmailAvailable ? 'border-green-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent`}
+                      placeholder="Enter email address"
+                    />
+                    <div className="absolute inset-y-0 right-3 flex items-center">
+                      {isCheckingEmail && (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#004D40]"></div>
+                      )}
+                      {/* {!isCheckingEmail && emailError && (
+                        <XMarkIconSolid className="h-5 w-5 text-red-500" aria-hidden="true" />
+                      )}
+                      {!isCheckingEmail && isEmailAvailable && (
+                        <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
+                      )} */}
+                    </div>
+                    {emailError && (
+                      <div className="mt-2 flex items-center">
+                        <span className="text-sm text-red-500 bg-red-50 px-2 py-1 rounded">
+                          {emailError}
+                        </span>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <p className="flex-1 text-gray-900 p-2 bg-gray-50 rounded-lg">{email}</p>
                 )}
+              </div>
 
+              <div className="mt-4 flex justify-end">
                 <button
-                  onClick={() => {
-                    // isEditing ? handleEmailSave() : setIsEditing(true)
-                    handleEmailSave()
-                  }}
-                  className="px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
+                  onClick={handleEmailSave}
+                  disabled={isEditing && (!!emailError || isCheckingEmail)}
+                  className={`px-6 py-2 rounded-lg ${isEditing && (!!emailError || isCheckingEmail)
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-[#004D40] hover:bg-[#003D30]'
+                    } text-white font-medium`}
                 >
                   {isLoading ? 'Saving...' : isEditing ? 'Save' : 'Edit'}
                 </button>
@@ -528,26 +624,37 @@ export default function Profile() {
               <input
                 type="text"
                 value={bankDetails.accountNumber}
-                onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                onChange={handleAccountNumberChange}
+                className={`w-full p-2 border ${accountLookupError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent`}
                 maxLength={10}
                 placeholder="Enter account number"
               />
+              {isLookingUpAccount && (
+                <div className="mt-2 text-sm text-gray-500">
+                  Looking up account details...
+                </div>
+              )}
+              {accountLookupError && (
+                <div className="mt-2 text-sm text-red-500">
+                  {accountLookupError}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
               <input
                 type="text"
                 value={bankDetails.accountName}
-                onChange={(e) => setBankDetails({ ...bankDetails, accountName: e.target.value })}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                placeholder="Enter account name"
+                readOnly
+                className="w-full p-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                placeholder="Account name will appear here"
               />
             </div>
             <div className="flex justify-end pt-4">
               <button
                 onClick={handleBankDetailsSave}
-                className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
+                disabled={isUpdatingBankDetails || !!accountLookupError || !bankDetails.accountName}
+                className={`px-6 py-2 ${isUpdatingBankDetails || !!accountLookupError || !bankDetails.accountName ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#004D40] hover:bg-[#003D30]'} text-white rounded-lg`}
               >
                 {isUpdatingBankDetails ? 'Saving...' : 'Save Changes'}
               </button>

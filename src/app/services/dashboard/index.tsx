@@ -51,6 +51,7 @@ export interface ClaimData {
     incident_location: string;
     incident_date: string;
     description: string;
+    claim_type_details: ClaimType;
     claim_type: ClaimType;
     status: string;
     created_at: string;

@@ -42,6 +42,11 @@ interface TransactionHistoryResponse {
     }
 }
 
+interface BankAccountLookupResponse {
+    account_bank: string;
+    account_name: string;
+}
+
 export const getUsers = (): Promise<any> =>
     Http.get(`/user-management/customers`);
 
@@ -92,7 +97,7 @@ export const withdraw = (data: any): Promise<any> =>
 
 // profile/change-password
 export const changePassword = (data: any): Promise<any> =>
-    Http.post(`/profile/change-password`, data);
+    Http.patch(`/profile/change-password`, data);
 
 //profile/update-pin
 export const updatePin = (data: any): Promise<any> =>
@@ -102,6 +107,10 @@ export const updatePin = (data: any): Promise<any> =>
 // profile/store-bank-account
 export const storeBankAccount = (data: any): Promise<any> =>
     Http.post(`/profile/store-bank-account`, data);
+
+// profile/update-bank-account
+export const lookupBankAccount = (data: any): Promise<BankAccountLookupResponse> =>
+    Http.post(`/profile/lookup-bank-account`, data);
 
 
 

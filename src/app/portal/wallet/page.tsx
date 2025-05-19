@@ -110,7 +110,7 @@ export default function Wallet() {
   useEffect(() => {
 
     const token = cookie().getCookie('token');
-  
+
     if (!token) {
       router.push('/portal');
     }
@@ -242,7 +242,7 @@ export default function Wallet() {
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Wallet Balance */}
-        <div className="bg-white rounded-xl shadow p-6">
+        {/* <div className="bg-white rounded-xl shadow p-6">
           <div className="flex gap-4">
             <div className="flex flex-col justify-center py-2">
               <div className="bg-[#004D40] p-3 rounded-full">
@@ -267,7 +267,7 @@ export default function Wallet() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Transaction History */}
         <div className="bg-white rounded-xl shadow p-6">

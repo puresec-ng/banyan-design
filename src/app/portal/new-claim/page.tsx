@@ -52,6 +52,7 @@ export default function NewClaim() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [skipDocuments, setSkipDocuments] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     type: '',
     insuranceProvider: '',
@@ -95,11 +96,6 @@ export default function NewClaim() {
   }, [router]);
 
   const handleNext = () => {
-    // if (formData.type !== '' && currentStep === 1) {
-    //   setCurrentStep(currentStep + 1);
-    // } else {
-    //  setCurrentStep(currentStep);
-    // }
     if (currentStep === 1) {
       if (formData.type !== '') {
         setCurrentStep(currentStep + 1);
@@ -142,10 +138,11 @@ export default function NewClaim() {
       setCurrentStep(currentStep + 1);
     }
     if (currentStep === 3) {
-      // if (formData.documents.length === 0) {
-      //   showToast('Please upload at least one document', 'error');
-      //   return;
-      // }
+      // Check if all documents are uploaded or if skip was chosen
+      if (!skipDocuments && !formData.documents.every(doc => doc.file)) {
+        showToast('Please upload all required documents or choose to skip', 'error');
+        return;
+      }
       setCurrentStep(currentStep + 1);
     }
   };
@@ -480,6 +477,18 @@ export default function NewClaim() {
         {currentStep === 3 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Documents</h2>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-gray-600">All documents are required unless skipped</p>
+              <button
+                onClick={() => setSkipDocuments(!skipDocuments)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${skipDocuments
+                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                {skipDocuments ? 'Resume Upload' : 'Skip All Documents'}
+              </button>
+            </div>
             {uploading && <div className='flex items-center gap-2 mb-4'>
               <svg className="animate-spin h-5 w-5 text-[#004D40]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -487,7 +496,7 @@ export default function NewClaim() {
               </svg>
               Uploading...
             </div>}
-            <div className="space-y-6">
+            <div className={`space-y-6 ${skipDocuments ? 'opacity-50 pointer-events-none' : ''}`}>
               {formData.documents.map((doc) => (
                 <div key={doc.id} className="space-y-2">
 
@@ -643,7 +652,7 @@ export default function NewClaim() {
               {/* Documents Section */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Supporting Documents</h3>
-                {formData.documents.length > 0 ? (
+                {formData.documents.length > 0 && !skipDocuments ? (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <ul className="space-y-3">
                       {formData.documents.map((file, index) => (
@@ -690,7 +699,7 @@ export default function NewClaim() {
           {currentStep < 4 ? (
             <button
               onClick={handleNext}
-              disabled={isSubmitting}
+              disabled={isSubmitting || (currentStep === 3 && !skipDocuments && !formData.documents.every(doc => doc.file))}
               className="flex items-center gap-2 px-6 py-2 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30] transition-colors ml-auto disabled:opacity-50"
             >
               Next

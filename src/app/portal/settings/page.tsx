@@ -7,7 +7,9 @@ import {
   LockClosedIcon,
   ArrowPathIcon,
   XMarkIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { changePassword, updatePin } from '@/app/services/dashboard/user-management';
 import { useToast } from '@/app/context/ToastContext';
@@ -55,6 +57,14 @@ export default function Settings() {
     currentPin: '',
     newPin: '',
     confirmPin: ''
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+    currentPin: false,
+    newPin: false,
+    confirmPin: false
   });
   const [otp, setOtp] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -178,33 +188,72 @@ export default function Settings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                <input
-                  type="password"
-                  value={formData.currentPassword}
-                  onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.currentPassword ? 'text' : 'password'}
+                    value={formData.currentPassword}
+                    onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, currentPassword: !showPasswords.currentPassword })}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.currentPassword ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                <input
-                  type="password"
-                  value={formData.newPassword}
-                  onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.newPassword ? 'text' : 'password'}
+                    value={formData.newPassword}
+                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, newPassword: !showPasswords.newPassword })}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.newPassword ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
                 <p className="mt-1 text-sm text-gray-500">
                   Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, confirmPassword: !showPasswords.confirmPassword })}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.confirmPassword ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
               <button
                 onClick={handlePasswordChange}
@@ -220,33 +269,72 @@ export default function Settings() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Current PIN</label>
-                <input
-                  type="password"
-                  value={formData.currentPin}
-                  onChange={(e) => setFormData({ ...formData, currentPin: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  maxLength={4}
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.currentPin ? 'text' : 'password'}
+                    value={formData.currentPin}
+                    onChange={(e) => setFormData({ ...formData, currentPin: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                    maxLength={4}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, currentPin: !showPasswords.currentPin })}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.currentPin ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
-                <input
-                  type="password"
-                  value={formData.newPin}
-                  onChange={(e) => setFormData({ ...formData, newPin: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  maxLength={4}
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.newPin ? 'text' : 'password'}
+                    value={formData.newPin}
+                    onChange={(e) => setFormData({ ...formData, newPin: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                    maxLength={4}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, newPin: !showPasswords.newPin })}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.newPin ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New PIN</label>
-                <input
-                  type="password"
-                  value={formData.confirmPin}
-                  onChange={(e) => setFormData({ ...formData, confirmPin: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  maxLength={4}
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirmPin ? 'text' : 'password'}
+                    value={formData.confirmPin}
+                    onChange={(e) => setFormData({ ...formData, confirmPin: e.target.value })}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                    maxLength={4}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords({ ...showPasswords, confirmPin: !showPasswords.confirmPin })}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPasswords.confirmPin ? (
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
               </div>
               <button
                 onClick={handlePinChange}
@@ -338,7 +426,7 @@ export default function Settings() {
             </div>
 
             {/* Change PIN */}
-            <div
+            {/* <div
               className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer"
               onClick={() => setActiveModal('pin')}
             >
@@ -354,7 +442,7 @@ export default function Settings() {
               <div className="text-[#004D40]">
                 <LockClosedIcon className="w-5 h-5" />
               </div>
-            </div>
+            </div> */}
 
             {/* Reset PIN */}
             {/* <div 

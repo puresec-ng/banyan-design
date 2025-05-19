@@ -42,6 +42,12 @@ interface PhoneValidation {
   hasValidFormat: boolean;
 }
 
+interface FieldValidation {
+  isValid: boolean;
+  message: string;
+  isChecking: boolean;
+}
+
 const validateNigerianPhoneNumber = (phone: string): PhoneValidation => {
   // Remove any spaces, dashes, or parentheses
   const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
@@ -99,36 +105,85 @@ export default function Register() {
     hasValidLength: false,
     hasValidFormat: false
   });
+  const [phoneFieldValidation, setPhoneFieldValidation] = useState<FieldValidation>({
+    isValid: false,
+    message: '',
+    isChecking: false
+  });
+  const [emailValidation, setEmailValidation] = useState<FieldValidation>({
+    isValid: false,
+    message: '',
+    isChecking: false
+  });
 
-  // Add debounced email check
+  // Add function to check if form is valid
+  const isFormValid = () => {
+    return (
+      formData.firstName.trim() !== '' &&
+      formData.lastName.trim() !== '' &&
+      phoneFieldValidation.isValid &&
+      emailValidation.isValid &&
+      Object.values(passwordValidation).every(Boolean)
+    );
+  };
+
+  // Modify the debounced email check
   const debouncedEmailCheck = debounce(async (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(email)) {
+      setEmailValidation(prev => ({ ...prev, isChecking: true }));
       try {
         await checkEmail({ email });
-        // Email is available
-        // showToast('Email is available', 'success');
+        setEmailValidation({
+          isValid: true,
+          message: '',
+          isChecking: false
+        });
       } catch (error) {
-        // Email is already registered
-        showToast('This email is already registered', 'error');
+        setEmailValidation({
+          isValid: false,
+          message: 'This email is already registered',
+          isChecking: false
+        });
       }
+    } else {
+      setEmailValidation({
+        isValid: false,
+        message: 'Please enter a valid email address',
+        isChecking: false
+      });
     }
-  }, 1000); // Wait for 1 second after user stops typing
+  }, 1000);
 
-  // Add debounced phone check
+  // Modify the debounced phone check
   const debouncedPhoneCheck = debounce(async (phone: string) => {
     const validation = validateNigerianPhoneNumber(phone);
+    setPhoneValidation(validation);
+
     if (validation.hasValidFormat) {
+      setPhoneFieldValidation(prev => ({ ...prev, isChecking: true }));
       try {
         await checkPhone({ phone });
-        // Phone is available
-        // showToast('Phone number is available', 'success');
+        setPhoneFieldValidation({
+          isValid: true,
+          message: '',
+          isChecking: false
+        });
       } catch (error) {
-        // Phone is already registered
-        showToast('This phone number is already registered', 'error');
+        setPhoneFieldValidation({
+          isValid: false,
+          message: 'This phone number is already registered',
+          isChecking: false
+        });
       }
+    } else {
+      setPhoneFieldValidation({
+        isValid: false,
+        message: 'Please enter a valid phone number',
+        isChecking: false
+      });
     }
-  }, 1000); // Wait for 1 second after user stops typing
+  }, 1000);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -248,7 +303,15 @@ export default function Register() {
       console.log(response);
 
       // Move to PIN creation step
-      setCurrentStep(3);
+      // setCurrentStep(3);
+
+      // Move to success screen
+      setCurrentStep(4);
+
+      // Redirect to dashboard after 5 seconds
+      setTimeout(() => {
+        router.push('/portal/dashboard');
+      }, 5000);
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Error verifying OTP', 'error');
     } finally {
@@ -322,51 +385,91 @@ export default function Register() {
           <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
             Phone Number
           </label>
-          <input
-            id="phoneNumber"
-            name="phoneNumber"
-            type="tel"
-            maxLength={14}
-            value={formData.phoneNumber}
-            onChange={handleChange}
-            placeholder="+234XXXXXXXXXX or 0XXXXXXXXXX"
-            className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.phoneNumber ?
-              (phoneValidation.hasValidFormat ? 'border-green-500' : 'border-red-500') :
-              'border-gray-300'
-              }`}
-          />
-          <div className="mt-2 space-y-1">
-            <p className="text-sm text-gray-500">Phone number must:</p>
-            <ul className="text-sm space-y-1">
-              <li className={`flex items-center ${phoneValidation.hasValidPrefix ? 'text-green-600' : 'text-gray-500'}`}>
-                <span className="mr-2">{phoneValidation.hasValidPrefix ? '✓' : '○'}</span>
-                Start with +234 or 0
-              </li>
-              <li className={`flex items-center ${phoneValidation.hasValidLength ? 'text-green-600' : 'text-gray-500'}`}>
-                <span className="mr-2">{phoneValidation.hasValidLength ? '✓' : '○'}</span>
-                Have correct length (11 digits for 0 prefix, 14 digits for +234)
-              </li>
-              <li className={`flex items-center ${phoneValidation.hasValidFormat ? 'text-green-600' : 'text-gray-500'}`}>
-                <span className="mr-2">{phoneValidation.hasValidFormat ? '✓' : '○'}</span>
-                Contain only valid digits
-              </li>
-            </ul>
+          <div className="relative">
+            <input
+              id="phoneNumber"
+              name="phoneNumber"
+              type="tel"
+              maxLength={14}
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              placeholder="+234XXXXXXXXXX or 0XXXXXXXXXX"
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.phoneNumber
+                ? phoneFieldValidation.isChecking
+                  ? 'border-yellow-500'
+                  : phoneFieldValidation.isValid
+                    ? 'border-green-500'
+                    : 'border-red-500'
+                : 'border-gray-300'
+                }`}
+            />
+            {formData.phoneNumber && (
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                {phoneFieldValidation.isChecking ? (
+                  <svg className="animate-spin h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : phoneFieldValidation.isValid ? (
+                  <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+            )}
           </div>
+          {formData.phoneNumber && phoneFieldValidation.message && (
+            <p className="mt-1 text-sm text-red-600">{phoneFieldValidation.message}</p>
+          )}
         </div>
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
             Email Address
           </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="new-email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-          />
+          <div className="relative">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="new-email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.email
+                ? emailValidation.isChecking
+                  ? 'border-yellow-500'
+                  : emailValidation.isValid
+                    ? 'border-green-500'
+                    : 'border-red-500'
+                : 'border-gray-300'
+                }`}
+            />
+            {formData.email && (
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                {emailValidation.isChecking ? (
+                  <svg className="animate-spin h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : emailValidation.isValid ? (
+                  <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+            )}
+          </div>
+          {formData.email && emailValidation.message && (
+            <p className="mt-1 text-sm text-red-600">{emailValidation.message}</p>
+          )}
         </div>
 
         <div>
@@ -457,7 +560,7 @@ export default function Register() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !isFormValid()}
           className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Processing...' : 'Continue'}

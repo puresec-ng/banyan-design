@@ -24,6 +24,16 @@ export default function ClientPortal() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    // Check for remembered email in localStorage
+    const storedEmail = localStorage.getItem('rememberedEmail');
+    if (storedEmail) {
+      setFormData(prev => ({ ...prev, email: storedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,6 +55,13 @@ export default function ClientPortal() {
       // Store auth state
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userPhone', formData.email);
+
+      // Handle remember me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
 
       // Set cookies with debug logging
       console.log('Setting cookies...');
@@ -155,6 +172,8 @@ export default function ClientPortal() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="h-4 w-4 text-[#004D40] focus:ring-[#004D40] border-gray-300 rounded"
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
