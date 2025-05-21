@@ -11,7 +11,7 @@ import {
   EyeSlashIcon,
 } from '@heroicons/react/24/outline';
 import { useToast } from '../../context/ToastContext';
-import { requestVerificationCode,resetPassword, forgotPassword } from '../../services/auth';
+import { requestVerificationCode, resetPassword, forgotPassword } from '../../services/auth';
 
 
 type Step = 'email' | 'verify' | 'success';
@@ -57,10 +57,16 @@ export default function ForgotPassword() {
     try {
       // Simulate API call to send OTP
       await forgotPassword({ email });
+      // clear form data
+      setFormData({
+        newPassword: '',
+        confirmPassword: '',
+      });
+      setOtp('');
       setCurrentStep('verify');
       setCountdown(300);
       setCanResend(false);
-      showToast('OTP sent successfully', 'success');  
+      showToast('OTP sent successfully', 'success');
     } catch (error: any) {
       showToast(error.response?.data?.message || 'Error sending OTP', 'error');
     } finally {
@@ -91,7 +97,7 @@ export default function ForgotPassword() {
 
     try {
       // Simulate API call to verify OTP and reset password
-      await resetPassword({ reset_id:email, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
+      await resetPassword({ reset_id: email, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
       setCurrentStep('success');
       showToast('Password reset successfully', 'success');
       // Auto-redirect to dashboard after success

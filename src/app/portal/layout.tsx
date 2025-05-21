@@ -24,7 +24,7 @@ const menuItems = [
   { name: 'New Claim', href: '/portal/new-claim', icon: PlusCircleIcon },
   { name: 'Track Claim', href: '/portal/track-claim', icon: MagnifyingGlassIcon },
   { name: 'Profile', href: '/portal/profile', icon: UserIcon },
-  { name: 'Wallet', href: '/portal/wallet', icon: WalletIcon },
+  { name: 'Transactions', href: '/portal/wallet', icon: WalletIcon },
   { name: 'Settings', href: '/portal/settings', icon: Cog6ToothIcon },
   { name: 'Support', href: '/portal/support', icon: QuestionMarkCircleIcon },
 ];
@@ -41,8 +41,8 @@ export default function PortalLayout({
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const registrationData = localStorage.getItem('registrationData');
-    const userData = JSON.parse(registrationData || '{}')?.user || {};
+    const user = cookie().getCookie('user');
+    const userData = JSON.parse(user || '{}') || {};
     setUserName(`${userData.first_name || ''} ${userData.last_name || ''}`);
   }, []);
 

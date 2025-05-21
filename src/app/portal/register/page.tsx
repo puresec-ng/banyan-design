@@ -607,7 +607,7 @@ export default function Register() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || otp.length !== 6}
           className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Verifying...' : 'Verify OTP'}
@@ -688,7 +688,7 @@ export default function Register() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || pin.length !== 4 || confirmPin.length !== 4}
           className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Creating PIN...' : 'Create PIN'}

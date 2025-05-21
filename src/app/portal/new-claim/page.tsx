@@ -542,41 +542,6 @@ export default function NewClaim() {
               ))}
             </div>
 
-            {/* <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
-              <input
-                type="file"
-                multiple
-                className="hidden"
-                id="document-upload"
-                onChange={(e) => {
-                  const files = Array.from(e.target.files || []);
-                  // setFormData({ ...formData, documents: files });
-                }}
-              />
-              <label
-                htmlFor="document-upload"
-                className="cursor-pointer text-[#004D40] hover:text-[#003D30]"
-              >
-                <PhotoIcon className="w-12 h-12 mx-auto mb-4" />
-                <p className="text-lg font-medium">Upload Documents</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Drag and drop files here, or click to select files
-                </p>
-              </label>
-            </div> */}
-            {/* {formData.documents.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-medium text-gray-900 mb-3">Uploaded Files</h3>
-                <ul className="space-y-2">
-                  {formData.documents.map((file, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                      <DocumentTextIcon className="w-5 h-5" />
-                      {file.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )} */}
           </div>
         )}
 
@@ -697,14 +662,27 @@ export default function NewClaim() {
             </button>
           )}
           {currentStep < 4 ? (
-            <button
-              onClick={handleNext}
-              disabled={isSubmitting || (currentStep === 3 && !skipDocuments && !formData.documents.every(doc => doc.file))}
-              className="flex items-center gap-2 px-6 py-2 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30] transition-colors ml-auto disabled:opacity-50"
-            >
-              Next
-              <ArrowRightIcon className="w-5 h-5" />
-            </button>
+            <div className='flex items-center gap-2'>
+              {currentStep === 3 && (
+                <button
+                  onClick={() => setSkipDocuments(!skipDocuments)}
+                  className={`px-4 border border-gray-300 py-2 rounded-xl text-sm font-medium transition-colors ${skipDocuments
+                    ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  {skipDocuments ? 'Resume Upload' : 'Skip All Documents'}
+                </button>
+              )}
+              <button
+                onClick={handleNext}
+                disabled={isSubmitting || (currentStep === 3 && !skipDocuments && !formData.documents.every(doc => doc.file))}
+                className="flex items-center gap-2 px-6 py-2 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30] transition-colors ml-auto disabled:opacity-50"
+              >
+                Next
+                <ArrowRightIcon className="w-5 h-5" />
+              </button>
+            </div>
           ) : (
             <button
               onClick={handleSubmit}

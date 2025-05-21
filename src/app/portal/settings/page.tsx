@@ -68,6 +68,14 @@ export default function Settings() {
   });
   const [otp, setOtp] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+    matches: false
+  });
 
   useEffect(() => {
 
@@ -107,6 +115,14 @@ export default function Settings() {
       showToast('Password changed successfully', 'success');
       setActiveModal(null);
       setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordValidation({
+        hasMinLength: false,
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+        matches: false
+      });
     } catch (error: any) {
       showToast(error?.response?.data?.message || 'An error occurred', 'error');
     } finally {
@@ -214,7 +230,18 @@ export default function Settings() {
                   <input
                     type={showPasswords.newPassword ? 'text' : 'password'}
                     value={formData.newPassword}
-                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                    onChange={(e) => {
+                      const newPassword = e.target.value;
+                      setFormData({ ...formData, newPassword });
+                      setPasswordValidation({
+                        hasMinLength: newPassword.length >= 8,
+                        hasUpperCase: /[A-Z]/.test(newPassword),
+                        hasLowerCase: /[a-z]/.test(newPassword),
+                        hasNumber: /[0-9]/.test(newPassword),
+                        hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword),
+                        matches: newPassword === formData.confirmPassword
+                      });
+                    }}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
                   />
                   <button
@@ -229,9 +256,31 @@ export default function Settings() {
                     )}
                   </button>
                 </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  Password must be at least 8 characters long and contain uppercase, lowercase, numbers, and special characters.
-                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-gray-500">Password must contain:</p>
+                  <ul className="text-sm space-y-1">
+                    <li className={`flex items-center ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}>
+                      <span className="mr-2">{passwordValidation.hasMinLength ? '✓' : '○'}</span>
+                      At least 8 characters
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}>
+                      <span className="mr-2">{passwordValidation.hasUpperCase ? '✓' : '○'}</span>
+                      One uppercase letter
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}>
+                      <span className="mr-2">{passwordValidation.hasLowerCase ? '✓' : '○'}</span>
+                      One lowercase letter
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                      <span className="mr-2">{passwordValidation.hasNumber ? '✓' : '○'}</span>
+                      One number
+                    </li>
+                    <li className={`flex items-center ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                      <span className="mr-2">{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>
+                      One special character
+                    </li>
+                  </ul>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
@@ -239,8 +288,20 @@ export default function Settings() {
                   <input
                     type={showPasswords.confirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10"
+                    onChange={(e) => {
+                      const confirmPassword = e.target.value;
+                      setFormData({ ...formData, confirmPassword });
+                      setPasswordValidation(prev => ({
+                        ...prev,
+                        matches: formData.newPassword === confirmPassword
+                      }));
+                    }}
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent pr-10 ${formData.confirmPassword
+                      ? passwordValidation.matches
+                        ? 'border-green-500'
+                        : 'border-red-500'
+                      : 'border-gray-300'
+                      }`}
                   />
                   <button
                     type="button"
@@ -254,10 +315,13 @@ export default function Settings() {
                     )}
                   </button>
                 </div>
+                {formData.confirmPassword && !passwordValidation.matches && (
+                  <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+                )}
               </div>
               <button
                 onClick={handlePasswordChange}
-                disabled={isProcessing}
+                disabled={isProcessing || !Object.values(passwordValidation).every(Boolean)}
                 className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? 'Changing Password...' : 'Change Password'}
