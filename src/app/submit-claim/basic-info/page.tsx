@@ -19,6 +19,8 @@ export default function BasicInfo() {
     queryFn: getIncidentTypes,
   });
 
+  const { showToast } = useToast();
+
   useEffect(() => {
     if (insurers) {
       console.log('Insurers data:', insurers);
@@ -28,7 +30,7 @@ export default function BasicInfo() {
     }
   }, [insurers, incidentTypes]);
 
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     insuranceProvider: '',
     incidentType: '',
     incidentDate: '',
@@ -36,7 +38,9 @@ export default function BasicInfo() {
     incidentLocation: '',
     incidentDescription: '',
     policyNumber: ''
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
     // Check if user has completed previous steps
@@ -49,12 +53,36 @@ export default function BasicInfo() {
     // Load saved form data if it exists
     const savedData = localStorage.getItem('basicInfo');
     if (savedData) {
-      setFormData(JSON.parse(savedData));
+      try {
+        setFormData(JSON.parse(savedData));
+      } catch (e) {
+        console.error('Failed to parse basicInfo from localStorage', e);
+        // Optionally clear invalid data
+        localStorage.removeItem('basicInfo');
+      }
     }
   }, [router]);
 
+  const today = new Date().toISOString().split('T')[0];
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0,5);
+  };
+  const isTimeInFuture = (selectedDate: string, selectedTime: string) => {
+    if (selectedDate !== today) return false;
+    const now = new Date();
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const selectedDateTime = new Date();
+    selectedDateTime.setHours(hours, minutes, 0, 0);
+    return selectedDateTime > now;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === 'incidentTime' && isTimeInFuture(formData.incidentDate, value)) {
+      showToast('Cannot select a future time for today', 'error');
+      return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -64,6 +92,11 @@ export default function BasicInfo() {
 
   const handleContinue = () => {
     if (isFormValid()) {
+      // Final check for future time
+      if (isTimeInFuture(formData.incidentDate, formData.incidentTime)) {
+        showToast('Cannot select a future time for today', 'error');
+        return;
+      }
       const insurer = insurers?.find((i: Insurer) => i.name === formData.insuranceProvider);
       const incidentType = incidentTypes?.find((t: IncidentType) => t.name === formData.incidentType);
       localStorage.setItem('basicInfo', JSON.stringify({
@@ -76,12 +109,14 @@ export default function BasicInfo() {
   };
 
   const isFormValid = () => {
-    return formData.insuranceProvider &&
+    return (
+      formData.insuranceProvider &&
       formData.incidentType &&
       formData.incidentDate &&
       formData.incidentTime &&
       formData.incidentLocation &&
-      formData.incidentDescription;
+      formData.incidentDescription
+    );
   };
 
   return (
@@ -171,6 +206,7 @@ export default function BasicInfo() {
               name="incidentDate"
               value={formData.incidentDate}
               onChange={handleChange}
+              max={today}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
               required
             />
@@ -187,6 +223,7 @@ export default function BasicInfo() {
               name="incidentTime"
               value={formData.incidentTime}
               onChange={handleChange}
+              max={formData.incidentDate === today ? getCurrentTime() : undefined}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
               required
             />

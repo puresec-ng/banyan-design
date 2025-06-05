@@ -27,12 +27,12 @@ export default function ClientPortal() {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    // Check for remembered email in localStorage
     const storedEmail = localStorage.getItem('rememberedEmail');
+    const rememberMeChecked = localStorage.getItem('rememberMeChecked') === 'true';
     if (storedEmail) {
       setFormData(prev => ({ ...prev, email: storedEmail }));
-      setRememberMe(true);
     }
+    setRememberMe(rememberMeChecked);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,8 +59,10 @@ export default function ClientPortal() {
       // Handle remember me
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', formData.email);
+        localStorage.setItem('rememberMeChecked', 'true');
       } else {
         localStorage.removeItem('rememberedEmail');
+        localStorage.setItem('rememberMeChecked', 'false');
       }
 
       // Set cookies with debug logging
@@ -193,7 +195,7 @@ export default function ClientPortal() {
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !formData.email || !formData.password}
                 className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Logging in...' : 'Login'}

@@ -87,6 +87,23 @@ export default function NewClaim() {
     queryFn: getIncidentTypes,
   });
 
+  const today = new Date().toISOString().split('T')[0];
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0,5);
+  };
+
+  const isTimeInFuture = (selectedDate: string, selectedTime: string) => {
+    if (selectedDate !== today) return false;
+    
+    const now = new Date();
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const selectedDateTime = new Date();
+    selectedDateTime.setHours(hours, minutes, 0, 0);
+    
+    return selectedDateTime > now;
+  };
+
   useEffect(() => {
 
     const token = cookie().getCookie('token');
@@ -115,6 +132,14 @@ export default function NewClaim() {
       }
       if (!formData.incidentDate) {
         showToast('Please select an incident date', 'error');
+        return;
+      }
+      // Prevent future dates
+      const selectedDate = new Date(formData.incidentDate);
+      const now = new Date();
+      now.setHours(0,0,0,0);
+      if (selectedDate > now) {
+        showToast('Incident date cannot be in the future', 'error');
         return;
       }
       if (!formData.incidentTime) {
@@ -272,6 +297,17 @@ export default function NewClaim() {
     }
   }
 
+  const isDetailsStepValid = () => {
+    return (
+      formData.insuranceProvider &&
+      formData.incidentType &&
+      formData.incidentDate &&
+      formData.incidentTime &&
+      formData.incidentLocation.trim() !== '' &&
+      formData.description.trim() !== ''
+    );
+  };
+
   if (showSuccess) {
     return (
       <main className="container mx-auto px-4 py-8">
@@ -415,6 +451,7 @@ export default function NewClaim() {
                     type="date"
                     value={formData.incidentDate}
                     onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
+                    max={today}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                   />
                 </div>
@@ -425,7 +462,15 @@ export default function NewClaim() {
                   <input
                     type="time"
                     value={formData.incidentTime}
-                    onChange={(e) => setFormData({ ...formData, incidentTime: e.target.value })}
+                    onChange={(e) => {
+                      const newTime = e.target.value;
+                      if (!isTimeInFuture(formData.incidentDate, newTime)) {
+                        setFormData({ ...formData, incidentTime: newTime });
+                      } else {
+                        showToast('Cannot select a future time for today', 'error');
+                      }
+                    }}
+                    max={formData.incidentDate === today ? getCurrentTime() : undefined}
                     className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
                   />
                 </div>
@@ -676,11 +721,15 @@ export default function NewClaim() {
               )}
               <button
                 onClick={handleNext}
-                disabled={isSubmitting || (currentStep === 3 && !skipDocuments && !formData.documents.every(doc => doc.file))}
-                className="flex items-center gap-2 px-6 py-2 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30] transition-colors ml-auto disabled:opacity-50"
+                disabled={
+                  (currentStep === 1 && !formData.type) ||
+                  (currentStep === 2 && !isDetailsStepValid()) ||
+                  (currentStep === 3 && !skipDocuments && !formData.documents.every(doc => doc.file))
+                }
+                className="px-6 py-2 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 Next
-                <ArrowRightIcon className="w-5 h-5" />
+                <ArrowRightIcon className="w-6 h-6" />
               </button>
             </div>
           ) : (

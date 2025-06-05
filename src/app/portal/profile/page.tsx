@@ -28,7 +28,7 @@ const BANKS = [{ "code": "044", "name": "Access Bank" }, { "code": "035A", "name
 type VerificationMethod = 'email' | 'phone' | 'new-phone';
 
 // Add Snackbar component
-const Snackbar = ({ message, onClose }: { message: string; onClose: () => void }) => {
+const Snackbar = ({ message, onClose, type = 'success' }: { message: string; onClose: () => void; type?: 'success' | 'error' }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -38,8 +38,8 @@ const Snackbar = ({ message, onClose }: { message: string; onClose: () => void }
 
   return (
     <div className="fixed top-4 right-4 z-50">
-      <div className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-        <CheckCircleIcon className="w-5 h-5" />
+      <div className={`px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 ${type === 'error' ? 'bg-red-600' : 'bg-green-600'} text-white`}>
+        {type === 'error' ? <XCircleIcon className="w-5 h-5" /> : <CheckCircleIcon className="w-5 h-5" />}
         <span>{message}</span>
       </div>
     </div>
@@ -79,6 +79,9 @@ export default function Profile() {
   const [isEmailAvailable, setIsEmailAvailable] = useState(false);
   const [isLookingUpAccount, setIsLookingUpAccount] = useState(false);
   const [accountLookupError, setAccountLookupError] = useState('');
+  const [isEditingBank, setIsEditingBank] = useState(false);
+  const [snackbarType, setSnackbarType] = useState<'success' | 'error'>('success');
+  const [originalBankDetails, setOriginalBankDetails] = useState(bankDetails);
 
   useEffect(() => {
     // Check authentication
@@ -101,6 +104,13 @@ export default function Profile() {
   }, [router, isUserLoading, user]);
 
   const showSuccessMessage = (message: string) => {
+    setSnackbarType('success');
+    setSnackbarMessage(message);
+    setShowSnackbar(true);
+  };
+
+  const showErrorMessage = (message: string) => {
+    setSnackbarType('error');
     setSnackbarMessage(message);
     setShowSnackbar(true);
   };
@@ -197,28 +207,26 @@ export default function Profile() {
 
   const handleBankDetailsSave = async () => {
     try {
-      setIsUpdatingBankDetails(true)
-      // const resp = await updateProfile({
-      //   bank_name: bankDetails.bankName,
-      //   bank_account_number: bankDetails.accountNumber,
-      //   bank_account_name: bankDetails.accountName
-      // })
+      setIsUpdatingBankDetails(true);
       const resp2 = await storeBankAccount({
         bank_name: bankDetails.bankName,
         account_number: bankDetails.accountNumber,
         bank_account_name: bankDetails.accountName,
         bank_code: BANKS.find(bank => bank.name === bankDetails.bankName)?.code
-      })
+      });
       console.log(resp2, 'resp______');
-      setIsUpdatingBankDetails(false)
-      showSuccessMessage('Bank details updated successfully');
-
-
-    } catch (error) {
-      setIsUpdatingBankDetails(false)
-
+      if (resp2 && (resp2.success || resp2.status === 'success' || resp2.status === 200)) {
+        setIsUpdatingBankDetails(false);
+        showSuccessMessage('Bank details updated successfully');
+        setIsEditingBank(false);
+      } else {
+        setIsUpdatingBankDetails(false);
+        showErrorMessage(resp2?.message || 'Failed to update bank details. Please try again.');
+      }
+    } catch (error: any) {
+      setIsUpdatingBankDetails(false);
+      showErrorMessage(error?.response?.data?.message || error?.message || 'Failed to update bank details. Please try again.');
     }
-    // In a real app, this would make an API call to update bank details
   };
 
 
@@ -608,8 +616,15 @@ export default function Profile() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
               <select
                 value={bankDetails.bankName}
-                onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
+                onChange={(e) => {
+                  if (isEditingBank) {
+                    setBankDetails({ bankName: e.target.value, accountNumber: '', accountName: '' });
+                  } else {
+                    setBankDetails({ ...bankDetails, bankName: e.target.value });
+                  }
+                }}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                disabled={!isEditingBank}
               >
                 <option value="">Select a bank</option>
                 {BANKS.map((bank) => (
@@ -628,6 +643,7 @@ export default function Profile() {
                 className={`w-full p-2 border ${accountLookupError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent`}
                 maxLength={10}
                 placeholder="Enter account number"
+                disabled={!isEditingBank}
               />
               {isLookingUpAccount && (
                 <div className="mt-2 text-sm text-gray-500">
@@ -650,14 +666,40 @@ export default function Profile() {
                 placeholder="Account name will appear here"
               />
             </div>
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={handleBankDetailsSave}
-                disabled={isUpdatingBankDetails || !!accountLookupError || !bankDetails.accountName}
-                className={`px-6 py-2 ${isUpdatingBankDetails || !!accountLookupError || !bankDetails.accountName ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#004D40] hover:bg-[#003D30]'} text-white rounded-lg`}
-              >
-                {isUpdatingBankDetails ? 'Saving...' : 'Save Changes'}
-              </button>
+            <div className="flex justify-end pt-4 gap-2">
+              {isEditingBank ? (
+                <>
+                  <button
+                    onClick={async () => {
+                      await handleBankDetailsSave();
+                      // Only exit edit mode if save is successful (handled in handleBankDetailsSave)
+                    }}
+                    disabled={isUpdatingBankDetails || !!accountLookupError || !bankDetails.accountName}
+                    className={`px-6 py-2 ${isUpdatingBankDetails || !!accountLookupError || !bankDetails.accountName ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#004D40] hover:bg-[#003D30]'} text-white rounded-lg`}
+                  >
+                    {isUpdatingBankDetails ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setBankDetails(originalBankDetails);
+                      setIsEditingBank(false);
+                    }}
+                    className="px-6 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setOriginalBankDetails(bankDetails);
+                    setIsEditingBank(true);
+                  }}
+                  className="px-6 py-2 bg-[#004D40] hover:bg-[#003D30] text-white rounded-lg"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -682,14 +724,17 @@ export default function Profile() {
               </button>
             </div>
 
-            {verificationError && (
-              <div className="flex items-center gap-2 mb-4 text-red-600">
-                <XCircleIcon className="w-5 h-5" />
-                <span className="text-sm">{verificationError}</span>
-              </div>
+            {verificationStep === 'bvn' && (
+              <>
+                {renderBvnStep()}
+                {verificationError && (
+                  <div className="flex items-center gap-2 mt-2 text-red-600">
+                    <XCircleIcon className="w-5 h-5" />
+                    <span className="text-sm">{verificationError}</span>
+                  </div>
+                )}
+              </>
             )}
-
-            {verificationStep === 'bvn' && renderBvnStep()}
             {verificationStep === 'method' && renderMethodStep()}
             {verificationStep === 'otp' && renderOtpStep()}
             {verificationStep === 'success' && renderSuccessStep()}
@@ -701,6 +746,7 @@ export default function Profile() {
         <Snackbar
           message={snackbarMessage}
           onClose={() => setShowSnackbar(false)}
+          type={snackbarType}
         />
       )}
     </main>

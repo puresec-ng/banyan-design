@@ -6,12 +6,13 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
 export default function PersonalInfo() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     firstName: '',
     lastName: '',
     phoneNumber: '',
     email: ''
-  });
+  };
+  const [formData, setFormData] = useState(initialFormData);
   const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
@@ -26,7 +27,13 @@ export default function PersonalInfo() {
     const savedPersonalInfo = localStorage.getItem('personalInfo');
     console.log('savedPersonalInfo____', savedPersonalInfo);
     if (savedPersonalInfo) {
-      setFormData(JSON.parse(savedPersonalInfo));
+      try {
+        setFormData(JSON.parse(savedPersonalInfo));
+      } catch (e) {
+        console.error('Failed to parse personalInfo from localStorage', e);
+        // Optionally clear invalid data
+        localStorage.removeItem('personalInfo');
+      }
     }
   }, [router]);
 
@@ -74,6 +81,7 @@ export default function PersonalInfo() {
     return formData.firstName &&
       formData.lastName &&
       formData.phoneNumber &&
+      formData.email &&
       !phoneError;
   };
 
@@ -140,7 +148,7 @@ export default function PersonalInfo() {
           {/* Email Address */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address (Optional)
+              Email Address
             </label>
             <input
               type="email"
@@ -150,6 +158,7 @@ export default function PersonalInfo() {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
               placeholder="Enter your email address"
+              required
             />
           </div>
         </div>

@@ -18,12 +18,18 @@ export default function Sidebar() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
+    // Preserve remembered email if it exists
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
     // Clear auth state
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userPhone');
     localStorage.removeItem('registrationData');
     cookie().deleteCookie('token');
     cookie().deleteCookie('user');
+    // Restore remembered email if it was set
+    if (rememberedEmail) {
+      localStorage.setItem('rememberedEmail', rememberedEmail);
+    }
     // Redirect to login
     router.push('/portal');
   };

@@ -304,10 +304,10 @@ export default function DocumentUpload() {
         </button>
         <button
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || documents.some(doc => !doc.file)}
           className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Submitting...' : 'Submit Claim1'}
+          {loading ? 'Submitting...' : 'Submit Claim'}
         </button>
       </div>
     </div>
