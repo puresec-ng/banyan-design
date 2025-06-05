@@ -43,24 +43,24 @@ export default function BasicInfo() {
   const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
-    // Check if user has completed previous steps
-    const selectedType = localStorage.getItem('selectedClaimType');
-    if (!selectedType) {
-      router.push('/submit-claim');
-      return;
+    // Clear all claim data on initial load of this page if accessed directly
+    localStorage.removeItem('basicInfo');
+    localStorage.removeItem('personalInfo');
+    localStorage.removeItem('selectedClaimType');
+    localStorage.removeItem('documents');
+    localStorage.removeItem('submissionDetails');
+    localStorage.removeItem('claimNumber');
+
+    // Check if user has completed previous steps (though clearing above makes this less critical on direct access)
+    const selectedType = localStorage.getItem('selectedClaimType'); // This will likely be null after clearing
+    if (!selectedType && window.location.pathname === '/submit-claim/basic-info') {
+        // Optionally redirect to the start if basicInfo must be preceded by claim type selection
+        // router.push('/submit-claim');
+        // return;
     }
 
-    // Load saved form data if it exists
-    const savedData = localStorage.getItem('basicInfo');
-    if (savedData) {
-      try {
-        setFormData(JSON.parse(savedData));
-      } catch (e) {
-        console.error('Failed to parse basicInfo from localStorage', e);
-        // Optionally clear invalid data
-        localStorage.removeItem('basicInfo');
-      }
-    }
+    // Note: No longer loading saved data here as per requirement to start fresh from this URL.
+
   }, [router]);
 
   const today = new Date().toISOString().split('T')[0];
