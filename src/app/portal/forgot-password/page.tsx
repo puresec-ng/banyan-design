@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,9 +12,20 @@ import {
 } from '@heroicons/react/24/outline';
 import { useToast } from '../../context/ToastContext';
 import { requestVerificationCode, resetPassword, forgotPassword } from '../../services/auth';
+import React from 'react';
 
 
 type Step = 'email' | 'verify' | 'success';
+
+// Add password validation helper
+const validatePassword = (password: string, confirmPassword: string) => ({
+  hasMinLength: password.length >= 8,
+  hasUpperCase: /[A-Z]/.test(password),
+  hasLowerCase: /[a-z]/.test(password),
+  hasNumber: /[0-9]/.test(password),
+  hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+  matches: password === confirmPassword && password.length > 0
+});
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -31,6 +42,16 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(300); // 5 minutes in seconds
   const [canResend, setCanResend] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+    matches: false
+  });
+  const [resetId, setResetId] = useState<string>('');
+  const resetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -55,8 +76,23 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to send OTP
-      await forgotPassword({ email });
+      // Call forgotPassword and store reset_id
+      const response = await forgotPassword({ email });
+      console.log('forgotPassword response:', response);
+      let reset_id = '';
+      if (response && typeof response === 'object') {
+        if ('data' in response && response.data && typeof response.data === 'object' && 'reset_id' in response.data) {
+          reset_id = response.data.reset_id;
+        } else if ('reset_id' in response) {
+          reset_id = (response as any).reset_id;
+        }
+      }
+      console.log('Storing reset_id:', reset_id);
+      resetIdRef.current = reset_id;
+      if (reset_id) {
+        localStorage.setItem('reset_id', reset_id);
+        console.log('localStorage reset_id:', localStorage.getItem('reset_id'));
+      }
       // clear form data
       setFormData({
         newPassword: '',
@@ -96,16 +132,19 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to verify OTP and reset password
-      await resetPassword({ reset_id: email, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
+      // Retrieve reset_id from ref or localStorage
+      const reset_id = resetIdRef.current || localStorage.getItem('reset_id') || '';
+      // Log the payload before calling resetPassword
+      console.log('resetPassword payload:', {
+        reset_id,
+        otp,
+        password: formData.newPassword,
+        password_confirmation: formData.confirmPassword
+      });
+      await resetPassword({ reset_id, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
       setCurrentStep('success');
       showToast('Password reset successfully', 'success');
-      // Auto-redirect to dashboard after success
       setTimeout(() => {
-        // Set authentication state
-        // localStorage.setItem('isAuthenticated', 'true');
-        // localStorage.setItem('userEmail', email);
-        // Redirect to dashboard
         router.push('/portal');
       }, 1000);
     } catch (error: any) {
@@ -113,6 +152,25 @@ export default function ForgotPassword() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Update password validation on input change
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setFormData((prev) => {
+      const updated = { ...prev, newPassword };
+      setPasswordValidation(validatePassword(newPassword, prev.confirmPassword));
+      return updated;
+    });
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const confirmPassword = e.target.value;
+    setFormData((prev) => {
+      const updated = { ...prev, confirmPassword };
+      setPasswordValidation(validatePassword(prev.newPassword, confirmPassword));
+      return updated;
+    });
   };
 
   const renderEmailStep = () => (
@@ -178,7 +236,7 @@ export default function ForgotPassword() {
             Enter OTP
           </label>
           <p className="mt-1 text-sm text-gray-500">
-            Enter the 6-digit code sent to {email}
+            Enter the 5-digit code sent to {email}
           </p>
           <div className="mt-2">
             <input
@@ -186,9 +244,9 @@ export default function ForgotPassword() {
               name="otp"
               type="text"
               required
-              maxLength={6}
+              maxLength={5}
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 5))}
               className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm"
             />
           </div>
@@ -221,8 +279,8 @@ export default function ForgotPassword() {
               type={showPassword ? 'text' : 'password'}
               required
               value={formData.newPassword}
-              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm"
+              onChange={handlePasswordChange}
+              className={`appearance-none block w-full px-3 py-2 border ${formData.newPassword && !passwordValidation.hasMinLength ? 'border-red-500' : 'border-gray-300'} rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm`}
             />
             <button
               type="button"
@@ -235,6 +293,16 @@ export default function ForgotPassword() {
                 <EyeIcon className="h-5 w-5" />
               )}
             </button>
+          </div>
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-gray-500">Password must contain:</p>
+            <ul className="text-sm space-y-1">
+              <li className={`flex items-center ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasMinLength ? '✓' : '○'}</span>At least 8 characters</li>
+              <li className={`flex items-center ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasUpperCase ? '✓' : '○'}</span>One uppercase letter</li>
+              <li className={`flex items-center ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasLowerCase ? '✓' : '○'}</span>One lowercase letter</li>
+              <li className={`flex items-center ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasNumber ? '✓' : '○'}</span>One number</li>
+              <li className={`flex items-center ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>One special character</li>
+            </ul>
           </div>
         </div>
 
@@ -249,8 +317,8 @@ export default function ForgotPassword() {
               type={showConfirmPassword ? 'text' : 'password'}
               required
               value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm"
+              onChange={handleConfirmPasswordChange}
+              className={`appearance-none block w-full px-3 py-2 border ${formData.confirmPassword && !passwordValidation.matches ? 'border-red-500' : 'border-gray-300'} rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm`}
             />
             <button
               type="button"
@@ -264,11 +332,14 @@ export default function ForgotPassword() {
               )}
             </button>
           </div>
+          {formData.confirmPassword && !passwordValidation.matches && (
+            <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+          )}
         </div>
 
         <button
           type="submit"
-          disabled={isLoading || !otp || !formData.newPassword || !formData.confirmPassword}
+          disabled={isLoading || otp.length !== 5 || !Object.values(passwordValidation).every(Boolean)}
           className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-[#004D40] hover:bg-[#003D30] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? 'Resetting Password...' : 'Reset Password'}

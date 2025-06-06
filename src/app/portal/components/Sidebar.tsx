@@ -20,16 +20,18 @@ export default function Sidebar() {
   const handleLogout = () => {
     // Preserve remembered email if it exists
     const rememberedEmail = localStorage.getItem('rememberedEmail');
-    // Clear auth state
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('registrationData');
-    cookie().deleteCookie('token');
-    cookie().deleteCookie('user');
+    // Clear all localStorage
+    localStorage.clear();
     // Restore remembered email if it was set
     if (rememberedEmail) {
       localStorage.setItem('rememberedEmail', rememberedEmail);
     }
+    // Clear all user-related cookies
+    cookie().deleteCookie('token');
+    cookie().deleteCookie('user');
+    // Add more cookies here if needed
+    // Invalidate or refetch queries here if using React Query
+    // Example: queryClient.clear() or queryClient.invalidateQueries()
     // Redirect to login
     router.push('/portal');
   };

@@ -206,6 +206,7 @@ export default function Profile() {
   };
 
   const handleBankDetailsSave = async () => {
+    console.log('handleBankDetailsSave called');
     try {
       setIsUpdatingBankDetails(true);
       const resp2 = await storeBankAccount({
@@ -214,8 +215,10 @@ export default function Profile() {
         bank_account_name: bankDetails.accountName,
         bank_code: BANKS.find(bank => bank.name === bankDetails.bankName)?.code
       });
-      console.log(resp2, 'resp______');
-      if (resp2 && (resp2.success || resp2.status === 'success' || resp2.status === 200)) {
+      console.log('API response:', resp2);
+      const isSuccess = resp2 && resp2.account_name && resp2.account_bank;
+      console.log('isSuccess:', isSuccess);
+      if (isSuccess) {
         setIsUpdatingBankDetails(false);
         showSuccessMessage('Bank details updated successfully');
         setIsEditingBank(false);
@@ -593,7 +596,12 @@ export default function Profile() {
               </div>
             ) : (
               <button
-                onClick={() => setShowVerificationModal(true)}
+                onClick={() => {
+                  localStorage.removeItem('bvn');
+                  localStorage.removeItem('bvnDetails');
+                  setBvn('');
+                  setShowVerificationModal(true);
+                }}
                 className="px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30]"
               >
                 Verify BVN

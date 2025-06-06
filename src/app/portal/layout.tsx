@@ -57,12 +57,14 @@ export default function PortalLayout({
   }
 
   const handleLogout = () => {
-    // Clear auth state
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userPhone');
-    localStorage.removeItem('registrationData');
+    // Clear all localStorage
+    localStorage.clear();
+    // Clear all user-related cookies
     cookie().deleteCookie('token');
     cookie().deleteCookie('user');
+    // Add more cookies here if needed
+    // Invalidate or refetch queries here if using React Query
+    // Example: queryClient.clear() or queryClient.invalidateQueries()
     // Redirect to login
     router.push('/portal');
   };

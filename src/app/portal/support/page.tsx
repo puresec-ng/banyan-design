@@ -40,7 +40,7 @@ export default function Support() {
 
   const contactInfo = {
     phone: '020 133 06325',
-    whatsapp: '020 133 06325',
+    whatsapp: '+234 813 855 9101',
     email: 'enquiries@banyanclaims.com'
   };
 
@@ -124,6 +124,30 @@ export default function Support() {
               </div>
               <div className="text-[#004D40]">
                 <EnvelopeIcon className="w-5 h-5" />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer" onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=EridanSpace,+The+Philippi+Centre,+Oluwalogbon+House,+Plot+A+Obafemi+Awolowo+Way,+Alausa,+Ikeja,+Lagos', '_blank')}>
+              <div className="flex items-center gap-3">
+                <div className="bg-[#004D40] p-2 rounded-full">
+                  {/* Location icon solid */}
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">Address</h3>
+                  <p className="text-sm text-gray-500">EridanSpace, The Philippi Centre, Oluwalogbon House, Plot A Obafemi Awolowo Way, Alausa, Ikeja, Lagos</p>
+                </div>
+              </div>
+              <div className="text-[#004D40]">
+                {/* Location icon outline */}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
               </div>
             </div>
           </div>

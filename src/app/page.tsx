@@ -199,7 +199,7 @@ export default function Home() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-xl font-bold mb-2">Visit Us</h3>
-                  <p className="text-gray-600">123 Insurance Street, Lagos, Nigeria</p>
+                  <p className="text-gray-600">EridanSpace, The Philippi Centre, Oluwalogbon House, Plot A Obafemi Awolowo Way, Alausa, Ikeja, Lagos</p>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">Contact</h3>

@@ -584,30 +584,27 @@ export default function Register() {
         Verify Your Account
       </h1>
 
-      <form onSubmit={handleOtpSubmit} className="space-y-4">
-        <div className="text-center mb-4">
-          <p className="text-sm text-gray-600">
-            We've sent a verification code to your email and phone number
-          </p>
-        </div>
-
+      <form onSubmit={handleOtpSubmit} className="space-y-6">
         <div>
           <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
-            Enter Verification Code
+            Enter OTP
           </label>
           <input
             id="otp"
+            name="otp"
             type="text"
+            maxLength={5}
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            maxLength={6}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 5))}
             className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent text-center text-lg tracking-widest"
+            placeholder="Enter 5-digit OTP"
+            required
           />
         </div>
 
         <button
           type="submit"
-          disabled={isLoading || otp.length !== 6}
+          disabled={isLoading || otp.length !== 5}
           className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Verifying...' : 'Verify OTP'}
