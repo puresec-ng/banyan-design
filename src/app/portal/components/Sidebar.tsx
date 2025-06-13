@@ -38,7 +38,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="bg-white h-screen w-64 fixed left-0 top-0 border-r border-gray-200">
+      <aside className="bg-white min-h-screen w-64 fixed left-0 top-0 border-r border-gray-200">
         <div className="p-4">
           <Link href="/portal/dashboard">
             <div className="relative w-32 h-12">

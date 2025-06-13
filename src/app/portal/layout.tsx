@@ -91,7 +91,7 @@ export default function PortalLayout({
       {/* Sidebar */}
       <div className={`fixed top-0 left-0 w-64 transform transition-transform duration-200 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 z-30`}>
-        <div className="flex flex-col h-screen bg-white border-r border-gray-200">
+        <div className="flex flex-col min-h-screen bg-white border-r border-gray-200">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200">
             <Link href="/" className="flex items-center">
