@@ -82,6 +82,7 @@ export default function Profile() {
   const [isEditingBank, setIsEditingBank] = useState(false);
   const [snackbarType, setSnackbarType] = useState<'success' | 'error'>('success');
   const [originalBankDetails, setOriginalBankDetails] = useState(bankDetails);
+  const [bvnSessionId, setBvnSessionId] = useState<string>('');
 
   useEffect(() => {
     // Check authentication
@@ -239,21 +240,19 @@ export default function Profile() {
       setIsVerifying(true);
       setVerificationError('');
 
-
       const response = await bvnLookup({ bvn });
-      console.log(response, 'response______');
+      const methods = response?.data?.methods || [];
+      const emailMethod = methods.find(m => m.method === 'email');
+      const phoneMethod = methods.find(m => m.method === 'phone');
 
-      // Mock BVN lookup result
-      // setBvnDetails(MOCK_BVN_DETAILS);
       setBvnDetails({
-        email: user?.email || '',
-        phoneNumber: user?.phone || '',
-        firstName: user?.first_name || '',
-        lastName: user?.last_name || '',
+        email: emailMethod?.hint?.replace(/^.*to\s*/, '') || '',
+        phoneNumber: phoneMethod?.hint?.replace(/^.*to\s*/, '') || '',
       });
+      setBvnSessionId(response?.data?.session_id || '');
       setVerificationStep('method');
     } catch (error: any) {
-      setVerificationError(error?.message || 'An error occurred during BVN lookup. Please try again.');
+      showErrorMessage(error?.message || 'An error occurred during BVN lookup. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -271,7 +270,7 @@ export default function Profile() {
       // }
 
       const response = await setBvnVerificationMethod({
-        request_id: "74c8fe70-ea2c-458e-a99f-3f7a6061632c",
+        request_id: bvnSessionId,
         otp_method: method === "new-phone" ? "phone" : method,
         ...(method === "new-phone" && { phone: alternativePhone }),
       });
@@ -279,7 +278,7 @@ export default function Profile() {
 
       setVerificationStep('otp');
     } catch (error) {
-      setVerificationError('An error occurred. Please try again.');
+      showErrorMessage('An error occurred. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -293,7 +292,7 @@ export default function Profile() {
       // Simulate OTP verification
       // await new Promise(resolve => setTimeout(resolve, 2000));
       const response = await validateBvnOtp({
-        request_id: "74c8fe70-ea2c-458e-a99f-3f7a6061632c",
+        request_id: bvnSessionId,
         otp: otp,
       });
       console.log(response, 'response______');
@@ -304,7 +303,7 @@ export default function Profile() {
       showSuccessMessage('BVN verified successfully');
 
     } catch (error: any) {
-      setVerificationError(error?.message || 'An error occurred during verification. Please try again.');
+      showErrorMessage(error?.message || 'An error occurred during verification. Please try again.');
     } finally {
       setIsVerifying(false);
     }
