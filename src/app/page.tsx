@@ -204,7 +204,6 @@ export default function Home() {
                 <div>
                   <h3 className="text-xl font-bold mb-2">Contact</h3>
                   <p className="text-gray-600">Phone: 02013306325</p>
-                  <p className="text-gray-600">WhatsApp: +234 813 855 9101</p>
                   <p className="text-gray-600">Email: enquiries@banyanclaims.com</p>
                 </div>
                 <div>
