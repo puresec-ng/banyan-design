@@ -3,7 +3,7 @@
 A modern, technology-driven insurance claims management platform built with Next.js and Tailwind CSS.
 
 ## Features
-- User registration and secure authentication (with OTP verification)
+- User registration and authentication (with OTP verification)
 - BVN (Bank Verification Number) validation and verification flow
 - Submit and track insurance claims online
 - Upload and manage required claim documents
