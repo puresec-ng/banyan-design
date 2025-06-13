@@ -1,4 +1,17 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Banyan Claims Consultant Limited
+
+A modern, technology-driven insurance claims management platform built with Next.js and Tailwind CSS.
+
+## Features
+- User registration and secure authentication (with OTP verification)
+- BVN (Bank Verification Number) validation and verification flow
+- Submit and track insurance claims online
+- Upload and manage required claim documents
+- Responsive, mobile-friendly design
+- Contact and support options (phone, WhatsApp, email)
+- Admin and user dashboard views
+- Toast notifications for user feedback
+- Built-in troubleshooting and error handling
 
 ## Getting Started
 
