@@ -157,13 +157,20 @@ export default function Register() {
 
   // Modify the debounced phone check
   const debouncedPhoneCheck = debounce(async (phone: string) => {
+    // Format phone number for backend check
+    let formattedPhone = phone;
+    if (formattedPhone.startsWith('+234') && formattedPhone.length === 14) {
+      formattedPhone = '0' + formattedPhone.slice(4);
+    } else if (formattedPhone.startsWith('234') && formattedPhone.length === 13) {
+      formattedPhone = '0' + formattedPhone.slice(3);
+    }
     const validation = validateNigerianPhoneNumber(phone);
     setPhoneValidation(validation);
 
     if (validation.hasValidFormat) {
       setPhoneFieldValidation(prev => ({ ...prev, isChecking: true }));
       try {
-        await checkPhone({ phone });
+        await checkPhone({ phone: formattedPhone });
         setPhoneFieldValidation({
           isValid: true,
           message: '',
@@ -233,11 +240,20 @@ export default function Register() {
 
     try {
       setIsLoading(true);
+      // Format phone number for backend
+      let formattedPhone = formData.phoneNumber;
+      if (formattedPhone.startsWith('+234') && formattedPhone.length === 14) {
+        // Convert '+234XXXXXXXXXX' to '0XXXXXXXXXX'
+        formattedPhone = '0' + formattedPhone.slice(4);
+      } else if (formattedPhone.startsWith('234') && formattedPhone.length === 13) {
+        // Convert '234XXXXXXXXXX' to '0XXXXXXXXXX'
+        formattedPhone = '0' + formattedPhone.slice(3);
+      }
       const payload = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        phone: formData.phoneNumber,
+        phone: formattedPhone,
         password: formData.password,
         accept_tc: 'yes',
         referral_code: '',
@@ -583,7 +599,9 @@ export default function Register() {
       <h1 className="text-2xl font-semibold text-gray-900 text-center mb-6">
         Verify Your Account
       </h1>
-
+      <p className="text-center text-gray-600 mb-4">
+        Enter the 5-digit code sent to your email address ({formData.email})
+      </p>
       <form onSubmit={handleOtpSubmit} className="space-y-6">
         <div>
           <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">

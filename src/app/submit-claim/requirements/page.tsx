@@ -130,6 +130,14 @@ export default function DocumentRequirements() {
               </div>
             </div>
           ))}
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <DocumentTextIcon className="w-6 h-6 text-[#004D40] flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-medium text-gray-900">Any additional document</h3>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
