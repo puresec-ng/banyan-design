@@ -35,6 +35,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body className={`${lato.variable} ${roboto.variable} ${montserrat.variable} font-roboto`}>
         <ReactQueryProvider>
           <ToastProvider>
