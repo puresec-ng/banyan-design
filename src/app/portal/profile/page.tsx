@@ -26,6 +26,11 @@ interface BvnLookupResponse {
   };
 }
 
+interface BvnDetails {
+  email: string;
+  phoneNumber: string;
+}
+
 // Mock BVN lookup response
 const MOCK_BVN_DETAILS = {
   email: 'john@example.com',
@@ -77,7 +82,7 @@ export default function Profile() {
   const [isBvnVerified, setIsBvnVerified] = useState(user?.bvn_verified ? true : false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationStep, setVerificationStep] = useState<'bvn' | 'method' | 'new-phone' | 'otp' | 'success'>('bvn');
-  const [bvnDetails, setBvnDetails] = useState<typeof MOCK_BVN_DETAILS | null>(null);
+  const [bvnDetails, setBvnDetails] = useState<BvnDetails | null>(null);
   const [alternativePhone, setAlternativePhone] = useState('');
   const [otp, setOtp] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
