@@ -14,6 +14,18 @@ interface EmailCheckResponse {
   exists: boolean;
 }
 
+interface BvnMethod {
+  method: string;
+  hint: string;
+}
+
+interface BvnLookupResponse {
+  data: {
+    methods: BvnMethod[];
+    session_id: string;
+  };
+}
+
 // Mock BVN lookup response
 const MOCK_BVN_DETAILS = {
   email: 'john@example.com',
@@ -242,8 +254,8 @@ export default function Profile() {
 
       const response = await bvnLookup({ bvn });
       const methods = response?.data?.methods || [];
-      const emailMethod = methods.find(m => m.method === 'email');
-      const phoneMethod = methods.find(m => m.method === 'phone');
+      const emailMethod = methods.find((m: BvnMethod) => m.method === 'email');
+      const phoneMethod = methods.find((m: BvnMethod) => m.method === 'phone');
 
       setBvnDetails({
         email: emailMethod?.hint?.replace(/^.*to\s*/, '') || '',
