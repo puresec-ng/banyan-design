@@ -13,7 +13,7 @@ import {
 import { useToast } from '../../context/ToastContext';
 import { requestVerificationCode, resetPassword, forgotPassword } from '../../services/auth';
 import { useApiError } from '../../utils/http';
-import { cookie } from '../../utils/cookie';
+import cookie from '../../utils/cookie';
 import React from 'react';
 
 type Step = 'email' | 'verify' | 'success';
@@ -83,8 +83,9 @@ export default function ForgotPassword() {
 
     try {
       const response = await forgotPassword({ email });
-      resetIdRef.current = response.reset_id || '';
-      localStorage.setItem('reset_id', response.reset_id || '');
+      const reset_id = response.data?.reset_id || response.data?.data?.reset_id || '';
+      resetIdRef.current = reset_id;
+      localStorage.setItem('reset_id', reset_id);
       setFormData({
         newPassword: '',
         confirmPassword: '',

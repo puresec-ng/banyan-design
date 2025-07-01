@@ -42,7 +42,7 @@ export default function PortalLayout({
 
   const updateUserName = () => {
     const user = cookie().getCookie('user');
-    let userData = {};
+    let userData: { first_name?: string; last_name?: string } = {};
     
     try {
       if (user && user !== 'undefined' && user !== 'null') {
