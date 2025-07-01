@@ -14,6 +14,8 @@ import {
 import { changePassword, updatePin } from '@/app/services/dashboard/user-management';
 import { useToast } from '@/app/context/ToastContext';
 import cookie from '@/app/utils/cookie';
+import { useApiError } from '../../utils/http';
+
 const validatePassword = (password: string) => {
   const minLength = 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -47,6 +49,7 @@ const validatePassword = (password: string) => {
 export default function Settings() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [activeModal, setActiveModal] = useState<'password' | 'pin' | 'reset-pin' | null>(null);
@@ -124,7 +127,9 @@ export default function Settings() {
         matches: false
       });
     } catch (error: any) {
-      showToast(error?.response?.data?.message || 'An error occurred', 'error');
+      console.log('Error changing password:', error);
+      const errorMessage = handleApiError(error, 'An error occurred');
+      showToast(errorMessage, 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -132,14 +137,13 @@ export default function Settings() {
 
   const handlePinChange = async () => {
     if (formData.newPin !== formData.confirmPin) {
-      showSuccessMessage('PINs do not match');
+      showToast('PINs do not match', 'error');
       return;
     }
+
     try {
       setIsProcessing(true);
       const data = {
-
-
         current_pin: formData.currentPin,
         new_pin: formData.newPin,
         new_pin_confirmation: formData.newPin
@@ -150,7 +154,9 @@ export default function Settings() {
       setActiveModal(null);
       setFormData({ ...formData, currentPin: '', newPin: '', confirmPin: '' });
     } catch (error: any) {
-      showToast(error?.response?.data?.message || 'An error occurred', 'error');
+      console.log('Error updating PIN:', error);
+      const errorMessage = handleApiError(error, 'An error occurred');
+      showToast(errorMessage, 'error');
     } finally {
       setIsProcessing(false);
     }

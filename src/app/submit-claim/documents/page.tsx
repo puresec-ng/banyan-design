@@ -6,6 +6,7 @@ import { DocumentTextIcon, XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/2
 import { IncidentType, getIncidentTypes, uploadDocument, submitClaim } from '@/app/services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
+import { useApiError } from '../../utils/http';
 
 interface Document {
   id: string;
@@ -35,6 +36,7 @@ export default function DocumentUpload() {
     queryKey: ['incidentTypes'],
     queryFn: getIncidentTypes,
   });
+  const { handleApiError } = useApiError();
 
   useEffect(() => {
 
@@ -100,7 +102,8 @@ export default function DocumentUpload() {
       ));
       showToast('File uploaded successfully', 'success');
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Failed to upload file. Please try again.', 'error');
+      const errorMessage = handleApiError(error, 'Failed to upload file. Please try again.');
+      showToast(errorMessage, 'error');
       console.error('Error uploading file:', error);
     } finally {
       setUploading(false);

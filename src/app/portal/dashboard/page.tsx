@@ -26,7 +26,8 @@ import {
   PaperClipIcon,
 } from '@heroicons/react/24/outline';
 import { getSubmitedClaims, ClaimData, uploadClaimDocument } from '../../services/dashboard';
-import { uploadDocument, } from '@/app/services/public';
+import { uploadDocument } from '../../services/public';
+import { useApiError } from '../../utils/http';
 
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
@@ -250,6 +251,7 @@ const MOCK_USER = {
 export default function Dashboard() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
 
   const [statusFilter, setStatusFilter] = useState<StatusType | 'ALL'>('ALL');
 
@@ -311,7 +313,8 @@ export default function Dashboard() {
     } catch (error: any) {
       setUploadingDocument(false);
       console.log(error, 'error______');
-      showToast(error?.response?.data?.message || "Error uploading document", "error");
+      const errorMessage = handleApiError(error, 'Error uploading document');
+      showToast(errorMessage, 'error');
     }
   }
 
@@ -356,7 +359,7 @@ export default function Dashboard() {
           <div className="p-6 flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#004D40]"></div>
           </div>
-        ) : claims?.data.data.length === 0 ? (
+        ) : !claims || !claims.data || !claims.data.data || claims.data.data.length === 0 ? (
           <div className="p-6 text-center">
             <div className="mb-4">
               <ClipboardDocumentListIcon className="w-12 h-12 text-gray-400 mx-auto" />
@@ -366,7 +369,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="divide-y">
-            {claims?.data.data?.map((claim: ClaimData) => (
+            {claims.data.data?.map((claim: ClaimData) => (
               <div key={claim.claim_number} className="p-6">
                 <div className="flex justify-between items-start">
                   <div>

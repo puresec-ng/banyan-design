@@ -40,11 +40,30 @@ export default function PortalLayout({
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [userName, setUserName] = useState('');
 
-  useEffect(() => {
+  const updateUserName = () => {
     const user = cookie().getCookie('user');
-    const userData = JSON.parse(user || '{}') || {};
+    let userData = {};
+    
+    try {
+      if (user && user !== 'undefined' && user !== 'null') {
+        userData = JSON.parse(user);
+      }
+    } catch (error) {
+      console.error('Error parsing user cookie:', error);
+      userData = {};
+    }
+    
     setUserName(`${userData.first_name || ''} ${userData.last_name || ''}`);
+  };
+
+  useEffect(() => {
+    updateUserName();
   }, []);
+
+  // Listen for route changes to update username when navigating
+  useEffect(() => {
+    updateUserName();
+  }, [pathname]);
 
   // Check if we're on the login or forgot-password page
   const isLoginPage = pathname === '/portal';
@@ -57,8 +76,21 @@ export default function PortalLayout({
   }
 
   const handleLogout = () => {
-    // Clear all localStorage
+    // Store remember me data before clearing
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    const rememberMeChecked = localStorage.getItem('rememberMeChecked');
+    
+    // Clear all localStorage except remember me data
     localStorage.clear();
+    
+    // Restore remember me data if it existed
+    if (rememberedEmail) {
+      localStorage.setItem('rememberedEmail', rememberedEmail);
+    }
+    if (rememberMeChecked) {
+      localStorage.setItem('rememberMeChecked', rememberMeChecked);
+    }
+    
     // Clear all user-related cookies
     cookie().deleteCookie('token');
     cookie().deleteCookie('user');

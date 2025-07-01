@@ -13,10 +13,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../context/ToastContext';
 import { login } from '../services/auth';
 import cookie from '../utils/cookie';
+import { useApiError } from '../utils/http';
 
 export default function ClientPortal() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -42,8 +44,12 @@ export default function ClientPortal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
+    console.log('About to call login API...');
+    
     try {
       setIsLoading(true);
+      console.log('Calling login function...');
       const response = await login(formData);
       console.log('Login response:', response);
 
@@ -71,12 +77,22 @@ export default function ClientPortal() {
       cookie().setCookie('user', JSON.stringify(response.user));
       console.log('Cookies after setting:', document.cookie);
 
-      // Redirect to dashboard
-      router.push('/portal/dashboard');
+      // Small delay to ensure cookies are set before redirect
+      setTimeout(() => {
+        // Redirect to dashboard
+        router.push('/portal/dashboard');
+      }, 100);
 
     } catch (error: any) {
       console.log('Login error:', error);
-      showToast(error.response?.data?.message || 'Invalid email or password', 'error');
+      console.log('Error details:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      const errorMessage = handleApiError(error, 'Invalid email or password');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }

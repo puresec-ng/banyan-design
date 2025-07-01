@@ -6,11 +6,13 @@ import { ArrowLeftIcon, ArrowRightIcon, DocumentTextIcon, ArrowUpTrayIcon } from
 import { getIncidentTypes, IncidentType, submitClaim } from '../../services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
+import { useApiError } from '../../utils/http';
 
 
 export default function DocumentRequirements() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
   const [claimType, setClaimType] = useState<string>('');
   const [documents, setDocuments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,7 +101,8 @@ export default function DocumentRequirements() {
       // Navigate to success page
       router.push('/submit-claim/success');
     } catch (error: any) {
-      showToast(error.response.data.message || 'Failed to submit claim. Please try again.', 'error');
+      const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
+      showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
     }

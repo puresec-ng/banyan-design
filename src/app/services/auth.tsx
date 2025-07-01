@@ -43,8 +43,11 @@ export const setBusinessDetails = (payload: {
   industry: "string";
 }) => Http.post(`/auth/set-details`, payload);
 
-export const login = (payload: { email: string; password: string }): Promise<RegisterResponse> =>
-  Http.post(`/auth/login`, payload);
+export const login = (payload: { email: string; password: string }): Promise<RegisterResponse> => {
+  console.log('Login function called with payload:', payload);
+  console.log('Making API call to /auth/login...');
+  return Http.post(`/auth/login`, payload);
+};
 
 export const register = (payload: RegisterPayload): Promise<RegisterResponse> =>
   Http.post(`/auth/register`, payload);

@@ -9,6 +9,7 @@ import { useToast } from '@/app/context/ToastContext';
 import { getProfile, lookupBankAccount, storeBankAccount, updateProfile, setBvnVerificationMethod, validateBvnOtp, bvnLookup, } from '@/app/services/dashboard/user-management';
 import { useQuery } from "@tanstack/react-query";
 import { checkEmail, } from '../../services/auth';
+import { useApiError } from '../../utils/http';
 
 interface EmailCheckResponse {
   exists: boolean;
@@ -65,6 +66,8 @@ const Snackbar = ({ message, onClose, type = 'success' }: { message: string; onC
 
 export default function Profile() {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { handleApiError } = useApiError();
   // const userCookie = cookie().getCookie('user');
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ['user'],
@@ -178,7 +181,8 @@ export default function Profile() {
         // setIsEditing(false);
         showSuccessMessage('Email updated successfully');
       } catch (error: any) {
-        setEmailError(error?.message || 'An error occurred during email update. Please try again.');
+        const errorMessage = handleApiError(error, 'An error occurred during email update. Please try again.');
+        setEmailError(errorMessage);
       } finally {
         setIsLoading(false);
         // setIsEditing(false);
@@ -242,11 +246,13 @@ export default function Profile() {
         setIsEditingBank(false);
       } else {
         setIsUpdatingBankDetails(false);
-        showErrorMessage(resp2?.message || 'Failed to update bank details. Please try again.');
+        const errorMessage = handleApiError(resp2, 'Failed to update bank details. Please try again.');
+        showErrorMessage(errorMessage);
       }
     } catch (error: any) {
       setIsUpdatingBankDetails(false);
-      showErrorMessage(error?.response?.data?.message || error?.message || 'Failed to update bank details. Please try again.');
+      const errorMessage = handleApiError(error, 'Failed to update bank details. Please try again.');
+      showErrorMessage(errorMessage);
     }
   };
 
@@ -269,7 +275,8 @@ export default function Profile() {
       setBvnSessionId(response?.data?.session_id || '');
       setVerificationStep('method');
     } catch (error: any) {
-      showErrorMessage(error?.message || 'An error occurred during BVN lookup. Please try again.');
+      const errorMessage = handleApiError(error, 'An error occurred during BVN lookup. Please try again.');
+      showErrorMessage(errorMessage);
     } finally {
       setIsVerifying(false);
     }
@@ -295,7 +302,8 @@ export default function Profile() {
 
       setVerificationStep('otp');
     } catch (error) {
-      showErrorMessage('An error occurred. Please try again.');
+      const errorMessage = handleApiError(error, 'An error occurred. Please try again.');
+      showErrorMessage(errorMessage);
     } finally {
       setIsVerifying(false);
     }
@@ -320,7 +328,8 @@ export default function Profile() {
       showSuccessMessage('BVN verified successfully');
 
     } catch (error: any) {
-      showErrorMessage(error?.message || 'An error occurred during verification. Please try again.');
+      const errorMessage = handleApiError(error, 'An error occurred during verification. Please try again.');
+      showErrorMessage(errorMessage);
     } finally {
       setIsVerifying(false);
     }

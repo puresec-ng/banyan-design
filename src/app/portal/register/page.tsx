@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
 import { register, requestVerificationCode, verifyEmail, createPin, checkEmail, checkPhone } from '../../services/auth';
 import cookie from '@/app/utils/cookie';
+import { useApiError } from '../../utils/http';
 
 // Add debounce function
 const debounce = (func: Function, wait: number) => {
@@ -74,6 +75,7 @@ const validatePassword = (password: string, confirmPassword: string): PasswordVa
 export default function Register() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);

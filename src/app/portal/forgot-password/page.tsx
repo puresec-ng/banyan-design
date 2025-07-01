@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useToast } from '../../context/ToastContext';
 import { requestVerificationCode, resetPassword, forgotPassword } from '../../services/auth';
+import { useApiError } from '../../utils/http';
 import React from 'react';
 
 
@@ -30,6 +31,7 @@ const validatePassword = (password: string, confirmPassword: string) => ({
 export default function ForgotPassword() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
   const [currentStep, setCurrentStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -104,7 +106,8 @@ export default function ForgotPassword() {
       setCanResend(false);
       showToast('OTP sent successfully', 'success');
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Error sending OTP', 'error');
+      const errorMessage = handleApiError(error, 'Error sending OTP');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +124,8 @@ export default function ForgotPassword() {
       setCanResend(false);
       showToast('OTP sent successfully', 'success');
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Error sending OTP', 'error');
+      const errorMessage = handleApiError(error, 'Error sending OTP');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +152,8 @@ export default function ForgotPassword() {
         router.push('/portal');
       }, 1000);
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Error resetting password', 'error');
+      const errorMessage = handleApiError(error, 'Error resetting password');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -298,94 +303,4 @@ export default function ForgotPassword() {
             <p className="text-sm text-gray-500">Password must contain:</p>
             <ul className="text-sm space-y-1">
               <li className={`flex items-center ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasMinLength ? '✓' : '○'}</span>At least 8 characters</li>
-              <li className={`flex items-center ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasUpperCase ? '✓' : '○'}</span>One uppercase letter</li>
-              <li className={`flex items-center ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasLowerCase ? '✓' : '○'}</span>One lowercase letter</li>
-              <li className={`flex items-center ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasNumber ? '✓' : '○'}</span>One number</li>
-              <li className={`flex items-center ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>One special character</li>
-            </ul>
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-            Confirm New Password
-          </label>
-          <div className="mt-1 relative">
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              required
-              value={formData.confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              className={`appearance-none block w-full px-3 py-2 border ${formData.confirmPassword && !passwordValidation.matches ? 'border-red-500' : 'border-gray-300'} rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm`}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
-            >
-              {showConfirmPassword ? (
-                <EyeSlashIcon className="h-5 w-5" />
-              ) : (
-                <EyeIcon className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-          {formData.confirmPassword && !passwordValidation.matches && (
-            <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          disabled={isLoading || otp.length !== 5 || !Object.values(passwordValidation).every(Boolean)}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-[#004D40] hover:bg-[#003D30] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isLoading ? 'Resetting Password...' : 'Reset Password'}
-        </button>
-      </form>
-    </div>
-  );
-
-  const renderSuccessStep = () => (
-    <div className="bg-white py-8 px-4 shadow-lg sm:rounded-2xl sm:px-10 text-center">
-      <div className="flex justify-center mb-6">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-          <CheckCircleIcon className="w-10 h-10 text-green-600" />
-        </div>
-      </div>
-      <h2 className="text-2xl font-semibold text-gray-900 mb-2">Password Reset Successful!</h2>
-      <p className="text-gray-600 mb-8">
-        Your password has been reset successfully. You will be redirected to the dashboard shortly.
-      </p>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/" className="flex justify-center mb-6">
-          <div className="relative w-32 h-20">
-            <Image
-              src="/brand/logo-black.png"
-              alt="Banyan Claims Logo"
-              fill
-              style={{ objectFit: 'contain' }}
-              priority
-            />
-          </div>
-        </Link>
-        <h2 className="text-center text-3xl font-bold text-gray-900 font-lato">
-          Reset Password
-        </h2>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        {currentStep === 'email' && renderEmailStep()}
-        {currentStep === 'verify' && renderVerifyStep()}
-        {currentStep === 'success' && renderSuccessStep()}
-      </div>
-    </div>
-  );
-} 
+              <li className={`

@@ -9,6 +9,14 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: 'https://api.banyanclaims.com/api/v1/:path*',
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig 

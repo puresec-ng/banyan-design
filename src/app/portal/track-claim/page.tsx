@@ -13,6 +13,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { trackClaim, ClaimData } from '@/app/services/dashboard';
 import cookie from '@/app/utils/cookie';
+import { useToast } from '../../context/ToastContext';
+import { useApiError } from '../../utils/http';
 
 // Using the same types from dashboard
 type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'PENDING_RESPONSE';
@@ -113,6 +115,8 @@ const StatusBadge = ({ status }: { status: StatusType }) => {
 
 export default function TrackClaim() {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { handleApiError } = useApiError();
   const [claimId, setClaimId] = useState('');
   const [claim, setClaim] = useState<ClaimData | null>(null);
   // const [claim, setClaim] = useState<ClaimData[]>([]);
@@ -150,7 +154,8 @@ export default function TrackClaim() {
       //   setIsSearching(false);
       // }, 1000);
     } catch (error: any) {
-      setError(error.response?.data?.message || 'No claim found with this ID. Please check the ID and try again.');
+      const errorMessage = handleApiError(error, 'No claim found with this ID. Please check the ID and try again.');
+      setError(errorMessage);
       setClaim(null);
       console.log(error, 'error_____');
     } finally {

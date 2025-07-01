@@ -16,6 +16,7 @@ import { getProfile, getTransactionHistory, TransactionHistory, withdraw } from 
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
 import cookie from '@/app/utils/cookie';
+import { useApiError } from '../../utils/http';
 
 
 // Mock data - In a real app, this would come from your API
@@ -57,6 +58,7 @@ const MOCK_WALLET = {
 export default function Wallet() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
 
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ['user'],
@@ -156,7 +158,9 @@ export default function Wallet() {
       setRedirectCount(10);
       showToast('Withdrawal successful', 'success');
     } catch (error: any) {
-      showToast(error?.response?.data?.message || 'An error occurred', 'error');
+      console.log('Error fetching transactions:', error);
+      const errorMessage = handleApiError(error, 'An error occurred');
+      showToast(errorMessage, 'error');
     }
   };
 

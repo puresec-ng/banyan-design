@@ -16,6 +16,7 @@ import cookie from '@/app/utils/cookie';
 import { getClaimTypes, authSubmitClaim, getInsurers, Insurer, getIncidentTypes, IncidentType, uploadDocument, submitClaim } from '@/app/services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
+import { useApiError } from '../../utils/http';
 
 // type ClaimType = 'MOTOR' | 'GADGET' | 'PROPERTY' | 'BUSINESS';
 type ClaimType = string;
@@ -48,6 +49,7 @@ export default function NewClaim() {
   const userCookie = cookie().getCookie('user');
   const user = JSON.parse(userCookie || '{}');
   const { showToast } = useToast();
+  const { handleApiError } = useApiError();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
@@ -280,7 +282,8 @@ export default function NewClaim() {
       })
       showToast('File uploaded successfully', 'success');
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Failed to upload file. Please try again.', 'error');
+      const errorMessage = handleApiError(error, 'Failed to upload file. Please try again.');
+      showToast(errorMessage, 'error');
       console.error('Error uploading file:', error);
     } finally {
       setUploading(false);
