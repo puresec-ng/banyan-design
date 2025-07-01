@@ -91,8 +91,8 @@ const responseDataSample = {
       }
     ],
     "links": {
-      "first": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims?page=1",
-      "last": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims?page=1",
+      "first": "https:\/\/api.banyanclaims.com\/api\/v1\/claims?page=1",
+      "last": "https:\/\/api.banyanclaims.com\/api\/v1\/claims?page=1",
       "prev": null,
       "next": null
     },
@@ -107,7 +107,7 @@ const responseDataSample = {
           "active": false
         },
         {
-          "url": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims?page=1",
+          "url": "https:\/\/api.banyanclaims.com\/api\/v1\/claims?page=1",
           "label": "1",
           "active": true
         },
@@ -117,7 +117,7 @@ const responseDataSample = {
           "active": false
         }
       ],
-      "path": "https:\/\/banyan.backend.ricive.com\/api\/v1\/claims",
+      "path": "https:\/\/api.banyanclaims.com\/api\/v1\/claims",
       "per_page": 15,
       "to": 2,
       "total": 2

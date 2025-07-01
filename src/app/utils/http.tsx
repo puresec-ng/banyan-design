@@ -3,7 +3,7 @@ import cookie from "./cookie";
 
 const REACT_APP_API_BASEURL = process.env.NODE_ENV === 'development' 
   ? "/api/v1" 
-  : "https://banyan.backend.ricive.com/api/v1";
+  : "https://api.banyanclaims.com/api/v1";
 
 // Utility function to extract error message from API response
 export const extractErrorMessage = (error: any): string => {
