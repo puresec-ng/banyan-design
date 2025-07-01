@@ -2,30 +2,29 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeftIcon,
-  CheckCircleIcon,
   EyeIcon,
   EyeSlashIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useToast } from '../../context/ToastContext';
 import { requestVerificationCode, resetPassword, forgotPassword } from '../../services/auth';
 import { useApiError } from '../../utils/http';
+import { cookie } from '../../utils/cookie';
 import React from 'react';
-
 
 type Step = 'email' | 'verify' | 'success';
 
-// Add password validation helper
 const validatePassword = (password: string, confirmPassword: string) => ({
   hasMinLength: password.length >= 8,
   hasUpperCase: /[A-Z]/.test(password),
   hasLowerCase: /[a-z]/.test(password),
-  hasNumber: /[0-9]/.test(password),
+  hasNumber: /\d/.test(password),
   hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-  matches: password === confirmPassword && password.length > 0
+  matches: password === confirmPassword && password.length > 0,
 });
 
 export default function ForgotPassword() {
@@ -35,42 +34,47 @@ export default function ForgotPassword() {
   const [currentStep, setCurrentStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [canResend, setCanResend] = useState(false);
+  const resetIdRef = useRef<string>('');
+
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmPassword: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(300); // 5 minutes in seconds
-  const [canResend, setCanResend] = useState(false);
-  const [passwordValidation, setPasswordValidation] = useState({
-    hasMinLength: false,
-    hasUpperCase: false,
-    hasLowerCase: false,
-    hasNumber: false,
-    hasSpecialChar: false,
-    matches: false
-  });
-  const [resetId, setResetId] = useState<string>('');
-  const resetIdRef = useRef<string | null>(null);
+
+  const [passwordValidation, setPasswordValidation] = useState(validatePassword('', ''));
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (currentStep === 'verify' && countdown > 0) {
-      timer = setTimeout(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
-    } else if (countdown === 0) {
-      setCanResend(true);
+    const token = cookie().getCookie('token');
+    if (token) {
+      router.push('/portal/dashboard');
     }
-    return () => clearTimeout(timer);
-  }, [countdown, currentStep]);
+  }, [router]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown]);
 
   const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -78,24 +82,9 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // Call forgotPassword and store reset_id
       const response = await forgotPassword({ email });
-      console.log('forgotPassword response:', response);
-      let reset_id = '';
-      if (response && typeof response === 'object') {
-        if ('data' in response && response.data && typeof response.data === 'object' && 'reset_id' in response.data) {
-          reset_id = response.data.reset_id;
-        } else if ('reset_id' in response) {
-          reset_id = (response as any).reset_id;
-        }
-      }
-      console.log('Storing reset_id:', reset_id);
-      resetIdRef.current = reset_id;
-      if (reset_id) {
-        localStorage.setItem('reset_id', reset_id);
-        console.log('localStorage reset_id:', localStorage.getItem('reset_id'));
-      }
-      // clear form data
+      resetIdRef.current = response.reset_id || '';
+      localStorage.setItem('reset_id', response.reset_id || '');
       setFormData({
         newPassword: '',
         confirmPassword: '',
@@ -303,4 +292,94 @@ export default function ForgotPassword() {
             <p className="text-sm text-gray-500">Password must contain:</p>
             <ul className="text-sm space-y-1">
               <li className={`flex items-center ${passwordValidation.hasMinLength ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasMinLength ? '✓' : '○'}</span>At least 8 characters</li>
-              <li className={`
+              <li className={`flex items-center ${passwordValidation.hasUpperCase ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasUpperCase ? '✓' : '○'}</span>One uppercase letter</li>
+              <li className={`flex items-center ${passwordValidation.hasLowerCase ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasLowerCase ? '✓' : '○'}</span>One lowercase letter</li>
+              <li className={`flex items-center ${passwordValidation.hasNumber ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasNumber ? '✓' : '○'}</span>One number</li>
+              <li className={`flex items-center ${passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}><span className="mr-2">{passwordValidation.hasSpecialChar ? '✓' : '○'}</span>One special character</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            Confirm New Password
+          </label>
+          <div className="mt-1 relative">
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              required
+              value={formData.confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              className={`appearance-none block w-full px-3 py-2 border ${formData.confirmPassword && !passwordValidation.matches ? 'border-red-500' : 'border-gray-300'} rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#004D40] focus:border-transparent sm:text-sm`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+            >
+              {showConfirmPassword ? (
+                <EyeSlashIcon className="h-5 w-5" />
+              ) : (
+                <EyeIcon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+          {formData.confirmPassword && !passwordValidation.matches && (
+            <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading || otp.length !== 5 || !Object.values(passwordValidation).every(Boolean)}
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-[#004D40] hover:bg-[#003D30] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#004D40] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isLoading ? 'Resetting Password...' : 'Reset Password'}
+        </button>
+      </form>
+    </div>
+  );
+
+  const renderSuccessStep = () => (
+    <div className="bg-white py-8 px-4 shadow-lg sm:rounded-2xl sm:px-10 text-center">
+      <div className="flex justify-center mb-6">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+          <CheckCircleIcon className="w-10 h-10 text-green-600" />
+        </div>
+      </div>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-2">Password Reset Successful!</h2>
+      <p className="text-gray-600 mb-8">
+        Your password has been reset successfully. You will be redirected to the dashboard shortly.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <Link href="/" className="flex justify-center mb-6">
+          <div className="relative w-32 h-20">
+            <Image
+              src="/brand/logo-black.png"
+              alt="Banyan Claims Logo"
+              fill
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
+        </Link>
+        <h2 className="text-center text-3xl font-bold text-gray-900 font-lato">
+          Reset Password
+        </h2>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        {currentStep === 'email' && renderEmailStep()}
+        {currentStep === 'verify' && renderVerifyStep()}
+        {currentStep === 'success' && renderSuccessStep()}
+      </div>
+    </div>
+  );
+}
