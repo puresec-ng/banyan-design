@@ -198,7 +198,6 @@ export default function NewClaim() {
       console.log('formData.type:', formData.type);
       console.log('typeof formData.type:', typeof formData.type);
       console.log('formData.type === "":', formData.type === '');
-      console.log('formData.type === {}:', formData.type === {});
       console.log('JSON.stringify(formData.type):', JSON.stringify(formData.type));
       
       // Validate claim type
