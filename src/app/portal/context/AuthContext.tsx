@@ -7,6 +7,10 @@ export function useInactivityLogout() {
   const timer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Only run inactivity logic if user is logged in
+    if (typeof window === 'undefined' || !cookie().getCookie('token')) {
+      return;
+    }
     const logout = () => {
       cookie().deleteCookie('token');
       cookie().deleteCookie('userType');

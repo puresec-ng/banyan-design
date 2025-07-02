@@ -35,6 +35,7 @@ export default function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
+  useInactivityLogout();
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -101,11 +102,6 @@ export default function PortalLayout({
     // Redirect to login
     router.push('/portal');
   };
-
-  // Only apply inactivity logout for logged-in users
-  if (typeof window !== 'undefined' && cookie().getCookie('token')) {
-    useInactivityLogout();
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">

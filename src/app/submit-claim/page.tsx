@@ -56,6 +56,14 @@ export default function ClaimTypeSelection() {
     if (claimTypeId && (claimTypeId === '{}' || claimTypeId === '[object Object]')) {
       localStorage.removeItem('selectedClaimType');
     }
+    // Clear all claim-related data when starting a new claim
+    localStorage.removeItem('personalInfo');
+    localStorage.removeItem('basicInfo');
+    localStorage.removeItem('selectedClaimType');
+    localStorage.removeItem('documents');
+    localStorage.removeItem('submissionDetails');
+    localStorage.removeItem('claimNumber');
+    // Optionally clear any other claim-related keys here
     if (claimTypesData) {
       const formattedClaimTypes = claimTypesData.map(type => ({
         id: type.id.toString(),
