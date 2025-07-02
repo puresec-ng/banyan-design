@@ -133,13 +133,14 @@ export default function DocumentUpload() {
 
       const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
       const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-      const selectedClaimType = JSON.parse(localStorage.getItem('selectedClaimType') || '{}');
+      const selectedClaimType = localStorage.getItem('selectedClaimType') || '';
+      const claimTypeId = typeof selectedClaimType === 'string' ? selectedClaimType : '';
       const samplePayload = {
         first_name: personalInfo.firstName,
         last_name: personalInfo.lastName,
         phone: personalInfo.phoneNumber,
         email: personalInfo.email,
-        claim_type: selectedClaimType,
+        claim_type: claimTypeId,
         incident_type: basicInfo.incident_type,
         incident_date: `${basicInfo.incidentDate} ${basicInfo.incidentTime}:00`,
         incident_location: basicInfo.incidentLocation,
