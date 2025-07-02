@@ -18,6 +18,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import cookie from '@/app/utils/cookie';
+import { useInactivityLogout } from './context/AuthContext';
 
 const menuItems = [
   { name: 'Submitted Claims', href: '/portal/dashboard', icon: DocumentTextIcon },
@@ -100,6 +101,11 @@ export default function PortalLayout({
     // Redirect to login
     router.push('/portal');
   };
+
+  // Only apply inactivity logout for logged-in users
+  if (typeof window !== 'undefined' && cookie().getCookie('token')) {
+    useInactivityLogout();
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

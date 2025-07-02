@@ -357,6 +357,10 @@ export default function Home() {
           </div>
           <div className="mt-12 pt-8 border-t border-[#2d5445] text-center text-gray-200">
             <p>&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
+            <div className="mt-2 flex justify-center gap-6 text-sm">
+              <Link href="/terms" className="underline hover:text-white">Terms & Conditions</Link>
+              <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>
+            </div>
           </div>
         </div>
       </footer>

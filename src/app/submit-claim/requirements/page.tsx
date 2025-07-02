@@ -179,6 +179,9 @@ export default function DocumentRequirements() {
     localStorage.removeItem('personalInfo');
     localStorage.removeItem('basicInfo');
     localStorage.removeItem('selectedClaimType');
+    localStorage.removeItem('documents');
+    localStorage.removeItem('submissionDetails');
+    localStorage.removeItem('claimNumber');
   }
 
   return (

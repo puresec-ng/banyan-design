@@ -171,13 +171,17 @@ Http.interceptors.response.use(
     if (error.response?.status) {
       if (
         error.response.status === 401 ||
-        error?.response?.data?.statusCode == 401
+        error.response.status === 403 ||
+        error?.response?.data?.statusCode == 401 ||
+        error?.response?.data?.statusCode == 403
       ) {
-        const currentPath = window.location.pathname;
-        if (currentPath.includes("dashboard")) {
-          // window.location.pathname = "/login";
-        }
+        // Clear all session data
         cookie().deleteCookie("token");
+        cookie().deleteCookie("userType");
+        // Optionally clear other session-related cookies here
+        // Redirect to login with error message
+        const loginUrl = `/portal/login?error=${encodeURIComponent('Session expired. Please log in again.')}`;
+        window.location.replace(loginUrl);
       }
 
       if (error.response.status === 500) {

@@ -83,9 +83,11 @@ export default function ForgotPassword() {
 
     try {
       const response = await forgotPassword({ email });
-      const reset_id = response.data?.reset_id || response.data?.data?.reset_id || '';
-      resetIdRef.current = reset_id;
-      localStorage.setItem('reset_id', reset_id);
+      const reset_id = response?.reset_id || '';
+      if (reset_id) {
+        resetIdRef.current = reset_id;
+        localStorage.setItem('reset_id', reset_id);
+      }
       setFormData({
         newPassword: '',
         confirmPassword: '',
@@ -126,18 +128,11 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // Retrieve reset_id from ref or localStorage
       const reset_id = resetIdRef.current || localStorage.getItem('reset_id') || '';
-      // Log the payload before calling resetPassword
-      console.log('resetPassword payload:', {
-        reset_id,
-        otp,
-        password: formData.newPassword,
-        password_confirmation: formData.confirmPassword
-      });
       await resetPassword({ reset_id, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
       setCurrentStep('success');
       showToast('Password reset successfully', 'success');
+      localStorage.removeItem('reset_id');
       setTimeout(() => {
         router.push('/portal');
       }, 1000);
