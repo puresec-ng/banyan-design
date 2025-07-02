@@ -18,6 +18,8 @@ import React from 'react';
 
 type Step = 'email' | 'verify' | 'success';
 
+type ForgotPasswordResponse = { reset_id?: string; message?: string };
+
 const validatePassword = (password: string, confirmPassword: string) => ({
   hasMinLength: password.length >= 8,
   hasUpperCase: /[A-Z]/.test(password),
@@ -82,7 +84,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const response = await forgotPassword({ email });
+      const response = await forgotPassword({ email }) as ForgotPasswordResponse;
       const reset_id = response?.reset_id || '';
       if (reset_id) {
         resetIdRef.current = reset_id;
