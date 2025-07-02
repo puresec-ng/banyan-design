@@ -107,12 +107,17 @@ export default function NewClaim() {
   };
 
   useEffect(() => {
+    // Clean up any invalid formData.type values
+    if (formData.type && (typeof formData.type !== 'string' || formData.type === '{}' || formData.type === '[object Object]')) {
+      console.log('Cleaning up invalid formData.type:', formData.type);
+      setFormData(prev => ({ ...prev, type: '' }));
+    }
 
     const token = cookie().getCookie('token');
     if (!token) {
       router.push('/portal');
     }
-  }, [router]);
+  }, [router, formData.type]);
 
   const handleNext = () => {
     if (currentStep === 1) {
@@ -188,12 +193,28 @@ export default function NewClaim() {
       const insurerId = insurers?.find(i => i.name === formData.insuranceProvider)?.id;
       // const selectedClaimType = claimTypesData?.find(t => t.id === formData.type);
       // const selectedClaimTypeId = selectedClaimType?.id;
+      // DEBUG: Check formData.type before creating payload
+      console.log('=== PORTAL DEBUG ===');
+      console.log('formData.type:', formData.type);
+      console.log('typeof formData.type:', typeof formData.type);
+      console.log('formData.type === "":', formData.type === '');
+      console.log('formData.type === {}:', formData.type === {});
+      console.log('JSON.stringify(formData.type):', JSON.stringify(formData.type));
+      
+      // Validate claim type
+      if (!formData.type || formData.type === '' || typeof formData.type !== 'string') {
+        console.error('CRITICAL ERROR: formData.type is invalid!');
+        showToast('Please select a valid claim type.', 'error');
+        setIsSubmitting(false);
+        return;
+      }
+
       const samplePayload = {
         first_name: user.first_name,
         last_name: user.last_name,
         phone: user.phone,
         email: user.email,
-        claim_type: formData.type,
+        claim_type: formData.type.toString(),
         incident_type: selectedIncidentTypeId,
         incident_date: `${formData.incidentDate} ${formData.incidentTime}:00`,
         incident_location: formData.incidentLocation,
@@ -203,7 +224,8 @@ export default function NewClaim() {
         payment_model: 1,
         file_url: imageURL.map((doc: any) => doc.file)
       }
-      console.log(samplePayload, 'samplePayload');
+      console.log('Final samplePayload:', samplePayload);
+      console.log('=== END PORTAL DEBUG ===');
 
 
       const response = await authSubmitClaim(samplePayload);

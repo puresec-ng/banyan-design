@@ -27,19 +27,37 @@ export default function DocumentRequirements() {
     // Check if user has completed previous steps
     const personalInfo = localStorage.getItem('personalInfo');
     const basicInfo = localStorage.getItem('basicInfo');
+    const claimTypeId = localStorage.getItem('selectedClaimType');
 
     if (!personalInfo) {
       router.push('/submit-claim/personal-info');
       return;
     }
 
+    if (!basicInfo) {
+      router.push('/submit-claim/basic-info');
+      return;
+    }
+
+    // Only redirect if claim type is explicitly invalid (not just null)
+    if (claimTypeId && (claimTypeId === '{}' || claimTypeId === '[object Object]')) {
+      console.log('Invalid claim type found, redirecting to claim selection');
+      router.push('/submit-claim');
+      return;
+    }
+
+    // Load documents based on incident type
     if (basicInfo) {
-      const { incidentType } = JSON.parse(basicInfo);
-      if (incidentType && incidentTypes) {
-        const selectedIncidentType = incidentTypes.find(t => t.name === incidentType);
-        if (selectedIncidentType) {
-          setDocuments(JSON.parse(selectedIncidentType.required_documents || '[]'));
+      try {
+        const { incidentType } = JSON.parse(basicInfo);
+        if (incidentType && incidentTypes) {
+          const selectedIncidentType = incidentTypes.find(t => t.name === incidentType);
+          if (selectedIncidentType) {
+            setDocuments(JSON.parse(selectedIncidentType.required_documents || '[]'));
+          }
         }
+      } catch (error) {
+        console.error('Error parsing basicInfo:', error);
       }
     }
   }, [router, incidentTypes]);
@@ -52,30 +70,64 @@ export default function DocumentRequirements() {
     router.push('/submit-claim/documents');
   };
 
+  // Function to build the current payload from localStorage
+  const buildCurrentPayload = () => {
+    const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
+    const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
+    const selectedClaimType = localStorage.getItem('selectedClaimType') || '';
+    
+    return {
+      first_name: personalInfo.firstName,
+      last_name: personalInfo.lastName,
+      phone: personalInfo.phoneNumber,
+      email: personalInfo.email,
+      claim_type: selectedClaimType.toString(),
+      incident_type: basicInfo.incident_type,
+      incident_date: `${basicInfo.incidentDate} ${basicInfo.incidentTime}:00`,
+      incident_location: basicInfo.incidentLocation,
+      description: basicInfo.incidentDescription,
+      policy_number: basicInfo.policyNumber,
+      insurer_id: basicInfo.insurer_id,
+      payment_model: 1
+    };
+  };
+
   const handleSkip = async () => {
     try {
       setIsSubmitting(true);
       // Get all the required data from localStorage
       const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
       const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-      const selectedClaimType = JSON.parse(localStorage.getItem('selectedClaimType') || '{}');
-
-      const samplePayload = {
-        first_name: personalInfo.firstName,
-        last_name: personalInfo.lastName,
-        phone: personalInfo.phoneNumber,
-        email: personalInfo.email,
-        claim_type: selectedClaimType,
-        incident_type: basicInfo.incident_type,
-        incident_date: `${basicInfo.incidentDate} ${basicInfo.incidentTime}:00`,
-        incident_location: basicInfo.incidentLocation,
-        description: basicInfo.incidentDescription,
-        policy_number: basicInfo.policyNumber,
-        insurer_id: basicInfo.insurer_id,
-        payment_model: 1
+      const selectedClaimType = localStorage.getItem('selectedClaimType') || '';
+      
+      // Validate claim type
+      console.log('selectedClaimType before submit:', selectedClaimType, typeof selectedClaimType);
+      if (!selectedClaimType || selectedClaimType === '{}' || selectedClaimType === '[object Object]') {
+        localStorage.removeItem('selectedClaimType');
+        showToast('Please select a claim type before submitting.', 'error');
+        setIsSubmitting(false);
+        return;
       }
 
-      console.log(samplePayload, 'samplePayload');
+      const samplePayload = buildCurrentPayload();
+
+      console.log('=== DEBUG INFO ===');
+      console.log('selectedClaimType from localStorage:', selectedClaimType);
+      console.log('typeof selectedClaimType:', typeof selectedClaimType);
+      console.log('selectedClaimType.toString():', selectedClaimType.toString());
+      console.log('samplePayload.claim_type:', samplePayload.claim_type);
+      console.log('typeof samplePayload.claim_type:', typeof samplePayload.claim_type);
+      console.log('Full samplePayload:', samplePayload);
+      console.log('=== END DEBUG ===');
+
+      // FINAL SAFETY CHECK: Never send an empty object
+      if (!samplePayload.claim_type || samplePayload.claim_type === '{}' || samplePayload.claim_type === '[object Object]') {
+        console.error('CRITICAL ERROR: claim_type is still invalid after all checks!');
+        showToast('Invalid claim type. Please select a claim type again.', 'error');
+        router.push('/submit-claim');
+        setIsSubmitting(false);
+        return;
+      }
 
       // // Prepare the claim payload
       const claimPayload = {
@@ -86,20 +138,47 @@ export default function DocumentRequirements() {
       };
 
       // Submit the claim
+      console.log('About to submit claim...');
       const response = await submitClaim(claimPayload);
-      console.log(response, 'response_____');
-      const getSubmissionDetails = await localStorage.getItem('submissionDetails');
-      localStorage.setItem('submissionDetails', JSON.stringify({
+      console.log('=== SUCCESS RESPONSE ===');
+      console.log('Full response:', response);
+      console.log('Response data:', response.data);
+      console.log('Response status:', response.status);
+      console.log('Response message:', response.message);
+      console.log('=== END SUCCESS RESPONSE ===');
+      
+      // Store submission details
+      console.log('Processing success response...');
+      const getSubmissionDetails = localStorage.getItem('submissionDetails');
+      const submissionDetails = {
         ...JSON.parse(getSubmissionDetails || '{}'),
-        trackingNumber: response.data.claim_number
-      }));
+        trackingNumber: response.data?.claim_number || 'N/A',
+        submittedAt: new Date().toISOString()
+      };
+      localStorage.setItem('submissionDetails', JSON.stringify(submissionDetails));
+      console.log('Stored submission details:', submissionDetails);
 
       // Store empty documents array to indicate user skipped
       localStorage.setItem('documents', JSON.stringify([]));
-      emptyStoredData();
-
-      // Navigate to success page
-      router.push('/submit-claim/success');
+      
+      // Show success message
+      console.log('Showing success message...');
+      showToast('Claim submitted successfully!', 'success');
+      
+      // Navigate to success page immediately
+      console.log('Navigating to success page...');
+      try {
+        router.push('/submit-claim/success');
+      } catch (navError) {
+        console.error('Router navigation failed:', navError);
+        // Fallback: use window.location
+        window.location.href = '/submit-claim/success';
+      }
+      
+      // Clear form data after navigation (to avoid issues)
+      setTimeout(() => {
+        emptyStoredData();
+      }, 2000);
     } catch (error: any) {
       const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
       showToast(errorMessage, 'error');
@@ -136,9 +215,19 @@ export default function DocumentRequirements() {
         </div>
 
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-blue-800 mb-3">
             <strong>Note:</strong> You can proceed without uploading documents now and submit them later through your dashboard.
           </p>
+          <button
+            onClick={() => {
+              const payload = buildCurrentPayload();
+              console.log('Current Payload Preview:', payload);
+              alert('Check console for current payload preview');
+            }}
+            className="text-sm text-blue-600 hover:text-blue-800 underline"
+          >
+            Preview Current Payload
+          </button>
         </div>
       </div>
 

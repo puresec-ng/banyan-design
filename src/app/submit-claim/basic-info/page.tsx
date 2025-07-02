@@ -43,23 +43,32 @@ export default function BasicInfo() {
   const [formData, setFormData] = useState(initialFormData);
 
   useEffect(() => {
-    // Clear all claim data on initial load of this page if accessed directly
-    localStorage.removeItem('basicInfo');
-    localStorage.removeItem('personalInfo');
-    localStorage.removeItem('selectedClaimType');
-    localStorage.removeItem('documents');
-    localStorage.removeItem('submissionDetails');
-    localStorage.removeItem('claimNumber');
-
-    // Check if user has completed previous steps (though clearing above makes this less critical on direct access)
-    const selectedType = localStorage.getItem('selectedClaimType'); // This will likely be null after clearing
+    // Check if user has completed previous steps
+    const selectedType = localStorage.getItem('selectedClaimType');
     if (!selectedType && window.location.pathname === '/submit-claim/basic-info') {
-        // Optionally redirect to the start if basicInfo must be preceded by claim type selection
-        // router.push('/submit-claim');
-        // return;
+        // Redirect to claim selection if no claim type is selected
+        router.push('/submit-claim');
+        return;
     }
 
-    // Note: No longer loading saved data here as per requirement to start fresh from this URL.
+    // Load existing basic info if available
+    const existingBasicInfo = localStorage.getItem('basicInfo');
+    if (existingBasicInfo) {
+      try {
+        const parsedInfo = JSON.parse(existingBasicInfo);
+        setFormData({
+          insuranceProvider: parsedInfo.insuranceProvider || '',
+          incidentType: parsedInfo.incidentType || '',
+          incidentDate: parsedInfo.incidentDate || '',
+          incidentTime: parsedInfo.incidentTime || '',
+          incidentLocation: parsedInfo.incidentLocation || '',
+          incidentDescription: parsedInfo.incidentDescription || '',
+          policyNumber: parsedInfo.policyNumber || ''
+        });
+      } catch (error) {
+        console.error('Error parsing existing basic info:', error);
+      }
+    }
 
   }, [router]);
 

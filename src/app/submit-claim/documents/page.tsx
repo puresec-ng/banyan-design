@@ -120,6 +120,29 @@ export default function DocumentUpload() {
     setAdditionalDocs(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Function to build the current payload from localStorage
+  const buildCurrentPayload = () => {
+    const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
+    const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
+    const claimTypeId = localStorage.getItem('selectedClaimType') || '';
+    
+    return {
+      first_name: personalInfo.firstName,
+      last_name: personalInfo.lastName,
+      phone: personalInfo.phoneNumber,
+      email: personalInfo.email,
+      claim_type: claimTypeId.toString(),
+      incident_type: basicInfo.incident_type,
+      incident_date: `${basicInfo.incidentDate} ${basicInfo.incidentTime}:00`,
+      incident_location: basicInfo.incidentLocation,
+      description: basicInfo.incidentDescription,
+      policy_number: basicInfo.policyNumber,
+      insurer_id: basicInfo.insurer_id,
+      payment_model: 1,
+      file_url: imageURL.map((doc: any) => doc.file)
+    };
+  };
+
   const handleBack = () => {
     router.push('/submit-claim/requirements');
   };
@@ -134,12 +157,19 @@ export default function DocumentUpload() {
       const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
       const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
       const claimTypeId = localStorage.getItem('selectedClaimType') || '';
+      console.log('selectedClaimType before submit:', claimTypeId, typeof claimTypeId);
+      if (!claimTypeId || claimTypeId === '{}' || claimTypeId === '[object Object]') {
+        localStorage.removeItem('selectedClaimType');
+        showToast('Please select a claim type before submitting.', 'error');
+        setLoading(false);
+        return;
+      }
       const samplePayload = {
         first_name: personalInfo.firstName,
         last_name: personalInfo.lastName,
         phone: personalInfo.phoneNumber,
         email: personalInfo.email,
-        claim_type: claimTypeId,
+        claim_type: claimTypeId.toString(),
         incident_type: basicInfo.incident_type,
         incident_date: `${basicInfo.incidentDate} ${basicInfo.incidentTime}:00`,
         incident_location: basicInfo.incidentLocation,
@@ -149,6 +179,7 @@ export default function DocumentUpload() {
         payment_model: 1,
         file_url: imageURL.map((doc: any) => doc.file)
       }
+      console.log('Submitting payload:', samplePayload);
 
 
       // Submit the claim
@@ -189,10 +220,14 @@ export default function DocumentUpload() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Documents</h2>
-        <p className="text-gray-600 mb-6">
-          Please upload the required documents for your claim. You can also add any supporting documents.
-        </p>
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Documents</h2>
+            <p className="text-gray-600">
+              Please upload the required documents for your claim. You can also add any supporting documents.
+            </p>
+          </div>
+        </div>
         {uploading && <div className='flex items-center gap-2 mb-4'>
           <svg className="animate-spin h-5 w-5 text-[#004D40]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

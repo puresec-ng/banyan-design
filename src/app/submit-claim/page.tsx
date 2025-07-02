@@ -51,6 +51,11 @@ export default function ClaimTypeSelection() {
   };
 
   useEffect(() => {
+    // Migration: Remove invalid selectedClaimType values
+    const claimTypeId = localStorage.getItem('selectedClaimType');
+    if (claimTypeId && (claimTypeId === '{}' || claimTypeId === '[object Object]')) {
+      localStorage.removeItem('selectedClaimType');
+    }
     if (claimTypesData) {
       const formattedClaimTypes = claimTypesData.map(type => ({
         id: type.id.toString(),
