@@ -121,7 +121,6 @@ export default function PrivacyPage() {
 
           <h2 className="text-xl font-semibold mt-6">12. Policy Updates</h2>
           <p>This Policy may be updated periodically. All revisions will be posted on our website.</p>
-          <p className="text-xs text-gray-500">Effective Date: June 2025<br/>Last Updated: June 2025</p>
 
           <h2 className="text-xl font-semibold mt-6">13. Contact Us</h2>
           <p>Data Protection Officer<br/>
@@ -129,6 +128,7 @@ export default function PrivacyPage() {
           Email: <a href="mailto:enquiries@banyanclaims.com" className="underline text-blue-700">enquiries@banyanclaims.com</a><br/>
           Website: <a href="https://www.banyanclaims.com" className="underline text-blue-700">www.banyanclaims.com</a></p>
           <p className="mt-8">Thank you for trusting Banyan Claims Consultant Limited.</p>
+          <p className="text-xs text-gray-500 mt-4">Effective Date: June 2025<br/>Last Updated: June 2025</p>
         </div>
       </div>
 

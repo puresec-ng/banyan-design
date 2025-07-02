@@ -21,7 +21,7 @@ export default function Navbar() {
       <header className="fixed w-full bg-white z-[100] shadow-sm">
         <nav className="container mx-auto flex items-center justify-between py-4 px-4">
           <div className="flex lg:flex-1">
-            <Link href="#home" className="flex items-center">
+            <Link href="/" className="flex items-center">
               <div className="relative w-32 h-20">
                 <Image
                   src="/brand/logo-white.png"
@@ -82,7 +82,7 @@ export default function Navbar() {
           <div className="fixed inset-y-0 right-0 z-[200] w-full overflow-y-auto bg-white sm:max-w-sm">
             <div className="px-6 py-6">
               <div className="flex items-center justify-between mb-8">
-                <Link href="#home" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
                   <div className="relative w-28 h-16">
                     <Image
                       src="/brand/logo-white.png"

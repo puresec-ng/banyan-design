@@ -49,16 +49,16 @@ export default function TermsPage() {
             <li>Provide accurate, complete, and current information during any engagement.</li>
           </ul>
 
-          <h2 className="text-xl font-semibold mt-6">4. Advisory Scope</h2>
+          <h2 className="text-xl font-semibold mt-6">4A. Advisory Scope</h2>
           <ul className="list-disc ml-6">
             <li>Claims documentation and evidence review</li>
             <li>Advisory on claims rights and obligations</li>
             <li>Liaising with insurers, brokers, or assessors on behalf of clients</li>
             <li>Support during mediation, arbitration, or litigation where applicable</li>
           </ul>
-          <p className="text-gray-600 italic">Note: Banyan Claims cannot guarantee claim approval or payout, as final decisions rest solely with the insurance provider.</p>
+          <p className="italic text-gray-600 mt-2">Note: Banyan Claims cannot guarantee claim approval or payout, as final decisions rest solely with the insurance provider.</p>
 
-          <h2 className="text-xl font-semibold mt-6">4. Legal Disclaimer</h2>
+          <h2 className="text-xl font-semibold mt-6">4B. Legal Disclaimer</h2>
           <p>Banyan Claims Consultant Limited is not a law firm and does not offer legal representation or legal advice. Any support we provide during mediation, arbitration, or litigation processes is strictly in an advisory capacity relating to insurance claims. We work independently and may collaborate with licensed legal practitioners where necessary, but we do not act as legal counsel. Clients requiring formal legal advice or representation are encouraged to engage a qualified legal professional.</p>
 
           <h2 className="text-xl font-semibold mt-6">5. Fees and Payment</h2>

@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { checkEmail, login } from '../../services/auth';
+import { useToast } from '../../context/ToastContext';
 
 export default function PersonalInfo() {
   const router = useRouter();
+  const { showToast } = useToast();
   const initialFormData = {
     firstName: '',
     lastName: '',
