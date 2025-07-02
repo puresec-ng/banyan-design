@@ -56,11 +56,13 @@ export default function Home() {
       const formData = new FormData(e.target as HTMLFormElement);
       await emailjs.send(
         'service_wmg43vp', // Service ID
-        'template_8jnqeup', // Correct Template ID
+        'template_8jnqeup', // Template ID
         {
-          from_name: formData.get('name'),
-          from_email: formData.get('email'),
-          message: formData.get('message'),
+          from_name: formData.get('name'),      // Full Name
+          from_email: formData.get('email'),    // Email Address
+          message: `Email: ${formData.get('email')}
+
+${formData.get('message')}` // Message body includes email
         },
         'P0j4XeljA-hZrLyWO' // Public Key
       );
