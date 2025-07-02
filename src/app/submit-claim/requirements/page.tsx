@@ -138,17 +138,9 @@ export default function DocumentRequirements() {
       };
 
       // Submit the claim
-      console.log('About to submit claim...');
       const response = await submitClaim(claimPayload);
-      console.log('=== SUCCESS RESPONSE ===');
-      console.log('Full response:', response);
-      console.log('Response data:', response.data);
-      console.log('Response status:', response.status);
-      console.log('Response message:', response.message);
-      console.log('=== END SUCCESS RESPONSE ===');
       
       // Store submission details
-      console.log('Processing success response...');
       const getSubmissionDetails = localStorage.getItem('submissionDetails');
       const submissionDetails = {
         ...JSON.parse(getSubmissionDetails || '{}'),
@@ -156,21 +148,17 @@ export default function DocumentRequirements() {
         submittedAt: new Date().toISOString()
       };
       localStorage.setItem('submissionDetails', JSON.stringify(submissionDetails));
-      console.log('Stored submission details:', submissionDetails);
 
       // Store empty documents array to indicate user skipped
       localStorage.setItem('documents', JSON.stringify([]));
       
       // Show success message
-      console.log('Showing success message...');
       showToast('Claim submitted successfully!', 'success');
       
       // Navigate to success page immediately
-      console.log('Navigating to success page...');
       try {
         router.push('/submit-claim/success');
       } catch (navError) {
-        console.error('Router navigation failed:', navError);
         // Fallback: use window.location
         window.location.href = '/submit-claim/success';
       }
