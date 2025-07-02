@@ -133,8 +133,7 @@ export default function DocumentUpload() {
 
       const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
       const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-      const selectedClaimType = localStorage.getItem('selectedClaimType') || '';
-      const claimTypeId = typeof selectedClaimType === 'string' ? selectedClaimType : '';
+      const claimTypeId = localStorage.getItem('selectedClaimType') || '';
       const samplePayload = {
         first_name: personalInfo.firstName,
         last_name: personalInfo.lastName,

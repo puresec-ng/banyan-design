@@ -68,7 +68,7 @@ export default function ClaimTypeSelection() {
 
   const handleTypeSelect = (typeId: string) => {
     setSelectedType(typeId);
-    localStorage.setItem('selectedClaimType', typeId);
+    localStorage.setItem('selectedClaimType', typeId.toString());
     router.push('/submit-claim/basic-info');
   };
 
