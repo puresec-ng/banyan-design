@@ -35,6 +35,7 @@ export default function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
+  console.log('[PortalLayout] Rendered');
   useInactivityLogout();
   const router = useRouter();
   const pathname = usePathname();

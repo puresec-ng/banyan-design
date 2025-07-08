@@ -180,7 +180,7 @@ Http.interceptors.response.use(
         cookie().deleteCookie("userType");
         // Optionally clear other session-related cookies here
         // Redirect to login with error message
-        const loginUrl = `/portal/login?error=${encodeURIComponent('Session expired. Please log in again.')}`;
+        const loginUrl = `/portal?error=${encodeURIComponent('Session expired. Please log in again.')}`;
         window.location.replace(loginUrl);
       }
 
