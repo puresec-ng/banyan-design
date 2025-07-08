@@ -9,6 +9,7 @@ import { useToast } from '@/app/context/ToastContext';
 import { getProfile, lookupBankAccount, storeBankAccount, updateProfile, setBvnVerificationMethod, validateBvnOtp, bvnLookup, } from '@/app/services/dashboard/user-management';
 import { useQuery } from "@tanstack/react-query";
 import { checkEmail, } from '../../services/auth';
+import { getBanks } from '../../services/public';
 import { useApiError } from '../../utils/http';
 
 interface EmailCheckResponse {
@@ -40,7 +41,7 @@ const MOCK_BVN_DETAILS = {
   lastName: 'Doe',
 };
 
-const BANKS = [{ "code": "044", "name": "Access Bank" }, { "code": "035A", "name": "ALAT by WEMA" }, { "code": "401", "name": "ASO Savings and Loans" }, { "code": "50931", "name": "Bowen Microfinance Bank" }, { "code": "50823", "name": "CEMCS Microfinance Bank" }, { "code": "023", "name": "Citi bank Nigeria" }, { "code": "050", "name": "Ecobank Nigeria" }, { "code": "562", "name": "Ekondo Microfinance Bank" }, { "code": "070", "name": "Fidelity Bank" }, { "code": "011", "name": "First Bank of Nigeria" }, { "code": "214", "name": "First City Monument Bank" }, { "code": "00103", "name": "Globus Bank" }, { "code": "058", "name": "Guaranty Trust Bank" }, { "code": "50383", "name": "Hasal Microfinance Bank" }, { "code": "030", "name": "Heritage Bank" }, { "code": "301", "name": "Jaiz Bank" }, { "code": "082", "name": "Keystone Bank" }, { "code": "50211", "name": "Kuda Bank" }, { "code": "565", "name": "One Finance" }, { "code": "327", "name": "Paga" }, { "code": "526", "name": "Parallex Bank" }, { "code": "100004", "name": "Paycom(Opay)" }, { "code": "076", "name": "Polaris Bank" }, { "code": "101", "name": "Providus Bank" }, { "code": "125", "name": "Rubies MFB" }, { "code": "51310", "name": "Sparkle Microfinance Bank" }, { "code": "221", "name": "Stanbic IBTC Bank" }, { "code": "068", "name": "Standard Chartered Bank" }, { "code": "232", "name": "Sterling Bank" }, { "code": "100", "name": "Suntrust Bank" }, { "code": "302", "name": "TAJ Bank" }, { "code": "51211", "name": "TCF MFB" }, { "code": "102", "name": "Titan Trust Bank" }, { "code": "032", "name": "Union Bank of Nigeria" }, { "code": "033", "name": "United Bank For Africa" }, { "code": "215", "name": "Unity Bank" }, { "code": "566", "name": "VFD" }, { "code": "035", "name": "Wema Bank" }, { "code": "057", "name": "Zenith Bank" }, { "code": "120001", "name": "9mobile 9Payment Service Bank" }, { "code": "404", "name": "Abbey Mortgage Bank" }, { "code": "51204", "name": "Above Only MFB" }, { "code": "602", "name": "Accion Microfinance Bank" }, { "code": "50036", "name": "Ahmadu Bello University Microfinance Bank" }, { "code": "120004", "name": "Airtel Smartcash PSB" }, { "code": "51336", "name": "AKU Microfinance Bank" }, { "code": "90561", "name": "Akuchukwu Microfinance Bank Limited" }, { "code": "90629", "name": "Amegy Microfinance Bank" }, { "code": "50926", "name": "Amju Unique MFB" }, { "code": "51341", "name": "AMPERSAND MICROFINANCE BANK" }, { "code": "50083", "name": "Aramoko MFB" }, { "code": "MFB50094", "name": "Astrapolaris MFB LTD" }, { "code": "90478", "name": "AVUENEGBE MICROFINANCE BANK" }, { "code": "51229", "name": "Bainescredit MFB" }, { "code": "50117", "name": "Banc Corp Microfinance Bank" }, { "code": "50123", "name": "Beststar Microfinance Bank" }, { "code": "FC40163", "name": "Branch International Financial Services Limited" }, { "code": "565", "name": "Carbon" }, { "code": "865", "name": "CASHCONNECT MFB" }, { "code": "50171", "name": "Chanelle Microfinance Bank Limited" }, { "code": "312", "name": "Chikum Microfinance bank" }, { "code": "70027", "name": "CITYCODE MORTAGE BANK" }, { "code": "50910", "name": "Consumer Microfinance Bank" }, { "code": "50204", "name": "Corestep MFB" }, { "code": "559", "name": "Coronation Merchant Bank" }, { "code": "FC40128", "name": "County Finance Limited" }, { "code": "51297", "name": "Crescent MFB" }, { "code": "90560", "name": "Crust Microfinance Bank" }, { "code": "51334", "name": "Davenport MICROFINANCE BANK" }, { "code": "50162", "name": "Dot Microfinance Bank" }, { "code": "50263", "name": "Ekimogun MFB" }, { "code": "90678", "name": "EXCEL FINANCE BANK" }, { "code": "50126", "name": "Eyowo" }, { "code": "51318", "name": "Fairmoney Microfinance Bank" }, { "code": "50298", "name": "Fedeth MFB" }, { "code": "51314", "name": "Firmus MFB" }, { "code": "90164", "name": "FIRST ROYAL MICROFINANCE BANK" }, { "code": "413", "name": "FirstTrust Mortgage Bank Nigeria" }, { "code": "50315", "name": "FLOURISH MFB" }, { "code": "501", "name": "FSDH Merchant Bank Limited" }, { "code": "832", "name": "FUTMINNA MICROFINANCE BANK" }, { "code": "812", "name": "Gateway Mortgage Bank LTD" }, { "code": "90574", "name": "Goldman MFB" }, { "code": "100022", "name": "GoMoney" }, { "code": "90664", "name": "GOOD SHEPHERD MICROFINANCE BANK" }, { "code": "50739", "name": "Goodnews Microfinance Bank" }, { "code": "562", "name": "Greenwich Merchant Bank" }, { "code": "51251", "name": "Hackman Microfinance Bank" }, { "code": "120002", "name": "HopePSB" }, { "code": "51244", "name": "Ibile Microfinance Bank" }, { "code": "50439", "name": "Ikoyi Osun MFB" }, { "code": "50442", "name": "Ilaro Poly Microfinance Bank" }, { "code": "50453", "name": "Imowo MFB" }, { "code": "PMB90058", "name": "IMPERIAL HOMES MORTAGE BANK" }, { "code": "50457", "name": "Infinity MFB" }, { "code": "50502", "name": "Kadpoly MFB" }, { "code": "51308", "name": "KANOPOLY MFB" }, { "code": "50200", "name": "Kredi Money MFB LTD" }, { "code": "90052", "name": "Lagos Building Investment Company Plc." }, { "code": "50549", "name": "Links MFB" }, { "code": "31", "name": "Living Trust Mortgage Bank" }, { "code": "50491", "name": "LOMA MFB" }, { "code": "303", "name": "Lotus Bank" }, { "code": "90171", "name": "MAINSTREET MICROFINANCE BANK" }, { "code": "50563", "name": "Mayfair MFB" }, { "code": "50304", "name": "Mint MFB" }, { "code": "946", "name": "Money Master PSB" }, { "code": "50515", "name": "Moniepoint MFB" }, { "code": "120003", "name": "MTN Momo PSB" }, { "code": "90190", "name": "MUTUAL BENEFITS MICROFINANCE BANK" }, { "code": "90679", "name": "NDCC MICROFINANCE BANK" }, { "code": "50629", "name": "NPF MICROFINANCE BANK" }, { "code": "107", "name": "Optimus Bank Limited" }, { "code": "999991", "name": "PalmPay" }, { "code": "311", "name": "Parkway - ReadyCash" }, { "code": "90680", "name": "PATHFINDER MICROFINANCE BANK LIMITED" }, { "code": "100039", "name": "Paystack-Titan" }, { "code": "50743", "name": "Peace Microfinance Bank" }, { "code": "51146", "name": "Personal Trust MFB" }, { "code": "50746", "name": "Petra Mircofinance Bank Plc" }, { "code": "50021", "name": "PFI FINANCE COMPANY LIMITED" }, { "code": "268", "name": "Platinum Mortgage Bank" }, { "code": "716", "name": "Pocket App" }, { "code": "50864", "name": "Polyunwana MFB" }, { "code": "105", "name": "PremiumTrust Bank" }, { "code": "50023", "name": "PROSPERIS FINANCE LIMITED" }, { "code": "51293", "name": "QuickFund MFB" }, { "code": "502", "name": "Rand Merchant Bank" }, { "code": "90496", "name": "RANDALPHA MICROFINANCE BANK" }, { "code": "90067", "name": "Refuge Mortgage Bank" }, { "code": "50994", "name": "Rephidim Microfinance Bank" }, { "code": "51286", "name": "Rigo Microfinance Bank Limited" }, { "code": "50767", "name": "ROCKSHIELD MICROFINANCE BANK" }, { "code": "51113", "name": "Safe Haven MFB" }, { "code": "951113", "name": "Safe Haven Microfinance Bank Limited" }, { "code": "40165", "name": "SAGE GREY FINANCE LIMITED" }, { "code": "50582", "name": "Shield MFB" }, { "code": "106", "name": "Signature Bank Ltd" }, { "code": "51062", "name": "Solid Allianze MFB" }, { "code": "50800", "name": "Solid Rock MFB" }, { "code": "90162", "name": "STANFORD MICROFINANCE BANK" }, { "code": "51253", "name": "Stellas MFB" }, { "code": "50968", "name": "Supreme MFB" }, { "code": "51269", "name": "Tangerine Money" }, { "code": "50840", "name": "U&C Microfinance Bank Ltd (U AND C MFB)" }, { "code": "51322", "name": "Uhuru MFB" }, { "code": "50870", "name": "Unaab Microfinance Bank Limited" }, { "code": "50871", "name": "Unical MFB" }, { "code": "51316", "name": "Unilag Microfinance Bank" }, { "code": "50894", "name": "Uzondu Microfinance Bank Awka Anambra State" }, { "code": "50020", "name": "Vale Finance Limited" }, { "code": "51355", "name": "Waya Microfinance Bank" }].sort((a, b) => a.name.localeCompare(b.name))
+
 
 
 type VerificationMethod = 'email' | 'phone' | 'new-phone';
@@ -73,6 +74,13 @@ export default function Profile() {
     queryKey: ['user'],
     queryFn: () => getProfile(),
   });
+
+  const { data: banksResponse, isLoading: isBanksLoading } = useQuery({
+    queryKey: ['banks'],
+    queryFn: () => getBanks(),
+  });
+  
+  const banks = banksResponse?.banks || [];
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(user?.email);
@@ -201,7 +209,7 @@ export default function Profile() {
     if (accountNumber.length === 10 && bankDetails.bankName) {
       try {
         setIsLookingUpAccount(true);
-        const bankCode = BANKS.find(bank => bank.name === bankDetails.bankName)?.code;
+        const bankCode = banks?.find(bank => bank.name === bankDetails.bankName)?.code;
         if (!bankCode) {
           throw new Error('Invalid bank selected');
         }
@@ -235,7 +243,7 @@ export default function Profile() {
         bank_name: bankDetails.bankName,
         account_number: bankDetails.accountNumber,
         bank_account_name: bankDetails.accountName,
-        bank_code: BANKS.find(bank => bank.name === bankDetails.bankName)?.code
+        bank_code: banks?.find(bank => bank.name === bankDetails.bankName)?.code
       });
       console.log('API response:', resp2);
       const isSuccess = resp2 && resp2.account_name && resp2.account_bank;
@@ -660,11 +668,15 @@ export default function Profile() {
                 disabled={!isEditingBank}
               >
                 <option value="">Select a bank</option>
-                {BANKS.map((bank) => (
-                  <option key={bank.code} value={bank.name}>
-                    {bank.name}
-                  </option>
-                ))}
+                {isBanksLoading ? (
+                  <option value="" disabled>Loading banks...</option>
+                ) : (
+                  banks?.map((bank) => (
+                    <option key={bank.code} value={bank.name}>
+                      {bank.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
             <div>

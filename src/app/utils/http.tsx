@@ -87,8 +87,8 @@ export const extractErrorMessage = (error: any): string => {
     }
   }
 
-  // Fallback error message
-  return error.message || 'An unexpected error occurred. Please try again.';
+  // Fallback error message - never return the raw error message
+  return 'An unexpected error occurred. Please try again.';
 };
 
 // Custom hook for consistent error handling
@@ -189,11 +189,34 @@ Http.interceptors.response.use(
       }
     }
 
-    // Enhance the error object with the extracted message
+        // Enhance the error object with the extracted message
     error.extractedMessage = errorMessage;
+    
+    // Override the raw error message to prevent it from being displayed
+    error.message = errorMessage;
+    
+    // Log the extracted message for debugging (but not the raw error)
+    console.log('API Error (extracted):', errorMessage);
     
     return Promise.reject(error);
   }
 );
 
 export default Http;
+
+// Global error handler to catch any unhandled API errors
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    // Check if this is an API error from our Http instance
+    if (event.reason && event.reason.config && event.reason.config.baseURL) {
+      // Extract the error message using our utility
+      const errorMessage = extractErrorMessage(event.reason);
+      
+      // Log the extracted message instead of the raw error
+      console.log('Unhandled API Error (extracted):', errorMessage);
+      
+      // Prevent the default error handling
+      event.preventDefault();
+    }
+  });
+}

@@ -260,7 +260,8 @@ export default function Register() {
       // Move to OTP verification step
       setCurrentStep(2);
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Error during registration', 'error');
+      const errorMessage = handleApiError(error, 'Error during registration');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -287,7 +288,8 @@ export default function Register() {
       await requestVerificationCode({ email: formData.email });
       showToast('Verification code sent successfully', 'success');
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Failed to send verification code', 'error');
+      const errorMessage = handleApiError(error, 'Failed to send verification code');
+      showToast(errorMessage, 'error');
     }
   };
 
@@ -315,7 +317,8 @@ export default function Register() {
         router.push('/portal/dashboard');
       }, 5000);
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Error verifying OTP', 'error');
+      const errorMessage = handleApiError(error, 'Error verifying OTP');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -341,7 +344,8 @@ export default function Register() {
         router.push('/portal/dashboard');
       }, 5000);
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Error creating PIN', 'error');
+      const errorMessage = handleApiError(error, 'Error creating PIN');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }

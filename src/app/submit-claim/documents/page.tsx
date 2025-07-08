@@ -199,9 +199,10 @@ export default function DocumentUpload() {
       // Navigate to success page
       router.push('/submit-claim/success');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting claim:', error);
-      showToast('Failed to submit claim. Please try again.', 'error');
+      const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
+      showToast(errorMessage, 'error');
       // Handle error appropriately
     } finally {
       setLoading(false);

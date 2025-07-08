@@ -86,8 +86,6 @@ export default function ClientPortal() {
     } catch (error: any) {
       console.log('Login error:', error);
       console.log('Error details:', {
-        message: error.message,
-        response: error.response,
         status: error.response?.status,
         data: error.response?.data
       });

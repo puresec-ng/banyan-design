@@ -257,8 +257,10 @@ export default function NewClaim() {
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting claim:', error);
+      const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
+      showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
     }
