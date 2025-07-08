@@ -75,6 +75,8 @@ export const contactUs = (payload: any) => Http.post(`/public/contact-us`, paylo
 // public/faq
 export const getFaq = () => Http.get(`/public/faq`);
 
-// banks
-export const getBanks = () => Http.get(`/banks`);
+export type BankType = { code: string; name: string };
+export interface BanksApiResponse { banks: BankType[] }
+
+export const getBanks = (): Promise<BanksApiResponse> => Http.get(`/banks`);
 

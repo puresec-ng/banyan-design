@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { checkEmail, } from '../../services/auth';
 import { getBanks } from '../../services/public';
 import { useApiError } from '../../utils/http';
+import type { BankType } from '../../services/public';
 
 interface EmailCheckResponse {
   exists: boolean;
@@ -40,9 +41,6 @@ const MOCK_BVN_DETAILS = {
   firstName: 'John',
   lastName: 'Doe',
 };
-
-
-
 
 type VerificationMethod = 'email' | 'phone' | 'new-phone';
 
@@ -80,7 +78,7 @@ export default function Profile() {
     queryFn: () => getBanks(),
   });
   
-  const banks = banksResponse?.banks || [];
+  const banks: BankType[] = banksResponse?.banks || [];
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(user?.email);

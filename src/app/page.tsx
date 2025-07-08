@@ -93,7 +93,7 @@ ${formData.get('message')}` // Message body includes email
       </div>
 
       {/* Services Section */}
-      <section id="services" className="section bg-white">
+      <section id="services" className="section bg-white scroll-mt-24">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="heading-lg mb-6">Our Insurance Claim Services</h2>
@@ -121,7 +121,7 @@ ${formData.get('message')}` // Message body includes email
       </section>
 
       {/* Process Section */}
-      <section id="process" className="section bg-gray-50">
+      <section id="process" className="section bg-gray-50 scroll-mt-24">
         <div className="container">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="heading-lg mb-6">How It Works</h2>
@@ -145,7 +145,7 @@ ${formData.get('message')}` // Message body includes email
       </section>
 
       {/* About Section */}
-      <section id="about" className="section bg-white">
+      <section id="about" className="section bg-white scroll-mt-24">
         <div className="container">
           <div className="max-w-4xl mx-auto">
             <h2 className="heading-lg mb-6 text-center">About Banyan Claims</h2>
@@ -194,7 +194,7 @@ ${formData.get('message')}` // Message body includes email
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="section bg-gray-50">
+      <section id="contact" className="section bg-gray-50 scroll-mt-24">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-12">
             <div>
