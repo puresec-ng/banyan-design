@@ -237,12 +237,33 @@ const STATUS_BADGES = {
 // Helper function to normalize status
 const normalizeStatus = (status: string | undefined | null): StatusType => {
   if (!status) return 'DEFAULT';
-  const upperStatus = status.toString().toUpperCase();
-  // Check if the status exists in STATUS_BADGES
-  if (upperStatus in STATUS_BADGES) {
-    return upperStatus as StatusType;
-  }
-  return 'DEFAULT';
+  
+  const statusMap: Record<string, StatusType> = {
+    'submitted': 'SUBMITTED',
+    'documents_verified': 'DOCUMENTS_VERIFIED', 
+    'in_review': 'IN_REVIEW',
+    'approved': 'APPROVED',
+    'rejected': 'REJECTED',
+    'pending_documents': 'PENDING_DOCUMENTS',
+    'document_requested': 'DOCUMENT_REQUESTED',
+    'pending_response': 'PENDING_RESPONSE',
+    'documents_requested': 'DOCUMENTS_REQUESTED',
+    'pending': 'SUBMITTED', // Map 'pending' to 'SUBMITTED' status
+    // Handle any uppercase versions that might come through
+    'SUBMITTED': 'SUBMITTED',
+    'DOCUMENTS_VERIFIED': 'DOCUMENTS_VERIFIED',
+    'IN_REVIEW': 'IN_REVIEW', 
+    'APPROVED': 'APPROVED',
+    'REJECTED': 'REJECTED',
+    'PENDING_DOCUMENTS': 'PENDING_DOCUMENTS',
+    'DOCUMENT_REQUESTED': 'DOCUMENT_REQUESTED',
+    'PENDING_RESPONSE': 'PENDING_RESPONSE',
+    'DOCUMENTS_REQUESTED': 'DOCUMENTS_REQUESTED',
+    'PENDING': 'SUBMITTED', // Map 'PENDING' to 'SUBMITTED' status
+  };
+  
+  const normalizedStatus = statusMap[status.toString().toLowerCase()] || statusMap[status.toString().toUpperCase()];
+  return normalizedStatus || 'DEFAULT';
 };
 
 const StatusBadge = ({ status }: { status: StatusType }) => {
