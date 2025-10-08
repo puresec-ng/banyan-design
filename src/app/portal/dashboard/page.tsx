@@ -218,7 +218,7 @@ const MOCK_CLAIMS: Claim[] = [
   },
 ];
 
-type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'PENDING_RESPONSE';
+type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'DOCUMENT_REQUESTED' | 'PENDING_RESPONSE' | 'DEFAULT';
 
 const STATUS_BADGES = {
   SUBMITTED: { color: 'bg-blue-100 text-blue-800', icon: ClockIcon },
@@ -228,13 +228,28 @@ const STATUS_BADGES = {
   REJECTED: { color: 'bg-red-100 text-red-800', icon: XCircleIcon },
   PENDING_DOCUMENTS: { color: 'bg-orange-100 text-orange-800', icon: PaperClipIcon },
   DOCUMENTS_REQUESTED: { color: 'bg-orange-100 text-orange-800', icon: DocumentTextIcon },
+  DOCUMENT_REQUESTED: { color: 'bg-orange-100 text-orange-800', icon: DocumentTextIcon },
   PENDING_RESPONSE: { color: 'bg-orange-100 text-orange-800', icon: ExclamationCircleIcon },
+  // Default fallback for any unknown status
+  DEFAULT: { color: 'bg-gray-100 text-gray-800', icon: QuestionMarkCircleIcon },
+};
+
+// Helper function to normalize status
+const normalizeStatus = (status: string | undefined | null): StatusType => {
+  if (!status) return 'DEFAULT';
+  const upperStatus = status.toString().toUpperCase();
+  // Check if the status exists in STATUS_BADGES
+  if (upperStatus in STATUS_BADGES) {
+    return upperStatus as StatusType;
+  }
+  return 'DEFAULT';
 };
 
 const StatusBadge = ({ status }: { status: StatusType }) => {
-  const StatusIcon = STATUS_BADGES[status].icon;
+  const statusConfig = STATUS_BADGES[status] || STATUS_BADGES.DEFAULT;
+  const StatusIcon = statusConfig?.icon || QuestionMarkCircleIcon;
   return (
-    <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${STATUS_BADGES[status].color}`}>
+    <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${statusConfig?.color || 'bg-gray-100 text-gray-800'}`}>
       <StatusIcon className="w-4 h-4" />
       {status.replace('_', ' ')}
     </div>
@@ -375,7 +390,7 @@ export default function Dashboard() {
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-medium text-gray-900">{claim.claim_number}</span>
-                      <StatusBadge status={claim.status.toString().toUpperCase() as StatusType} />
+                      <StatusBadge status={normalizeStatus(claim.status)} />
                     </div>
                     <p className="text-gray-600 mb-2">{claim?.claim_type_details?.name || claim?.claim_type?.name}</p>
                     <p className="text-gray-600 mb-2">{claim.description}</p>
@@ -457,20 +472,24 @@ export default function Dashboard() {
                       {
                         claim.claim_history.length > 0 && (
                           <div className="space-y-6">
-                            {claim.claim_history.map((event, index) => (
-                              <div key={index} className="relative flex gap-4">
-                                <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status?.toString().toUpperCase() as StatusType].color} ring-4 ring-white`}></div>
-                                <div>
-                                  <p className="font-medium text-gray-900 capitalize">
-                                    {event.status.replace('_', ' ')}
-                                  </p>
-                                  <p className="text-gray-600 text-sm">{event.description}</p>
-                                  <p className="text-gray-500 text-sm mt-1">
-                                    {formatDate(event.created_at)}
-                                  </p>
+                            {claim.claim_history.map((event, index) => {
+                              const eventStatus = normalizeStatus(event.status);
+                              const eventStatusConfig = STATUS_BADGES[eventStatus] || STATUS_BADGES.DEFAULT;
+                              return (
+                                <div key={index} className="relative flex gap-4">
+                                  <div className={`w-4 h-4 rounded-full mt-1.5 ${eventStatusConfig?.color || 'bg-gray-100 text-gray-800'} ring-4 ring-white`}></div>
+                                  <div>
+                                    <p className="font-medium text-gray-900 capitalize">
+                                      {event.status.replace('_', ' ')}
+                                    </p>
+                                    <p className="text-gray-600 text-sm">{event.description}</p>
+                                    <p className="text-gray-500 text-sm mt-1">
+                                      {formatDate(event.created_at)}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )
                       }
