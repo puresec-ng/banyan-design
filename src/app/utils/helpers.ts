@@ -5,7 +5,7 @@ export const dateFormatter = (date: string) => {
 }
 
 export const dateFormatterWithTime = (date: string) => {
-    return moment(date).format("DD MMM YYYY HH:mm");
+    return moment(date).format("DD MMM YYYY hh:mm A");
 }
 
 export const numberFormatter = (number: number) => {

@@ -47,6 +47,7 @@ interface ClaimType {
     updated_at: string;
 }
 export interface ClaimData {
+    id?: number; // Numeric ID for API calls
     claim_number: string;
     incident_location: string;
     incident_date: string;
@@ -55,6 +56,7 @@ export interface ClaimData {
     claim_type: ClaimType;
     status: string;
     created_at: string;
+    submission_date?: string; // DD Mmm YYYY HH:MM format
     claim_history: ClaimHistory[];
     documents: Document[];
     questions?: questions[];

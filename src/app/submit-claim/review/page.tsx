@@ -144,7 +144,14 @@ export default function ReviewClaim() {
             <div>
               <dt className="text-sm font-medium text-gray-500">Incident Date & Time</dt>
               <dd className="text-gray-900">
-                {new Date(`${basicInfo.incidentDate}T${basicInfo.incidentTime}`).toLocaleString()}
+                {new Date(`${basicInfo.incidentDate}T${basicInfo.incidentTime}`).toLocaleString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true,
+                })}
               </dd>
             </div>
             <div className="md:col-span-2">

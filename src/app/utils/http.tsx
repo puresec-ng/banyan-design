@@ -118,13 +118,8 @@ export const Http = axios.create({
 });
 
 Http.interceptors.request.use((config: any) => {
-  console.log('Http request interceptor - URL:', config.url);
-  console.log('Http request interceptor - Method:', config.method);
-  console.log('Http request interceptor - Data:', config.data);
-  
   const token = cookie().getCookie("token");
   const userType = cookie().getCookie("userType");
-  console.log(token, 'token______');
   // const apiKey = cookie().getCookie("API_KEY");
 
 
@@ -151,22 +146,16 @@ Http.interceptors.request.use((config: any) => {
   //   config.headers["X-API-KEY"] = apiKey;
   // }
 
-  console.log('Http request interceptor - Final config:', config);
   return config;
 });
 
 Http.interceptors.response.use(
   (response: any) => {
-    console.log('Http response interceptor - Success:', response);
     return response.data;
   },
   (error: any) => {
-    console.log('Http response interceptor - Error:', error);
-    console.log('Http response interceptor - Error response:', error.response);
-    
     // Extract error message for logging
     const errorMessage = extractErrorMessage(error);
-    console.log('Extracted error message:', errorMessage);
     
     if (error.response?.status) {
       if (
@@ -185,7 +174,7 @@ Http.interceptors.response.use(
       }
 
       if (error.response.status === 500) {
-        console.log("Server error occurred");
+        // Server error occurred
       }
     }
 
@@ -194,9 +183,6 @@ Http.interceptors.response.use(
     
     // Override the raw error message to prevent it from being displayed
     error.message = errorMessage;
-    
-    // Log the extracted message for debugging (but not the raw error)
-    console.log('API Error (extracted):', errorMessage);
     
     return Promise.reject(error);
   }
