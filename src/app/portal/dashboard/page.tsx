@@ -666,6 +666,7 @@ const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: 
   const getOfferStatus = () => {
     if (offer.offer_acceptance_status === 'accepted') return 'accepted';
     if (offer.offer_acceptance_status === 'rejected') return 'rejected';
+    if (offer.status === 'client_accepted') return 'accepted';
     if (isOfferExpired()) return 'expired';
     if (offer.status === 'settlement_approved') return 'pending';
     return 'pending';

@@ -123,13 +123,14 @@ function OfferContent() {
   const canRespondToOffer = () => {
     // Can respond if offer is approved/pending and not expired and not already responded
     const isApproved = offer?.status === 'settlement_approved' || offer?.status === 'pending';
-    const notResponded = !offer?.offer_acceptance_status;
+    const notResponded = !offer?.offer_acceptance_status && offer?.status !== 'client_accepted';
     return isApproved && notResponded && !isOfferExpired();
   };
 
   const getOfferStatus = () => {
     if (offer?.offer_acceptance_status === 'accepted') return 'accepted';
     if (offer?.offer_acceptance_status === 'rejected') return 'rejected';
+    if (offer?.status === 'client_accepted') return 'accepted';
     if (isOfferExpired()) return 'expired';
     if (offer?.status === 'settlement_approved') return 'pending';
     return offer?.status || 'pending';
