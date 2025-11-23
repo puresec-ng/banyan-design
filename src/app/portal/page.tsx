@@ -71,10 +71,10 @@ export default function ClientPortal() {
         localStorage.setItem('rememberMeChecked', 'false');
       }
 
-      // Set cookies with debug logging
+      // Set cookies as session cookies (expire when browser closes)
       console.log('Setting cookies...');
-      cookie().setCookie('token', response.token);
-      cookie().setCookie('user', JSON.stringify(response.user));
+      cookie().setCookie('token', response.token); // Session cookie (no expiration)
+      cookie().setCookie('user', JSON.stringify(response.user)); // Session cookie (no expiration)
       console.log('Cookies after setting:', document.cookie);
 
       // Small delay to ensure cookies are set before redirect

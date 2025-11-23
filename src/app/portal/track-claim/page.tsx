@@ -14,10 +14,11 @@ import {
   ArrowRightIcon,
   InformationCircleIcon,
   PaperAirplaneIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import { trackClaim, ClaimData } from '@/app/services/dashboard';
 import { uploadDocument } from '@/app/services/public';
-import { getAdditionalInfoRequest, checkRequestStatus } from '@/app/services/claims';
+import { getAdditionalInfoRequest, checkRequestStatus, getClaimOffer } from '@/app/services/claims';
 import cookie from '@/app/utils/cookie';
 import { useToast } from '../../context/ToastContext';
 import { useApiError, Http } from '../../utils/http';
@@ -419,6 +420,107 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
           )}
         </div>
       ))}
+    </div>
+  );
+};
+
+// Component for displaying offers
+const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: string }) => {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const { handleApiError } = useApiError();
+
+  // Fetch offer for this claim
+  const { data: offerData, isLoading: isLoadingOffer, error: offerError } = useQuery({
+    queryKey: ['claim-offer', claimId],
+    queryFn: () => getClaimOffer(claimId),
+    enabled: !!claimId,
+    retry: 1,
+  });
+
+  // Handle errors silently for 404 (no offer exists yet)
+  useEffect(() => {
+    if (offerError && (offerError as any)?.response?.status !== 404) {
+      console.error('Error fetching offer:', offerError);
+    }
+  }, [offerError]);
+
+  const offer = offerData?.data;
+
+  if (isLoadingOffer) {
+    return null; // Don't show loading state, just hide the section
+  }
+
+  if (!offer) {
+    return null; // No offer available
+  }
+
+  const formatCurrency = (amount: string | number) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numAmount)) return '₦0';
+    return `₦${numAmount.toLocaleString('en-NG', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  const isOfferExpired = () => {
+    if (offer.expired !== undefined) {
+      return offer.expired;
+    }
+    if (!offer.expiry_period) return false;
+    return new Date(offer.expiry_period) < new Date();
+  };
+
+  const getOfferStatus = () => {
+    if (offer.offer_acceptance_status === 'accepted') return 'accepted';
+    if (offer.offer_acceptance_status === 'rejected') return 'rejected';
+    if (isOfferExpired()) return 'expired';
+    if (offer.status === 'settlement_approved') return 'pending';
+    return 'pending';
+  };
+
+  const getOfferStatusColor = () => {
+    const status = getOfferStatus();
+    if (status === 'accepted') return 'bg-green-50 border-green-200';
+    if (status === 'rejected') return 'bg-red-50 border-red-200';
+    if (status === 'expired') return 'bg-gray-50 border-gray-200';
+    return 'bg-blue-50 border-blue-200';
+  };
+
+  const getOfferStatusText = () => {
+    const status = getOfferStatus();
+    if (status === 'accepted') return 'Accepted';
+    if (status === 'rejected') return 'Rejected';
+    if (status === 'expired') return 'Expired';
+    return 'Pending';
+  };
+
+  return (
+    <div className="p-6 border-b">
+      <div className={`border rounded-lg p-4 ${getOfferStatusColor()}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CurrencyDollarIcon className="h-6 w-6 text-[#004D40]" />
+            <div>
+              <h3 className="font-semibold text-gray-900">Settlement Offer</h3>
+              <p className="text-sm text-gray-600">
+                Amount: <span className="font-medium">{formatCurrency(offer.offer_amount)}</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Status: <span className="font-medium">{getOfferStatusText()}</span>
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push(`/portal/offer?claimId=${claimId}`)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors text-sm font-medium"
+          >
+            View Offer
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -840,6 +942,9 @@ export default function TrackClaim() {
 
             {/* Additional Information Requests */}
             <AdditionalInfoRequestsSection claimId={claimId} />
+
+            {/* Offer Section */}
+            <OfferSection claimId={String(claim?.id || claim?.claim_number || claimId)} claimNumber={claim?.claim_number || claimId} />
 
             {/* Claim History */}
             <div className="p-6 mt-8">

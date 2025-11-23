@@ -251,8 +251,8 @@ export default function Register() {
         token: response.token,
         user: response.user,
       };
-      cookie().setCookie('token', response.token);
-      cookie().setCookie('user', JSON.stringify(response.user));
+      cookie().setCookie('token', response.token); // Session cookie (no expiration)
+      cookie().setCookie('user', JSON.stringify(response.user)); // Session cookie (no expiration)
 
       // Store form data in localStorage for the next steps
       localStorage.setItem('registrationData', JSON.stringify(savedResponse));

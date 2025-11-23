@@ -26,10 +26,12 @@ import {
   QuestionMarkCircleIcon,
   ExclamationCircleIcon,
   PaperClipIcon,
+  CurrencyDollarIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { getSubmitedClaims, ClaimData, uploadClaimDocument } from '../../services/dashboard';
 import { uploadDocument } from '../../services/public';
-import { getAdditionalInfoRequest, checkRequestStatus } from '../../services/claims';
+import { getAdditionalInfoRequest, checkRequestStatus, getClaimOffer } from '../../services/claims';
 import { useApiError, Http } from '../../utils/http';
 
 import { useQuery } from "@tanstack/react-query";
@@ -613,6 +615,107 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
   );
 };
 
+// Component for displaying offers
+const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: string }) => {
+  const router = useRouter();
+  const { showToast } = useToast();
+  const { handleApiError } = useApiError();
+
+  // Fetch offer for this claim
+  const { data: offerData, isLoading: isLoadingOffer, error: offerError } = useQuery({
+    queryKey: ['claim-offer', claimId],
+    queryFn: () => getClaimOffer(claimId),
+    enabled: !!claimId,
+    retry: 1,
+  });
+
+  // Handle errors silently for 404 (no offer exists yet)
+  useEffect(() => {
+    if (offerError && (offerError as any)?.response?.status !== 404) {
+      console.error('Error fetching offer:', offerError);
+    }
+  }, [offerError]);
+
+  const offer = offerData?.data;
+
+  if (isLoadingOffer) {
+    return null; // Don't show loading state, just hide the section
+  }
+
+  if (!offer) {
+    return null; // No offer available
+  }
+
+  const formatCurrency = (amount: string | number) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numAmount)) return '₦0';
+    return `₦${numAmount.toLocaleString('en-NG', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  const isOfferExpired = () => {
+    if (offer.expired !== undefined) {
+      return offer.expired;
+    }
+    if (!offer.expiry_period) return false;
+    return new Date(offer.expiry_period) < new Date();
+  };
+
+  const getOfferStatus = () => {
+    if (offer.offer_acceptance_status === 'accepted') return 'accepted';
+    if (offer.offer_acceptance_status === 'rejected') return 'rejected';
+    if (isOfferExpired()) return 'expired';
+    if (offer.status === 'settlement_approved') return 'pending';
+    return 'pending';
+  };
+
+  const getOfferStatusColor = () => {
+    const status = getOfferStatus();
+    if (status === 'accepted') return 'bg-green-50 border-green-200';
+    if (status === 'rejected') return 'bg-red-50 border-red-200';
+    if (status === 'expired') return 'bg-gray-50 border-gray-200';
+    return 'bg-blue-50 border-blue-200';
+  };
+
+  const getOfferStatusText = () => {
+    const status = getOfferStatus();
+    if (status === 'accepted') return 'Accepted';
+    if (status === 'rejected') return 'Rejected';
+    if (status === 'expired') return 'Expired';
+    return 'Pending';
+  };
+
+  return (
+    <div className="mt-6 mb-6">
+      <div className={`border rounded-lg p-4 ${getOfferStatusColor()}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CurrencyDollarIcon className="h-6 w-6 text-[#004D40]" />
+            <div>
+              <h3 className="font-semibold text-gray-900">Settlement Offer</h3>
+              <p className="text-sm text-gray-600">
+                Amount: <span className="font-medium">{formatCurrency(offer.offer_amount)}</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Status: <span className="font-medium">{getOfferStatusText()}</span>
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => router.push(`/portal/offer?claimId=${claimId}`)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors text-sm font-medium"
+          >
+            View Offer
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Component for handling request responses
 const RequestResponseComponent = ({ 
   event, 
@@ -930,13 +1033,18 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="divide-y">
-            {claims.data.data?.map((claim: ClaimData) => (
+            {claims.data.data?.map((claim: ClaimData) => {
+              const normalizedStatus = normalizeStatus(claim.status);
+              const isApproved = normalizedStatus === 'APPROVED';
+              const claimId = String(claim.id || claim.claim_number);
+              
+              return (
               <div key={claim.claim_number} className="p-6">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-medium text-gray-900">{claim.claim_number}</span>
-                      <StatusBadge status={normalizeStatus(claim.status)} />
+                      <StatusBadge status={normalizedStatus} />
                     </div>
                     <p className="text-gray-600 mb-2">{claim?.claim_type_details?.name || claim?.claim_type?.name}</p>
                     <p className="text-gray-600 mb-2">{claim.description}</p>
@@ -944,12 +1052,23 @@ export default function Dashboard() {
                       Submitted on {claim.submission_date ? formatDate(claim.submission_date) : formatDate(claim.incident_date)}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleClaimSelect(claim.claim_number)}
-                    className="text-[#004D40] hover:text-[#003D30]"
-                  >
-                    <ChevronRightIcon className={`w-6 h-6 transition-transform ${selectedClaim === claim.claim_number ? 'rotate-90' : ''}`} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {isApproved && (
+                      <button
+                        onClick={() => router.push(`/portal/offer?claimId=${claimId}`)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors text-sm font-medium"
+                      >
+                        View Offer
+                        <ArrowRightIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleClaimSelect(claim.claim_number)}
+                      className="text-[#004D40] hover:text-[#003D30]"
+                    >
+                      <ChevronRightIcon className={`w-6 h-6 transition-transform ${selectedClaim === claim.claim_number ? 'rotate-90' : ''}`} />
+                    </button>
+                  </div>
                 </div>
 
                 {selectedClaim === claim.claim_number && (
@@ -1014,6 +1133,9 @@ export default function Dashboard() {
                     {/* Additional Information Requests */}
                     <AdditionalInfoRequestsSection claimId={String(claim.id || claim.claim_number)} />
 
+                    {/* Offer Section */}
+                    <OfferSection claimId={String(claim.id || claim.claim_number)} claimNumber={claim.claim_number} />
+
                     {/* Claim History */}
                     <div className="mt-8">
                       <h3 className="text-lg font-medium text-gray-900 mb-4">Claim History</h3>
@@ -1056,7 +1178,8 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

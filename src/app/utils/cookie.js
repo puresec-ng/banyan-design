@@ -8,15 +8,22 @@ const cookie = () => {
    * use to set cookie
    * @param {*} key
    * @param {*} value
+   * @param {*} options - Optional: { expires: number } - if expires is undefined, cookie is session-only
    */
-  const setCookie = (key, value) => {
-    return Cookie.set(key, value, {
+  const setCookie = (key, value, options = {}) => {
+    const cookieOptions = {
       path: "/",
-      expires: 2,
       domain: parentDomain,
       secure: !dev,
       sameSite: 'strict'
-    });
+    };
+    
+    // Only set expires if provided (undefined = session cookie)
+    if (options.expires !== undefined) {
+      cookieOptions.expires = options.expires;
+    }
+    
+    return Cookie.set(key, value, cookieOptions);
   };
 
   /**
