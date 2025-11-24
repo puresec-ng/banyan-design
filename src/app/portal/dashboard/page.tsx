@@ -244,7 +244,7 @@ const MOCK_CLAIMS: Claim[] = [
   },
 ];
 
-type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'DOCUMENT_REQUESTED' | 'PENDING_RESPONSE' | 'DEFAULT';
+type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'DOCUMENT_REQUESTED' | 'PENDING_RESPONSE' | 'OFFER_ACCEPTED' | 'DEFAULT';
 
 const STATUS_BADGES = {
   SUBMITTED: { color: 'bg-blue-100 text-blue-800', icon: ClockIcon },
@@ -256,13 +256,23 @@ const STATUS_BADGES = {
   DOCUMENTS_REQUESTED: { color: 'bg-orange-100 text-orange-800', icon: DocumentTextIcon },
   DOCUMENT_REQUESTED: { color: 'bg-orange-100 text-orange-800', icon: DocumentTextIcon },
   PENDING_RESPONSE: { color: 'bg-orange-100 text-orange-800', icon: ExclamationCircleIcon },
+  OFFER_ACCEPTED: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },
   // Default fallback for any unknown status
   DEFAULT: { color: 'bg-gray-100 text-gray-800', icon: QuestionMarkCircleIcon },
 };
 
 // Helper function to normalize status
 const normalizeStatus = (status: string | undefined | null): StatusType => {
-  if (!status) return 'DEFAULT';
+  if (!status) {
+    console.warn('normalizeStatus: status is null/undefined');
+    return 'DEFAULT';
+  }
+  
+  const statusStr = status.toString().trim();
+  if (!statusStr) {
+    console.warn('normalizeStatus: status is empty string');
+    return 'DEFAULT';
+  }
   
   const statusMap: Record<string, StatusType> = {
     'submitted': 'SUBMITTED',
@@ -274,7 +284,10 @@ const normalizeStatus = (status: string | undefined | null): StatusType => {
     'document_requested': 'DOCUMENT_REQUESTED',
     'pending_response': 'PENDING_RESPONSE',
     'documents_requested': 'DOCUMENTS_REQUESTED',
+    'client_accepted': 'OFFER_ACCEPTED', // Map 'client_accepted' to 'OFFER_ACCEPTED' status
     'pending': 'SUBMITTED', // Map 'pending' to 'SUBMITTED' status
+    'default': 'SUBMITTED', // Map 'default' to 'SUBMITTED' status
+    'unknown': 'SUBMITTED', // Map 'unknown' to 'SUBMITTED' status
     // Handle any uppercase versions that might come through
     'SUBMITTED': 'SUBMITTED',
     'DOCUMENTS_VERIFIED': 'DOCUMENTS_VERIFIED',
@@ -285,20 +298,38 @@ const normalizeStatus = (status: string | undefined | null): StatusType => {
     'DOCUMENT_REQUESTED': 'DOCUMENT_REQUESTED',
     'PENDING_RESPONSE': 'PENDING_RESPONSE',
     'DOCUMENTS_REQUESTED': 'DOCUMENTS_REQUESTED',
+    'CLIENT_ACCEPTED': 'OFFER_ACCEPTED', // Map 'CLIENT_ACCEPTED' to 'OFFER_ACCEPTED' status
     'PENDING': 'SUBMITTED', // Map 'PENDING' to 'SUBMITTED' status
+    'DEFAULT': 'SUBMITTED', // Map 'DEFAULT' to 'SUBMITTED' status
+    'UNKNOWN': 'SUBMITTED', // Map 'UNKNOWN' to 'SUBMITTED' status
   };
   
-  const normalizedStatus = statusMap[status.toString().toLowerCase()] || statusMap[status.toString().toUpperCase()];
-  return normalizedStatus || 'DEFAULT';
+  const lowerStatus = statusStr.toLowerCase();
+  const upperStatus = statusStr.toUpperCase();
+  const normalizedStatus = statusMap[lowerStatus] || statusMap[upperStatus];
+  
+  if (!normalizedStatus) {
+    console.warn('normalizeStatus: Unknown status value:', statusStr, '| Original:', status);
+    return 'SUBMITTED'; // Default to SUBMITTED instead of DEFAULT
+  }
+  
+  return normalizedStatus;
 };
 
 const StatusBadge = ({ status }: { status: StatusType }) => {
   const statusConfig = STATUS_BADGES[status] || STATUS_BADGES.DEFAULT;
   const StatusIcon = statusConfig?.icon || QuestionMarkCircleIcon;
+  
+  // Format status text for display
+  const getStatusText = () => {
+    if (status === 'OFFER_ACCEPTED') return 'OFFER ACCEPTED';
+    return status ? status.replace(/_/g, ' ') : 'Unknown';
+  };
+  
   return (
     <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${statusConfig?.color || 'bg-gray-100 text-gray-800'}`}>
       <StatusIcon className="w-4 h-4" />
-      {status ? status.replace('_', ' ') : 'Unknown'}
+      {getStatusText()}
     </div>
   );
 };
@@ -1035,8 +1066,17 @@ export default function Dashboard() {
         ) : (
           <div className="divide-y">
             {claims.data.data?.map((claim: ClaimData) => {
+              // Debug: Log the actual status from API
+              if (claim.status === 'default' || claim.status === 'DEFAULT' || !claim.status) {
+                console.log('Claim status debug:', {
+                  claim_number: claim.claim_number,
+                  status: claim.status,
+                  statusType: typeof claim.status,
+                  allClaimData: claim
+                });
+              }
               const normalizedStatus = normalizeStatus(claim.status);
-              const isApproved = normalizedStatus === 'APPROVED';
+              const isApproved = normalizedStatus === 'APPROVED' || normalizedStatus === 'OFFER_ACCEPTED';
               const claimId = String(claim.id || claim.claim_number);
               
               return (
