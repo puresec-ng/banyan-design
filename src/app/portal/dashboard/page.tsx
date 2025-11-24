@@ -244,7 +244,7 @@ const MOCK_CLAIMS: Claim[] = [
   },
 ];
 
-type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'DOCUMENT_REQUESTED' | 'PENDING_RESPONSE' | 'OFFER_ACCEPTED' | 'DEFAULT';
+type StatusType = 'SUBMITTED' | 'DOCUMENTS_VERIFIED' | 'IN_REVIEW' | 'APPROVED' | 'REJECTED' | 'PENDING_DOCUMENTS' | 'DOCUMENTS_REQUESTED' | 'DOCUMENT_REQUESTED' | 'PENDING_RESPONSE' | 'PENDING' | 'OFFER_ACCEPTED' | 'OFFER_PAID' | 'DEFAULT';
 
 const STATUS_BADGES = {
   SUBMITTED: { color: 'bg-blue-100 text-blue-800', icon: ClockIcon },
@@ -256,7 +256,9 @@ const STATUS_BADGES = {
   DOCUMENTS_REQUESTED: { color: 'bg-orange-100 text-orange-800', icon: DocumentTextIcon },
   DOCUMENT_REQUESTED: { color: 'bg-orange-100 text-orange-800', icon: DocumentTextIcon },
   PENDING_RESPONSE: { color: 'bg-orange-100 text-orange-800', icon: ExclamationCircleIcon },
+  PENDING: { color: 'bg-yellow-100 text-yellow-800', icon: ClockIcon },
   OFFER_ACCEPTED: { color: 'bg-green-100 text-green-800', icon: CheckCircleIcon },
+  OFFER_PAID: { color: 'bg-emerald-100 text-emerald-800', icon: CheckCircleIcon },
   // Default fallback for any unknown status
   DEFAULT: { color: 'bg-gray-100 text-gray-800', icon: QuestionMarkCircleIcon },
 };
@@ -285,7 +287,8 @@ const normalizeStatus = (status: string | undefined | null): StatusType => {
     'pending_response': 'PENDING_RESPONSE',
     'documents_requested': 'DOCUMENTS_REQUESTED',
     'client_accepted': 'OFFER_ACCEPTED', // Map 'client_accepted' to 'OFFER_ACCEPTED' status
-    'pending': 'SUBMITTED', // Map 'pending' to 'SUBMITTED' status
+    'paid': 'OFFER_PAID', // Map 'paid' to 'OFFER_PAID' status
+    'pending': 'PENDING', // Map 'pending' to 'PENDING' status
     'default': 'SUBMITTED', // Map 'default' to 'SUBMITTED' status
     'unknown': 'SUBMITTED', // Map 'unknown' to 'SUBMITTED' status
     // Handle any uppercase versions that might come through
@@ -299,7 +302,8 @@ const normalizeStatus = (status: string | undefined | null): StatusType => {
     'PENDING_RESPONSE': 'PENDING_RESPONSE',
     'DOCUMENTS_REQUESTED': 'DOCUMENTS_REQUESTED',
     'CLIENT_ACCEPTED': 'OFFER_ACCEPTED', // Map 'CLIENT_ACCEPTED' to 'OFFER_ACCEPTED' status
-    'PENDING': 'SUBMITTED', // Map 'PENDING' to 'SUBMITTED' status
+    'PAID': 'OFFER_PAID', // Map 'PAID' to 'OFFER_PAID' status
+    'PENDING': 'PENDING', // Map 'PENDING' to 'PENDING' status
     'DEFAULT': 'SUBMITTED', // Map 'DEFAULT' to 'SUBMITTED' status
     'UNKNOWN': 'SUBMITTED', // Map 'UNKNOWN' to 'SUBMITTED' status
   };
@@ -323,6 +327,7 @@ const StatusBadge = ({ status }: { status: StatusType }) => {
   // Format status text for display
   const getStatusText = () => {
     if (status === 'OFFER_ACCEPTED') return 'OFFER ACCEPTED';
+    if (status === 'OFFER_PAID') return 'OFFER PAID';
     return status ? status.replace(/_/g, ' ') : 'Unknown';
   };
   
@@ -695,28 +700,29 @@ const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: 
   };
 
   const getOfferStatus = () => {
-    if (offer.offer_acceptance_status === 'accepted') return 'accepted';
-    if (offer.offer_acceptance_status === 'rejected') return 'rejected';
-    if (offer.status === 'client_accepted') return 'accepted';
-    if (isOfferExpired()) return 'expired';
-    if (offer.status === 'settlement_approved') return 'pending';
-    return 'pending';
+    // Use the status directly from the API
+    return offer.status || 'pending';
   };
 
   const getOfferStatusColor = () => {
     const status = getOfferStatus();
-    if (status === 'accepted') return 'bg-green-50 border-green-200';
-    if (status === 'rejected') return 'bg-red-50 border-red-200';
-    if (status === 'expired') return 'bg-gray-50 border-gray-200';
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'accepted' || statusLower === 'client_accepted') return 'bg-green-50 border-green-200';
+    if (statusLower === 'rejected') return 'bg-red-50 border-red-200';
+    if (statusLower === 'expired' || isOfferExpired()) return 'bg-gray-50 border-gray-200';
+    if (statusLower === 'paid') return 'bg-emerald-50 border-emerald-200';
     return 'bg-blue-50 border-blue-200';
   };
 
   const getOfferStatusText = () => {
     const status = getOfferStatus();
-    if (status === 'accepted') return 'Accepted';
-    if (status === 'rejected') return 'Rejected';
-    if (status === 'expired') return 'Expired';
-    return 'Pending';
+    const statusLower = status.toLowerCase();
+    // Format status text for display
+    if (statusLower === 'client_accepted') return 'Accepted';
+    if (statusLower === 'settlement_approved') return 'Pending';
+    if (statusLower === 'paid') return 'Paid';
+    // Capitalize first letter and replace underscores with spaces
+    return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
   };
 
   return (
@@ -724,7 +730,7 @@ const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: 
       <div className={`border rounded-lg p-4 ${getOfferStatusColor()}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CurrencyDollarIcon className="h-6 w-6 text-[#004D40]" />
+            <div className="h-6 w-6 flex items-center justify-center text-[#004D40] font-bold text-lg">₦</div>
             <div>
               <h3 className="font-semibold text-gray-900">Settlement Offer</h3>
               <p className="text-sm text-gray-600">
@@ -1172,7 +1178,9 @@ export default function Dashboard() {
                     }
 
                     {/* Additional Information Requests */}
-                    <AdditionalInfoRequestsSection claimId={String(claim.id || claim.claim_number)} />
+                    {normalizedStatus !== 'OFFER_PAID' && (
+                      <AdditionalInfoRequestsSection claimId={String(claim.id || claim.claim_number)} />
+                    )}
 
                     {/* Offer Section */}
                     <OfferSection claimId={String(claim.id || claim.claim_number)} claimNumber={claim.claim_number} />

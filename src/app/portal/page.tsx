@@ -107,7 +107,7 @@ export default function ClientPortal() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-4">
@@ -118,7 +118,7 @@ export default function ClientPortal() {
                 width={150}
                 height={40}
                 priority
-                className="mx-auto"
+                className="mx-auto dark:invert"
               />
             </Link>
           </div>
@@ -126,21 +126,21 @@ export default function ClientPortal() {
           <div className="mb-4">
             <Link
               href="/"
-              className="inline-flex items-center text-[#004D40] hover:text-[#003D30] font-medium"
+              className="inline-flex items-center text-[#004D40] dark:text-[#4FD1C7] hover:text-[#003D30] dark:hover:text-[#38B2AC] font-medium"
             >
               <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Return to Website
             </Link>
           </div>
 
-          <div className="bg-white shadow-md rounded-xl p-8">
-            <h1 className="text-2xl font-semibold text-gray-900 text-center mb-6">
+          <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl p-8">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-6">
               Client Portal Login
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Email
                 </label>
                 <input
@@ -149,13 +149,13 @@ export default function ClientPortal() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:ring-2 focus:ring-[#004D40] dark:focus:ring-[#4FD1C7] focus:border-transparent"
                   placeholder="Enter your email"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Password
                 </label>
                 <div className="mt-1 relative">
@@ -165,13 +165,13 @@ export default function ClientPortal() {
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:ring-2 focus:ring-[#004D40] dark:focus:ring-[#4FD1C7] focus:border-transparent pr-10"
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
                   >
                     {showPassword ? (
                       <EyeSlashIcon className="h-5 w-5" />
@@ -190,9 +190,9 @@ export default function ClientPortal() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 text-[#004D40] focus:ring-[#004D40] border-gray-300 rounded"
+                    className="h-4 w-4 text-[#004D40] dark:text-[#4FD1C7] focus:ring-[#004D40] dark:focus:ring-[#4FD1C7] border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
                     Remember me
                   </label>
                 </div>
@@ -200,7 +200,7 @@ export default function ClientPortal() {
                 <div className="text-sm">
                   <Link
                     href="/portal/forgot-password"
-                    className="font-medium text-[#004D40] hover:text-[#003D30]"
+                    className="font-medium text-[#004D40] dark:text-[#4FD1C7] hover:text-[#003D30] dark:hover:text-[#38B2AC]"
                   >
                     Forgot your password?
                   </Link>
@@ -219,17 +219,17 @@ export default function ClientPortal() {
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+                  <div className="w-full border-t border-gray-300 dark:border-gray-600" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Don't have an account?</span>
                 </div>
               </div>
 
               <div className="mt-4 text-center">
                 <Link
                   href="/portal/register"
-                  className="text-[#004D40] hover:text-[#003D30] font-medium"
+                  className="text-[#004D40] dark:text-[#4FD1C7] hover:text-[#003D30] dark:hover:text-[#38B2AC] font-medium"
                 >
                   Register now
                 </Link>

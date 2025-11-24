@@ -123,7 +123,7 @@ function OfferContent() {
   const canRespondToOffer = () => {
     // Can respond if offer is approved/pending and not expired and not already responded
     const isApproved = offer?.status === 'settlement_approved' || offer?.status === 'pending';
-    const notResponded = !offer?.offer_acceptance_status && offer?.status !== 'client_accepted';
+    const notResponded = !offer?.offer_acceptance_status && offer?.status !== 'client_accepted' && offer?.status !== 'paid';
     return isApproved && notResponded && !isOfferExpired();
   };
 
@@ -131,6 +131,7 @@ function OfferContent() {
     if (offer?.offer_acceptance_status === 'accepted') return 'accepted';
     if (offer?.offer_acceptance_status === 'rejected') return 'rejected';
     if (offer?.status === 'client_accepted') return 'accepted';
+    if (offer?.status === 'paid') return 'accepted'; // Treat paid as accepted
     if (isOfferExpired()) return 'expired';
     if (offer?.status === 'settlement_approved') return 'pending';
     return offer?.status || 'pending';
@@ -204,16 +205,18 @@ function OfferContent() {
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Settlement Offer
             </h1>
-            <p className="text-gray-600">
-              Review the offer for claim {offer.claim_id}
-            </p>
+            {offer?.status !== 'paid' && offer?.status !== 'client_accepted' && (
+              <p className="text-gray-600">
+                Review the offer for claim {offer.claim_id}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Offer Details Card */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
           {/* Status Banner */}
-          <div className={`px-6 py-4 ${
+          <div className={`px-4 sm:px-6 py-4 ${
             getOfferStatus() === 'accepted' 
               ? 'bg-green-50 border-b border-green-200' 
               : getOfferStatus() === 'rejected'
@@ -258,12 +261,12 @@ function OfferContent() {
           </div>
 
           {/* Offer Amount */}
-          <div className="px-6 py-8 bg-gradient-to-r from-[#004D40] to-[#003D30]">
+          <div className="px-4 sm:px-6 py-6 sm:py-8 bg-gradient-to-r from-[#004D40] to-[#003D30]">
             <div className="text-center">
               <div className="mb-2">
                 <p className="text-white text-sm font-medium">Settlement Amount</p>
               </div>
-              <h2 className="text-4xl font-bold text-white mb-2">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
                 {formatCurrency(offer.offer_amount)}
               </h2>
               {offer.assessed_claim_value && (
@@ -271,7 +274,7 @@ function OfferContent() {
                   Assessed Value: {formatCurrency(offer.assessed_claim_value)}
                 </p>
               )}
-              {offer.expiry_period && !isOfferExpired() && (
+              {offer.expiry_period && !isOfferExpired() && offer?.status !== 'paid' && offer?.status !== 'client_accepted' && (
                 <p className="text-white/80 text-sm mt-2">
                   Valid until {formatDate(offer.expiry_period)}
                 </p>
@@ -280,7 +283,7 @@ function OfferContent() {
           </div>
 
           {/* Offer Details */}
-          <div className="px-6 py-6 space-y-6">
+          <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
             {/* Payment Breakdown */}
             {(offer.deductions || offer.service_fee_percentage) && (
               <div>
@@ -364,10 +367,6 @@ function OfferContent() {
               <h3 className="font-semibold text-gray-900 mb-4">Offer Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Offer ID</p>
-                  <p className="font-medium text-gray-900">{offer.id}</p>
-                </div>
-                <div>
                   <p className="text-sm text-gray-500 mb-1">Claim Number</p>
                   <p className="font-medium text-gray-900">{offer.claim_id}</p>
                 </div>
@@ -379,7 +378,7 @@ function OfferContent() {
                   <p className="text-sm text-gray-500 mb-1">Created</p>
                   <p className="font-medium text-gray-900">{formatDate(offer.created_at)}</p>
                 </div>
-                {offer.expiry_period && (
+                {offer.expiry_period && offer?.status !== 'paid' && offer?.status !== 'client_accepted' && (
                   <div>
                     <p className="text-sm text-gray-500 mb-1">Valid Until</p>
                     <p className={`font-medium ${isOfferExpired() ? 'text-red-600' : 'text-gray-900'}`}>
@@ -399,7 +398,7 @@ function OfferContent() {
             <p className="text-gray-600 mb-6">
               Please review the offer carefully. Once you accept or reject, this action cannot be undone.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => acceptMutation.mutate()}
                 disabled={acceptMutation.isPending || rejectMutation.isPending}
