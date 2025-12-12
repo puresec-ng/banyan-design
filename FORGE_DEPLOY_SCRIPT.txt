@@ -1,0 +1,26 @@
+# Copy this entire script into Forge Dashboard > Your Site > Deploy Script
+
+cd /home/forge/banyanclaims.com || cd $FORGE_SITE_PATH
+
+# Configure git to handle divergent branches
+git config pull.rebase false 2>/dev/null || true
+git config pull.ff false 2>/dev/null || true
+
+# Fetch and reset to origin/main (this fixes divergent branches)
+git fetch origin
+git reset --hard origin/main
+
+# Clean any untracked files
+git clean -fd
+
+# Install dependencies
+npm install
+
+# Build the application
+npm run build
+
+# Restart the application (if needed)
+# pm2 restart banyan-claims || true
+
+echo "Deployment complete!"
+

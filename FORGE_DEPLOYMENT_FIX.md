@@ -1,16 +1,26 @@
 # Laravel Forge Deployment Fix Instructions
 
+## ⚠️ URGENT: This Must Be Fixed in Forge Dashboard
+
+**You cannot fix this from GitHub.** The Forge server has a local git state that conflicts with the remote repository. Someone with Forge access must update the deployment script.
+
 ## Problem
-Forge deployment is failing due to divergent git branches. The deployment server has an old commit (`bad5625`) that conflicts with the current remote commit (`a01ad3c`).
+Forge deployment is failing due to divergent git branches. The deployment server's `git pull` command fails because:
+- Server has commit `bad5625` locally
+- Remote has different commits (force push after amending)
+- Git doesn't know how to reconcile them
 
-## Solution Options
+**Error:** `fatal: Need to specify how to reconcile divergent branches`
 
-### Option 1: Update Forge Deployment Script (Recommended)
-If you have access to Forge dashboard:
+## ✅ Solution: Update Forge Deployment Script (REQUIRED)
 
-1. Go to your site in Forge dashboard
-2. Click on "Deploy Script" tab
-3. Replace the deployment script with the following:
+### Step 1: Access Forge Dashboard
+1. Log into Laravel Forge
+2. Select your site: **banyanclaims.com**
+3. Click on the **"Deploy Script"** tab
+
+### Step 2: Replace the Deployment Script
+**Copy the script from `FORGE_DEPLOY_SCRIPT.txt` in this repository**, or use:
 
 ```bash
 cd /home/forge/banyanclaims.com
