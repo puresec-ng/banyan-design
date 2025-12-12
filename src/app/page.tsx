@@ -152,7 +152,7 @@ ${formData.get('message')}` // Message body includes email
             <div className="space-y-6">
               <div className="text-center">
                 <p className="text-lg text-gray-600">
-                  Banyan Claims Consultant Limited is Nigeria's most trusted technology-driven claims consultancy. We specialize in providing efficient, transparent, and professional claims management services to individuals and businesses across Nigeria.
+                  Banyan Claims Consultant Limited is Nigeria&apos;s most trusted technology-driven claims consultancy. We specialize in providing efficient, transparent, and professional claims management services to individuals and businesses across Nigeria.
                 </p>
                 <p className="text-lg text-gray-600 mt-4">
                   Our team of experienced professionals combines deep industry knowledge with cutting-edge technology to ensure your claims are handled with the utmost care and efficiency.

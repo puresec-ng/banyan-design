@@ -10,7 +10,7 @@ export default function Hero() {
             <span className="text-green-300 block mt-2">Efficient Claims Management & Financial Advisory</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 mb-12 max-w-3xl mx-auto">
-            Experience seamless claims processing with Nigeria's leading technology-driven claims consultancy
+            Experience seamless claims processing with Nigeria&apos;s leading technology-driven claims consultancy
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <Link 

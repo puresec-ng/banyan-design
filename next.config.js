@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -16,6 +18,10 @@ const nextConfig = {
         destination: 'https://api.banyanclaims.com/api/v1/:path*',
       },
     ];
+  },
+  // Explicitly set the Turbopack root directory to prevent lockfile warnings
+  turbopack: {
+    root: __dirname,
   },
 }
 

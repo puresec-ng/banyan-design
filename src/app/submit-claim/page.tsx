@@ -105,7 +105,7 @@ export default function ClaimTypeSelection() {
             Select Claim Type
           </h1>
           <p className="text-lg text-gray-600 font-roboto">
-            Choose the type of claim you'd like to submit
+            Choose the type of claim you&apos;d like to submit
           </p>
         </div>
 

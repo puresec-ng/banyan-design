@@ -38,7 +38,7 @@ export default function PrivacyPage() {
         <h1 className="text-3xl font-bold mb-6">Banyan Claims Consultant Ltd: Privacy Policy</h1>
         <div className="space-y-4 text-gray-700">
           <h2 className="text-xl font-semibold mt-6">1. Introduction</h2>
-          <p>Banyan Claims Consultant Limited ("Banyan Claims", "we", "our", or "us") is committed to protecting the privacy and security of the personal information of our clients, employees, partners, and website visitors ("you" or "your"). This Privacy Policy outlines how we collect, use, disclose, and safeguard your personal data in compliance with the Nigeria Data Protection Act, 2023 and other applicable regulations.</p>
+          <p>Banyan Claims Consultant Limited (&quot;Banyan Claims&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting the privacy and security of the personal information of our clients, employees, partners, and website visitors (&quot;you&quot; or &quot;your&quot;). This Privacy Policy outlines how we collect, use, disclose, and safeguard your personal data in compliance with the Nigeria Data Protection Act, 2023 and other applicable regulations.</p>
           <p>We are a claims consultancy and advisory firm, not an insurance provider, legal practice, or data broker.</p>
 
           <h2 className="text-xl font-semibold mt-6">2. Scope and Consent</h2>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
           <h3 className="font-semibold mt-4">A. Information You Provide</h3>
           <ul className="list-disc ml-6">
             <li>Personal Information (e.g., name, email, phone number, date of birth)</li>
-            <li>Identification Data (e.g., NIN, passport number, voter's card, driver's license)</li>
+            <li>Identification Data (e.g., NIN, passport number, voter&apos;s card, driver&apos;s license)</li>
             <li>Financial Information (e.g., BVN, bank details where required)</li>
             <li>Sensitive Data (e.g., marital status, medical records where necessary for claims support)</li>
           </ul>
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
           </ul>
           <p>We are not liable for the misuse of data by third parties beyond our control.</p>
 
-          <h2 className="text-xl font-semibold mt-6">7. Children's Data</h2>
+          <h2 className="text-xl font-semibold mt-6">7. Children&apos;s Data</h2>
           <p>We do not knowingly collect data from individuals under the age of 18. If such data is inadvertently collected, it will be deleted upon discovery.</p>
 
           <h2 className="text-xl font-semibold mt-6">8. Data Security</h2>

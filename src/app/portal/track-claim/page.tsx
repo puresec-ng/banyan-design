@@ -133,6 +133,9 @@ const STATUS_BADGES = {
   PENDING_RESPONSE: { color: 'bg-orange-100 text-orange-800', icon: ExclamationCircleIcon },
 };
 
+// Default badge for unknown statuses
+const DEFAULT_BADGE = { color: 'bg-gray-100 text-gray-800', icon: InformationCircleIcon };
+
 // Utility function to format dates
 const formatDate = (dateString: string) => {
   if (!dateString) {
@@ -166,9 +169,10 @@ const formatDate = (dateString: string) => {
 };
 
 const StatusBadge = ({ status }: { status: StatusType }) => {
-  const StatusIcon = STATUS_BADGES[status].icon;
+  const badge = STATUS_BADGES[status] || DEFAULT_BADGE;
+  const StatusIcon = badge.icon;
   return (
-    <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${STATUS_BADGES[status].color}`}>
+    <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${badge.color}`}>
       <StatusIcon className="w-4 h-4" />
       {status ? status.replace('_', ' ') : 'Unknown'}
     </div>
@@ -656,7 +660,7 @@ const RequestResponseComponent = ({
           <h4 className="text-sm font-medium text-gray-900 mb-3">
             Respond to {requestType === 'additional_information' ? 'Information Request' : 'Document Request'}
           </h4>
-          <p className="text-xs text-gray-500 mb-2">Debug: requestType = "{requestType}"</p>
+          <p className="text-xs text-gray-500 mb-2">Debug: requestType = &quot;{requestType}&quot;</p>
           
           {requestType === 'additional_information' ? (
             <div>
@@ -733,6 +737,35 @@ export default function TrackClaim() {
 
   const [error, setError] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+
+  // Fetch unanswered requests to determine if action buttons should be enabled
+  const { data: allRequests } = useQuery({
+    queryKey: ['all-requests', claimId],
+    queryFn: async () => {
+      const result = await Http.get(`/claims/additional-information-requests/${claimId}`);
+      return result;
+    },
+    enabled: !!claimId && !!claim,
+  });
+
+  // Helper functions to check for unanswered requests
+  const hasUnansweredDocumentRequest = () => {
+    if (!allRequests?.data || !Array.isArray(allRequests.data)) return false;
+    return allRequests.data.some((request: InfoRequest) => 
+      request.request_type === 'document_request' && 
+      request.status !== 'completed' && 
+      request.status !== 'responded'
+    );
+  };
+
+  const hasUnansweredAdditionalInfoRequest = () => {
+    if (!allRequests?.data || !Array.isArray(allRequests.data)) return false;
+    return allRequests.data.some((request: InfoRequest) => 
+      request.request_type === 'additional_information' && 
+      request.status !== 'completed' && 
+      request.status !== 'responded'
+    );
+  };
 
   useEffect(() => {
 
@@ -911,31 +944,65 @@ export default function TrackClaim() {
                 {/* Document Request Button */}
                 <button
                   onClick={() => router.push(`/portal/request-response?claimId=${claimId}&requestType=document_request`)}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group"
+                  disabled={!hasUnansweredDocumentRequest()}
+                  className={`flex items-center justify-between p-4 bg-white rounded-lg border transition-all group ${
+                    hasUnansweredDocumentRequest()
+                      ? 'border-gray-200 hover:border-blue-300 hover:shadow-sm cursor-pointer'
+                      : 'border-gray-100 opacity-50 cursor-not-allowed'
+                  }`}
                 >
                   <div className="flex items-center">
-                    <DocumentTextIcon className="h-6 w-6 text-blue-600 mr-3" />
+                    <DocumentTextIcon className={`h-6 w-6 mr-3 ${
+                      hasUnansweredDocumentRequest() ? 'text-blue-600' : 'text-gray-400'
+                    }`} />
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">Document Request</p>
-                      <p className="text-sm text-gray-500">Upload required documents</p>
+                      <p className={`font-medium ${
+                        hasUnansweredDocumentRequest() ? 'text-gray-900' : 'text-gray-500'
+                      }`}>Document Request</p>
+                      <p className="text-sm text-gray-500">
+                        {hasUnansweredDocumentRequest() 
+                          ? 'Upload required documents' 
+                          : 'No pending requests'}
+                      </p>
                     </div>
                   </div>
-                  <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  <ArrowRightIcon className={`h-5 w-5 transition-colors ${
+                    hasUnansweredDocumentRequest() 
+                      ? 'text-gray-400 group-hover:text-blue-600' 
+                      : 'text-gray-300'
+                  }`} />
                 </button>
 
                 {/* Additional Information Button */}
                 <button
                   onClick={() => router.push(`/portal/request-response?claimId=${claimId}&requestType=additional_information`)}
-                  className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all group"
+                  disabled={!hasUnansweredAdditionalInfoRequest()}
+                  className={`flex items-center justify-between p-4 bg-white rounded-lg border transition-all group ${
+                    hasUnansweredAdditionalInfoRequest()
+                      ? 'border-gray-200 hover:border-green-300 hover:shadow-sm cursor-pointer'
+                      : 'border-gray-100 opacity-50 cursor-not-allowed'
+                  }`}
                 >
                   <div className="flex items-center">
-                    <InformationCircleIcon className="h-6 w-6 text-green-600 mr-3" />
+                    <InformationCircleIcon className={`h-6 w-6 mr-3 ${
+                      hasUnansweredAdditionalInfoRequest() ? 'text-green-600' : 'text-gray-400'
+                    }`} />
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">Additional Information</p>
-                      <p className="text-sm text-gray-500">Provide additional details</p>
+                      <p className={`font-medium ${
+                        hasUnansweredAdditionalInfoRequest() ? 'text-gray-900' : 'text-gray-500'
+                      }`}>Additional Information</p>
+                      <p className="text-sm text-gray-500">
+                        {hasUnansweredAdditionalInfoRequest() 
+                          ? 'Provide additional details' 
+                          : 'No pending requests'}
+                      </p>
                     </div>
                   </div>
-                  <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                  <ArrowRightIcon className={`h-5 w-5 transition-colors ${
+                    hasUnansweredAdditionalInfoRequest() 
+                      ? 'text-gray-400 group-hover:text-green-600' 
+                      : 'text-gray-300'
+                  }`} />
                 </button>
               </div>
             </div>
@@ -958,25 +1025,28 @@ export default function TrackClaim() {
                       {claim?.claim_history
                         ?.filter(event => event.description && event.description.trim() !== '') // Skip items with no details
                         ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) // Sort newest first
-                        ?.map((event, index) => (
-                        <div key={index} className="relative flex gap-4">
-                          <div className={`w-4 h-4 rounded-full mt-1.5 ${STATUS_BADGES[event.status?.toString().toUpperCase() as StatusType].color} ring-4 ring-white`}></div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {event.description}
-                            </p>
-                            {event.meta && (event.meta as any).request_id && (event.meta as any).request_id.details && String((event.meta as any).request_id.details).trim() !== '' && (
-                              <p className="text-gray-600 text-sm mt-1">
-                                {(event.meta as any).request_id.details}
-                              </p>
-                            )}
-                            <p className="text-gray-500 text-sm mt-1">
-                              {formatDate(event.created_at)}
-                            </p>
-                            
-                          </div>
-                        </div>
-                      ))}
+                        ?.map((event, index) => {
+                          const statusKey = event.status?.toString().toUpperCase() as StatusType;
+                          const badge = STATUS_BADGES[statusKey] || DEFAULT_BADGE;
+                          return (
+                            <div key={index} className="relative flex gap-4">
+                              <div className={`w-4 h-4 rounded-full mt-1.5 ${badge.color} ring-4 ring-white`}></div>
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {event.description}
+                                </p>
+                                {event.meta && (event.meta as any).request_id && (event.meta as any).request_id.details && String((event.meta as any).request_id.details).trim() !== '' && (
+                                  <p className="text-gray-600 text-sm mt-1">
+                                    {(event.meta as any).request_id.details}
+                                  </p>
+                                )}
+                                <p className="text-gray-500 text-sm mt-1">
+                                  {formatDate(event.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   )
                 }

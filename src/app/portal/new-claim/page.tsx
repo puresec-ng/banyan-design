@@ -161,6 +161,10 @@ export default function NewClaim() {
         showToast('Please provide a description of the incident', 'error');
         return;
       }
+      if (!formData.policyNumber || formData.policyNumber.length < 3) {
+        showToast('Please enter a valid policy number (at least 3 characters)', 'error');
+        return;
+      }
 
       const selectedIncidentType = incidentTypes?.find(t => t.name === formData.incidentType);
       console.log(JSON.parse(selectedIncidentType?.required_documents || '[]'), 'selectedIncidentType');
@@ -330,7 +334,9 @@ export default function NewClaim() {
       formData.incidentDate &&
       formData.incidentTime &&
       formData.incidentLocation.trim() !== '' &&
-      formData.description.trim() !== ''
+      formData.description.trim() !== '' &&
+      formData.policyNumber &&
+      formData.policyNumber.length >= 3
     );
   };
 
@@ -530,14 +536,15 @@ export default function NewClaim() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Policy Number (Optional)
+                  Policy Number
                 </label>
                 <input
                   type="text"
                   value={formData.policyNumber}
                   onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-                  placeholder="Enter your policy number if available"
+                  placeholder="Enter your policy number"
+                  required
                 />
               </div>
             </div>
@@ -548,17 +555,8 @@ export default function NewClaim() {
         {currentStep === 3 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Documents</h2>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-gray-600">All documents are required unless skipped</p>
-              <button
-                onClick={() => setSkipDocuments(!skipDocuments)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${skipDocuments
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                {skipDocuments ? 'Resume Upload' : 'Skip All Documents'}
-              </button>
+            <div className="mb-6">
+              <p className="text-sm text-gray-600">All documents are required</p>
             </div>
             {uploading && <div className='flex items-center gap-2 mb-4'>
               <svg className="animate-spin h-5 w-5 text-[#004D40]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -713,7 +711,7 @@ export default function NewClaim() {
               {/* Confirmation Notice */}
               <div className="mt-6 bg-yellow-50 border border-yellow-100 rounded-lg p-4">
                 <p className="text-sm text-yellow-800">
-                  Please review all information carefully before submitting. Once submitted, you'll receive a confirmation email with your claim reference number.
+                  Please review all information carefully before submitting. Once submitted, you&apos;ll receive a confirmation email with your claim reference number.
                 </p>
               </div>
             </div>

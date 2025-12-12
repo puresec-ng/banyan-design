@@ -38,7 +38,7 @@ export default function TermsPage() {
         <h1 className="text-3xl font-bold mb-6">Banyan Claims Consultant Ltd: Terms and Conditions</h1>
         <div className="space-y-4 text-gray-700">
           <h2 className="text-xl font-semibold mt-6">1. Introduction</h2>
-          <p>These Terms and Conditions ("Terms") govern your access to, and use of the website and services provided by Banyan Claims Consultant Limited ("Banyan Claims", "we", "us", or "our"). By using our website or engaging our advisory services, you agree to comply with these Terms. If you do not agree to any part of these Terms, you must not access or use our services.</p>
+          <p>These Terms and Conditions (&quot;Terms&quot;) govern your access to, and use of the website and services provided by Banyan Claims Consultant Limited (&quot;Banyan Claims&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;). By using our website or engaging our advisory services, you agree to comply with these Terms. If you do not agree to any part of these Terms, you must not access or use our services.</p>
 
           <h2 className="text-xl font-semibold mt-6">2. Nature of Our Services</h2>
           <p>Banyan Claims is a claims advisory and consultancy firm. We do not underwrite, issue, or administer insurance policies. Our role is strictly to support clients in managing, preparing, and pursuing insurance claims, and providing independent advisory services related to claims processes and dispute resolution.</p>
@@ -69,7 +69,7 @@ export default function TermsPage() {
           <p>By engaging our services or submitting your contact information, you consent to receive communication from Banyan Claims via email, SMS, or phone regarding your claim, advisory matters, or service updates. You may opt out of non-essential communications at any time.</p>
 
           <h2 className="text-xl font-semibold mt-6">7. Limitation of Liability</h2>
-          <p>Banyan Claims shall not be held liable for any insurer's decision, action, or inaction regarding a submitted claim. Our responsibility is limited to the provision of accurate and professional advisory services.</p>
+          <p>Banyan Claims shall not be held liable for any insurer&apos;s decision, action, or inaction regarding a submitted claim. Our responsibility is limited to the provision of accurate and professional advisory services.</p>
           <ul className="list-disc ml-6">
             <li>Claim denials by third parties</li>
             <li>Delays in processing by insurers</li>
@@ -101,7 +101,7 @@ export default function TermsPage() {
           <p>Banyan Claims shall not be held liable for any failure or delay in the performance of its obligations due to events beyond reasonable control, including but not limited to natural disasters, acts of government, internet outages, or civil unrest.</p>
 
           <h2 className="text-xl font-semibold mt-6">12C. Severability</h2>
-          <p>If any provision of these Terms is found to be invalid or unenforceable, such provision shall be modified to reflect the parties' intention, and all remaining provisions shall remain in full force and effect.</p>
+          <p>If any provision of these Terms is found to be invalid or unenforceable, such provision shall be modified to reflect the parties&apos; intention, and all remaining provisions shall remain in full force and effect.</p>
 
           <h2 className="text-xl font-semibold mt-6">13. Contact Us</h2>
           <p>For questions or complaints regarding these Terms: Banyan Claims Consultant Limited<br/>

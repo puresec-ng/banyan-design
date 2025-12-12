@@ -151,8 +151,9 @@ export default function AdditionalInfoRequestComponent({
   };
 
   // Get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
+  const getStatusColor = (status?: string) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
+    switch (status.toLowerCase()) {
       case 'completed':
         return 'bg-green-100 text-green-800';
       case 'overdue':
@@ -163,8 +164,9 @@ export default function AdditionalInfoRequestComponent({
   };
 
   // Get priority color
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
+  const getPriorityColor = (priority?: string) => {
+    if (!priority) return 'bg-gray-100 text-gray-800';
+    switch (priority.toLowerCase()) {
       case 'high':
         return 'bg-red-100 text-red-800';
       case 'medium':
@@ -227,12 +229,16 @@ export default function AdditionalInfoRequestComponent({
               <h2 className="text-xl font-semibold text-gray-900">
                 {request.title}
               </h2>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(request.status)}`}>
-                {request.status.toUpperCase()}
-              </span>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(request.priority)}`}>
-                {request.priority.toUpperCase()} PRIORITY
-              </span>
+              {request.status && (
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(request.status)}`}>
+                  {request.status.toUpperCase()}
+                </span>
+              )}
+              {request.priority && (
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(request.priority)}`}>
+                  {request.priority.toUpperCase()} PRIORITY
+                </span>
+              )}
             </div>
             <p className="text-gray-600 text-sm mb-3">{request.description}</p>
             

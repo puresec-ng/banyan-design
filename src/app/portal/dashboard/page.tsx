@@ -884,7 +884,7 @@ const RequestResponseComponent = ({
           <h4 className="text-sm font-medium text-gray-900 mb-3">
             Respond to {requestType === 'additional_information' ? 'Information Request' : 'Document Request'}
           </h4>
-          <p className="text-xs text-gray-500 mb-2">Debug: requestType = "{requestType}"</p>
+          <p className="text-xs text-gray-500 mb-2">Debug: requestType = &quot;{requestType}&quot;</p>
           
           {requestType === 'additional_information' ? (
             <div>

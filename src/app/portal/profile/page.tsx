@@ -502,7 +502,7 @@ export default function Profile() {
       </button>
 
       <p className="text-sm text-gray-500 text-center">
-        Didn't receive code? <button className="text-[#004D40] hover:underline">Resend</button>
+        Didn&apos;t receive code? <button className="text-[#004D40] hover:underline">Resend</button>
       </p>
     </div>
   );

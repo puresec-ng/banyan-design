@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   HomeIcon, 
   WalletIcon, 
@@ -42,10 +43,11 @@ export default function Sidebar() {
         <div className="p-4">
           <Link href="/portal/dashboard">
             <div className="relative w-32 h-12">
-              <img
+              <Image
                 src="/brand/logo-black.png"
                 alt="Banyan Claims Logo"
-                className="object-contain w-full h-full"
+                fill
+                className="object-contain"
               />
             </div>
           </Link>

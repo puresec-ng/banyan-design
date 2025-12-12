@@ -685,7 +685,7 @@ export default function Register() {
 
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-sm text-blue-700">
-            Your PIN will be used for secure access to your account. Please keep it safe and don't share it with anyone.
+            Your PIN will be used for secure access to your account. Please keep it safe and don&apos;t share it with anyone.
           </p>
         </div>
 

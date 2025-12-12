@@ -124,7 +124,9 @@ export default function BasicInfo() {
       formData.incidentDate &&
       formData.incidentTime &&
       formData.incidentLocation &&
-      formData.incidentDescription
+      formData.incidentDescription &&
+      formData.policyNumber &&
+      formData.policyNumber.length >= 3
     );
   };
 
@@ -275,7 +277,7 @@ export default function BasicInfo() {
           {/* Policy Number */}
           <div>
             <label htmlFor="policyNumber" className="block text-sm font-medium text-gray-700 mb-1">
-              Policy Number (Optional)
+              Policy Number
             </label>
             <input
               type="text"
@@ -284,7 +286,8 @@ export default function BasicInfo() {
               value={formData.policyNumber}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
-              placeholder="Enter your policy number if available"
+              placeholder="Enter your policy number"
+              required
             />
           </div>
         </div>

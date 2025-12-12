@@ -173,7 +173,7 @@ export default function ForgotPassword() {
             Email Address
           </label>
           <p className="mt-1 text-sm text-gray-500">
-            Enter your registered email address. We'll send you an OTP to reset your password.
+            Enter your registered email address. We&apos;ll send you an OTP to reset your password.
           </p>
           <div className="mt-2">
             <input
