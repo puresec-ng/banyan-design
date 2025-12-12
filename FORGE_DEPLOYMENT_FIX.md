@@ -35,11 +35,15 @@ git clean -fd
 
 Then trigger a new deployment from Forge dashboard.
 
-### Option 3: Update Node.js Version in Forge
-Also ensure Node.js version is set to 20.x in Forge:
-1. Go to site settings
-2. Set Node.js version to 20.x (or 20.9.0+)
-3. Save and redeploy
+### Option 3: Update Node.js Version in Forge (REQUIRED)
+**This must be done manually in Forge dashboard:**
+1. Go to site settings in Forge
+2. Find "Node Version" or "Node.js Version" setting
+3. Set Node.js version to **20.x** (or latest 20.x available)
+4. Save settings
+5. Redeploy
+
+**Note:** Repository files (`.nvmrc`, `.node-version`, `package.json` engines) are already configured, but Forge may still require manual dashboard configuration.
 
 ### Option 4: Disconnect and Reconnect Repository
 1. Go to site settings in Forge
