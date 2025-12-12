@@ -1,7 +1,12 @@
 {
-  "buildCommand": "git fetch origin && git reset --hard origin/main && npm install && npm run build",
+  "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
 }
 
