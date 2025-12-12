@@ -7,7 +7,6 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "preinstall": "git fetch origin && git reset --hard origin/main 2>/dev/null || true",
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 3001",
