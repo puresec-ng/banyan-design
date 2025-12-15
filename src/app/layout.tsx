@@ -26,11 +26,6 @@ const montserrat = Montserrat({
 export const metadata: Metadata = {
   title: "Banyan Claims Consultant Limited",
   description: "Nigeria's leading claims advocacy platform with a technology-driven approach",
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
-  },
 };
 
 export default function RootLayout({
