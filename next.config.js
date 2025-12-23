@@ -67,6 +67,13 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Strip console.* calls from production bundles so users don't see debug logs
+  compiler: {
+    removeConsole: {
+      // Keep console.error for critical error reporting
+      exclude: ['error'],
+    },
+  },
 }
 
 module.exports = nextConfig 
