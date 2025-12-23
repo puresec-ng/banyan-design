@@ -1,4 +1,4 @@
-  /** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const path = require('path');
 
 const nextConfig = {
@@ -16,6 +16,15 @@ const nextConfig = {
       {
         source: '/api/v1/:path*',
         destination: 'https://api.banyanclaims.com/api/v1/:path*',
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/real-favicon.ico',
+        permanent: true,
       },
     ];
   },
@@ -76,4 +85,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig 
+module.exports = nextConfig
