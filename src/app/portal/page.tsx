@@ -135,7 +135,7 @@ export default function ClientPortal() {
 
           <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl p-8">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-6">
-              Client Portal Login
+              Claim Support Portal Login
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-4">

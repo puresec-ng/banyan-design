@@ -3,7 +3,6 @@ import { objectToQueryString } from "../../utils/objectToQueryString";
 
 
 interface Profile {
-    account_balance: string;
     address: string;
     bank_account_name: string;
     bank_account_number: string;
@@ -21,25 +20,6 @@ interface Profile {
     phone: string;
     phone_verified_at: string;
     updated_at: string;
-}
-
-export interface TransactionHistory {
-    id: number;
-    amount: number;
-    type: string;
-    description: string;
-    created_at: string;
-    status: string;
-}
-
-interface TransactionHistoryResponse {
-    data: {
-        data: TransactionHistory[];
-        total: number;
-        per_page: number;
-        current_page: number;
-        total_pages: number;
-    }
 }
 
 interface BankAccountLookupResponse {
@@ -85,15 +65,6 @@ export const setBvnVerificationMethod = (data: any): Promise<any> =>
 //validate-bvn-otp
 export const validateBvnOtp = (data: any): Promise<any> =>
     Http.post(`/profile/validate-bvn-otp`, data);
-
-// transaction history
-export const getTransactionHistory = (): Promise<TransactionHistoryResponse> =>
-    Http.get(`/transactions`);
-
-
-// withdraw
-export const withdraw = (data: any): Promise<any> =>
-    Http.post(`/withdraw`, data);
 
 // profile/change-password
 export const changePassword = (data: any): Promise<any> =>

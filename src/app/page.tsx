@@ -3,12 +3,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   BuildingOfficeIcon,
-  BuildingStorefrontIcon as TreeIcon,
   TruckIcon,
   DevicePhoneMobileIcon,
   HomeIcon,
   PhoneIcon,
-  CheckIcon,
   UserGroupIcon,
   BoltIcon,
   ShieldCheckIcon,
@@ -98,8 +96,7 @@ ${formData.get('message')}` // Message body includes email
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="heading-lg mb-6">Our Insurance Claim Services</h2>
             <p className="text-lg text-gray-600">
-              We specialize in various types of insurance claims, providing expert guidance
-              and support throughout the entire process.
+              We provide practical support to help claims become better prepared, better documented and easier to track through the claims process.
             </p>
           </div>
 
@@ -152,10 +149,10 @@ ${formData.get('message')}` // Message body includes email
             <div className="space-y-6">
               <div className="text-center">
                 <p className="text-lg text-gray-600">
-                  Banyan Claims Consultant Limited is Nigeria&apos;s most trusted technology-driven claims consultancy. We specialize in providing efficient, transparent, and professional claims management services to individuals and businesses across Nigeria.
+                  Banyan Claims Consultant Limited is a claims consultancy and claims support business. We help clients improve claim readiness, organise supporting documentation, prepare clearer claim files, and monitor progress through a more structured process.
                 </p>
                 <p className="text-lg text-gray-600 mt-4">
-                  Our team of experienced professionals combines deep industry knowledge with cutting-edge technology to ensure your claims are handled with the utmost care and efficiency.
+                  Our team combines practical claims knowledge with disciplined workflow support to help customers and businesses navigate claims more clearly and confidently.
                 </p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
@@ -170,22 +167,22 @@ ${formData.get('message')}` // Message body includes email
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <BoltIcon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Fast Processing</h3>
-                  <p className="text-gray-600">Quick and efficient claims handling</p>
+                  <h3 className="text-xl font-bold mb-2">Structured Process</h3>
+                  <p className="text-gray-600">Clearer documentation, better organisation and stronger follow-up</p>
                 </div>
                 <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <ShieldCheckIcon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Trusted Service</h3>
-                  <p className="text-gray-600">Reliable and transparent claims management</p>
+                  <h3 className="text-xl font-bold mb-2">Trusted Support</h3>
+                  <p className="text-gray-600">Transparent, professional support throughout the claims process</p>
                 </div>
                 <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <ChartBarIcon className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Data-Driven</h3>
-                  <p className="text-gray-600">Advanced analytics for optimal claim outcomes</p>
+                  <h3 className="text-xl font-bold mb-2">Workflow Visibility</h3>
+                  <p className="text-gray-600">Better status tracking and clearer next steps</p>
                 </div>
               </div>
             </div>
@@ -216,7 +213,7 @@ ${formData.get('message')}` // Message body includes email
                 <div>
                   <h3 className="text-xl font-bold mb-2">Hours</h3>
                   <p className="text-gray-600">Monday - Friday: 9am - 5pm</p>
-                  <p className="text-gray-600">24/7 Online Support Available</p>
+                  <p className="text-gray-600">Online Support Available</p>
                 </div>
               </div>
             </div>
@@ -311,10 +308,10 @@ ${formData.get('message')}` // Message body includes email
             <div>
               <h4 className="text-lg font-bold mb-4">Services</h4>
               <ul className="space-y-2">
-                {services.map((service) => (
-                  <li key={service.title}>
+                {footerServices.map((title) => (
+                  <li key={title}>
                     <Link href="#services" className="text-gray-200 hover:text-white transition-colors">
-                      {service.title}
+                      {title}
                     </Link>
                   </li>
                 ))}
@@ -363,7 +360,10 @@ ${formData.get('message')}` // Message body includes email
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-[#2d5445] text-center text-gray-200">
-            <p>&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
+            <p className="max-w-4xl mx-auto text-sm leading-relaxed">
+              Banyan Claims Consultant Limited provides claims advisory, documentation, workflow support and related consultancy services only. We do not underwrite insurance, sell insurance products, act as brokers, perform statutory loss adjusting, or decide claims on behalf of insurers.
+            </p>
+            <p className="mt-6">&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
             <div className="mt-2 flex justify-center gap-6 text-sm">
               <Link href="/terms" className="underline hover:text-white">Terms & Conditions</Link>
               <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>
@@ -378,33 +378,28 @@ ${formData.get('message')}` // Message body includes email
 // Data
 const services = [
   {
-    title: 'SME Claims',
-    description: 'Comprehensive claims support for small and medium enterprises.',
+    title: 'SME Claims Support',
+    description: 'Documentation, claim readiness and workflow support for small and medium enterprises.',
     icon: BuildingOfficeIcon,
   },
   {
-    title: 'Agro Claims',
-    description: 'Specialized claims processing for agricultural businesses.',
-    icon: TreeIcon,
-  },
-  {
-    title: 'Motor Claims',
-    description: 'Swift and efficient motor insurance claims resolution.',
+    title: 'Motor Claims Support',
+    description: 'Documentation and workflow support for motor insurance claims.',
     icon: TruckIcon,
   },
   {
-    title: 'Gadget Claims',
-    description: 'Expert handling of electronic device insurance claims.',
+    title: 'Gadget Claims Support',
+    description: 'Documentation and workflow support for electronic device claims.',
     icon: DevicePhoneMobileIcon,
   },
   {
-    title: 'Householder Claims',
-    description: 'Complete support for residential insurance claims.',
+    title: 'Householder Claims Support',
+    description: 'Documentation and workflow support for residential insurance claims.',
     icon: HomeIcon,
   },
   {
-    title: '24/7 Support',
-    description: 'Round-the-clock assistance for all your claims needs.',
+    title: 'Claims Workflow Support',
+    description: 'Structured tracking, follow-ups and clearer next steps through the claims process.',
     icon: PhoneIcon,
   },
 ];
@@ -415,20 +410,20 @@ const steps = [
     description: 'Fill out our simple online form with your claim details and documentation.',
   },
   {
-    title: 'We Process',
-    description: 'Our experts review your claim and handle all communications with insurers.',
+    title: 'We Review and Support',
+    description: 'Our team reviews your documentation, identifies gaps, helps organise your claim file, and supports communication where authorised by you.',
   },
   {
-    title: 'Get Resolution',
-    description: 'Receive your settlement quickly and efficiently through our streamlined process.',
+    title: 'Track Progress Clearly',
+    description: 'Receive clearer updates, document follow-up support, and a more structured view of claim progress.',
   },
 ];
 
-const features = [
-  'Technology-driven claims processing',
-  'Expert claims advocacy team',
-  'Transparent communication',
-  'Fast-track claim settlements',
-  'Dedicated customer support',
-  'Nationwide coverage',
+const footerServices = [
+  'SME Claims Support',
+  'Motor Claims Support',
+  'Gadget Claims Support',
+  'Householder Claims Support',
+  'Claims Documentation Support',
+  'Claims Workflow Support',
 ];

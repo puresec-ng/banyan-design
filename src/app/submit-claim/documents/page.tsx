@@ -193,7 +193,7 @@ export default function DocumentUpload() {
 
       // Store empty documents array to indicate user skipped
       localStorage.setItem('documents', JSON.stringify([]));
-      showToast('Claim submitted successfully', 'success');
+      showToast('Claim review submitted successfully', 'success');
       emptyStoredData();
 
       // Navigate to success page
@@ -201,7 +201,7 @@ export default function DocumentUpload() {
 
     } catch (error: any) {
       console.error('Error submitting claim:', error);
-      const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
+      const errorMessage = handleApiError(error, 'Failed to submit your claim review. Please try again.');
       showToast(errorMessage, 'error');
       // Handle error appropriately
     } finally {
@@ -349,7 +349,7 @@ export default function DocumentUpload() {
           disabled={loading || documents.some(doc => !doc.file)}
           className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Submitting...' : 'Submit Claim'}
+          {loading ? 'Submitting...' : 'Start Claim Review'}
         </button>
       </div>
     </div>

@@ -5,10 +5,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  HomeIcon,
   UserIcon,
   DocumentTextIcon,
-  WalletIcon,
   Cog6ToothIcon,
   ArrowLeftOnRectangleIcon,
   Bars3Icon,
@@ -25,7 +23,6 @@ const menuItems = [
   { name: 'New Claim', href: '/portal/new-claim', icon: PlusCircleIcon },
   { name: 'Track Claim', href: '/portal/track-claim', icon: MagnifyingGlassIcon },
   { name: 'Profile', href: '/portal/profile', icon: UserIcon },
-  // { name: 'Transactions', href: '/portal/wallet', icon: WalletIcon },
   { name: 'Settings', href: '/portal/settings', icon: Cog6ToothIcon },
   { name: 'Support', href: '/portal/support', icon: QuestionMarkCircleIcon },
 ];

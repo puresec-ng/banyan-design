@@ -10,11 +10,11 @@ import {
 } from '@heroicons/react/24/outline';
 
 const claimTypeLabels = {
-  MOTOR: 'Motor Claims',
-  SME: 'SME Claims',
-  GADGET: 'Gadget Claims',
-  HOUSEHOLDER: 'Householder Claims',
-  AGRO: 'Agro Claims',
+  MOTOR: 'Motor Claims Support',
+  SME: 'SME Claims Support',
+  GADGET: 'Gadget Claims Support',
+  HOUSEHOLDER: 'Householder Claims Support',
+  AGRO: 'Agro Claims Support',
 };
 
 const paymentModelLabels = {
@@ -86,7 +86,7 @@ export default function ReviewClaim() {
       // Navigate to success page
       router.push('/submit-claim/success');
     } catch (err) {
-      setError('Failed to submit claim. Please try again.');
+      setError('Failed to submit your claim review. Please try again.');
     }
   };
 
@@ -228,7 +228,7 @@ export default function ReviewClaim() {
             onClick={handleSubmit}
             className="px-6 py-3 bg-[#004D40] text-white font-medium rounded-xl hover:bg-[#003D30] transition-colors"
           >
-            Submit Claim
+            Start Claim Review
           </button>
         </div>
       </div>

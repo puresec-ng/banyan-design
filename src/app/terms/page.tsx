@@ -21,12 +21,12 @@ const navigation = [
 
 // Services data
 const services = [
-  { title: 'SME Claims' },
-  { title: 'Agro Claims' },
-  { title: 'Motor Claims' },
-  { title: 'Gadget Claims' },
-  { title: 'Householder Claims' },
-  { title: '24/7 Support' },
+  { title: 'SME Claims Support' },
+  { title: 'Motor Claims Support' },
+  { title: 'Gadget Claims Support' },
+  { title: 'Householder Claims Support' },
+  { title: 'Claims Documentation Support' },
+  { title: 'Claims Workflow Support' },
 ];
 
 export default function TermsPage() {
@@ -40,8 +40,8 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold mt-6">1. Introduction</h2>
           <p>These Terms and Conditions (&quot;Terms&quot;) govern your access to, and use of the website and services provided by Banyan Claims Consultant Limited (&quot;Banyan Claims&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;). By using our website or engaging our advisory services, you agree to comply with these Terms. If you do not agree to any part of these Terms, you must not access or use our services.</p>
 
-          <h2 className="text-xl font-semibold mt-6">2. Nature of Our Services</h2>
-          <p>Banyan Claims is a claims advisory and consultancy firm. We do not underwrite, issue, or administer insurance policies. Our role is strictly to support clients in managing, preparing, and pursuing insurance claims, and providing independent advisory services related to claims processes and dispute resolution.</p>
+          <h2 className="text-xl font-semibold mt-6">2. About Banyan Claims</h2>
+          <p>Banyan Claims Consultant Limited is a claims advisory and consultancy firm. We provide claims documentation support, claim readiness review, claims workflow support, and related advisory services. We do not underwrite, issue, administer, or sell insurance policies, and we do not act as brokers, statutory loss adjusters, or legal representatives.</p>
 
           <h2 className="text-xl font-semibold mt-6">3. Client Eligibility</h2>
           <ul className="list-disc ml-6">
@@ -52,14 +52,19 @@ export default function TermsPage() {
           <h2 className="text-xl font-semibold mt-6">4A. Advisory Scope</h2>
           <ul className="list-disc ml-6">
             <li>Claims documentation and evidence review</li>
-            <li>Advisory on claims rights and obligations</li>
-            <li>Liaising with insurers, brokers, or assessors on behalf of clients</li>
-            <li>Support during mediation, arbitration, or litigation where applicable</li>
+            <li>Claim readiness review</li>
+            <li>Claims workflow and progress-tracking support</li>
+            <li>Communication support with insurers, brokers, or other relevant parties where authorised by clients</li>
+            <li>Review of insurer responses and documentation-related guidance</li>
+            <li>Claims process guidance, templates, and advisory support</li>
           </ul>
-          <p className="italic text-gray-600 mt-2">Note: Banyan Claims cannot guarantee claim approval or payout, as final decisions rest solely with the insurance provider.</p>
+          <p className="italic text-gray-600 mt-2">Banyan provides consultancy, documentation, and workflow support services only. We do not guarantee that any insurer will admit, approve, or settle a claim, or that any claim will result in a particular amount or outcome.</p>
 
-          <h2 className="text-xl font-semibold mt-6">4B. Legal Disclaimer</h2>
-          <p>Banyan Claims Consultant Limited is not a law firm and does not offer legal representation or legal advice. Any support we provide during mediation, arbitration, or litigation processes is strictly in an advisory capacity relating to insurance claims. We work independently and may collaborate with licensed legal practitioners where necessary, but we do not act as legal counsel. Clients requiring formal legal advice or representation are encouraged to engage a qualified legal professional.</p>
+          <h2 className="text-xl font-semibold mt-6">4B. Services We Do Not Provide</h2>
+          <p>Banyan Claims Consultant Limited does not underwrite insurance, sell or distribute insurance products, act as an insurance broker or intermediary, perform statutory loss-adjusting functions, decide claims on behalf of insurers, guarantee claim acceptance or settlement outcomes, receive insurer settlement funds on behalf of clients, or provide legal representation in mediation, arbitration, or litigation.</p>
+
+          <h2 className="text-xl font-semibold mt-6">4C. Legal Disclaimer</h2>
+          <p>Banyan Claims Consultant Limited is not a law firm and does not offer legal representation or legal advice. Any support we provide in relation to insurance claims is strictly in an advisory and documentation capacity. We work independently and may collaborate with licensed legal practitioners where necessary, but we do not act as legal counsel. Clients requiring formal legal advice or representation are encouraged to engage a qualified legal professional.</p>
 
           <h2 className="text-xl font-semibold mt-6">5. Fees and Payment</h2>
           <p>All fees for our services will be clearly communicated and agreed upon prior to engagement. Payment terms and schedules will be outlined in your individual Service Agreement.</p>
@@ -197,7 +202,10 @@ export default function TermsPage() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-[#2d5445] text-center text-gray-200">
-            <p>&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
+            <p className="max-w-4xl mx-auto text-sm leading-relaxed">
+              Banyan Claims Consultant Limited provides claims advisory, documentation, workflow support and related consultancy services only. We do not underwrite insurance, sell insurance products, act as brokers, perform statutory loss adjusting, or decide claims on behalf of insurers.
+            </p>
+            <p className="mt-6">&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
             <div className="mt-2 flex justify-center gap-6 text-sm">
               <Link href="/terms" className="underline hover:text-white">Terms & Conditions</Link>
               <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>

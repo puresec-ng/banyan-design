@@ -55,17 +55,17 @@ export default function Navbar() {
             ))}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-6">
-            <Link 
-              href="/portal" 
+            <Link
+              href="/portal"
               className="px-4 py-2 text-base font-semibold text-white bg-[#1B4332] rounded-2xl hover:bg-[#15352a] transition-colors"
             >
-              Client Portal
+              Claim Support Portal
             </Link>
-            <Link 
-              href="/submit-claim" 
+            <Link
+              href="/submit-claim"
               className="px-4 py-2 text-base font-semibold text-white bg-[#E67635] rounded-2xl hover:bg-[#d16426] transition-colors"
             >
-              Submit Claim
+              Start Claim Review
             </Link>
           </div>
         </nav>
@@ -119,14 +119,14 @@ export default function Navbar() {
                     className="block w-full px-4 py-2 text-base font-semibold text-white bg-[#1B4332] rounded-2xl hover:bg-[#15352a] transition-colors text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Client Portal
+                    Claim Support Portal
                   </Link>
                   <Link
                     href="/submit-claim"
                     className="block w-full px-4 py-2 text-base font-semibold text-white bg-[#E67635] rounded-2xl hover:bg-[#d16426] transition-colors text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Submit Claim
+                    Start Claim Review
                   </Link>
                 </div>
               </div>

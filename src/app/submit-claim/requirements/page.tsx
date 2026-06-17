@@ -168,7 +168,7 @@ export default function DocumentRequirements() {
         emptyStoredData();
       }, 2000);
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
+      const errorMessage = handleApiError(error, 'Failed to submit your claim review. Please try again.');
       showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);

@@ -263,7 +263,7 @@ export default function NewClaim() {
       }, 5000);
     } catch (error: any) {
       console.error('Error submitting claim:', error);
-      const errorMessage = handleApiError(error, 'Failed to submit claim. Please try again.');
+      const errorMessage = handleApiError(error, 'Failed to submit your claim review. Please try again.');
       showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
@@ -784,7 +784,7 @@ export default function NewClaim() {
                 </>
               ) : (
                 <>
-                  Submit Claim
+                  Start Claim Review
                   <CheckCircleIcon className="w-5 h-5" />
                 </>
               )}

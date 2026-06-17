@@ -4,10 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  HomeIcon, 
-  WalletIcon, 
-  Cog6ToothIcon, 
+import {
+  HomeIcon,
+  Cog6ToothIcon,
   QuestionMarkCircleIcon,
   ArrowLeftOnRectangleIcon,
   XMarkIcon
@@ -62,15 +61,6 @@ export default function Sidebar() {
               >
                 <HomeIcon className="w-5 h-5" />
                 <span>Dashboard</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/portal/wallet"
-                className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg"
-              >
-                <WalletIcon className="w-5 h-5" />
-                <span>Wallet</span>
               </Link>
             </li>
             <li>

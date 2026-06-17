@@ -21,12 +21,12 @@ const navigation = [
 
 // Services data
 const services = [
-  { title: 'SME Claims' },
-  { title: 'Agro Claims' },
-  { title: 'Motor Claims' },
-  { title: 'Gadget Claims' },
-  { title: 'Householder Claims' },
-  { title: '24/7 Support' },
+  { title: 'SME Claims Support' },
+  { title: 'Motor Claims Support' },
+  { title: 'Gadget Claims Support' },
+  { title: 'Householder Claims Support' },
+  { title: 'Claims Documentation Support' },
+  { title: 'Claims Workflow Support' },
 ];
 
 export default function PrivacyPage() {
@@ -218,7 +218,10 @@ export default function PrivacyPage() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-[#2d5445] text-center text-gray-200">
-            <p>&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
+            <p className="max-w-4xl mx-auto text-sm leading-relaxed">
+              Banyan Claims Consultant Limited provides claims advisory, documentation, workflow support and related consultancy services only. We do not underwrite insurance, sell insurance products, act as brokers, perform statutory loss adjusting, or decide claims on behalf of insurers.
+            </p>
+            <p className="mt-6">&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
             <div className="mt-2 flex justify-center gap-6 text-sm">
               <Link href="/terms" className="underline hover:text-white">Terms & Conditions</Link>
               <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>

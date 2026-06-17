@@ -51,7 +51,7 @@ export default function SuccessPage() {
               onClick={() => router.push('/portal')}
               className="w-full px-6 py-3 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors"
             >
-              Client Portal
+              Claim Support Portal
             </button>
             <button
               onClick={() => router.push('/')}
