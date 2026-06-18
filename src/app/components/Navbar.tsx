@@ -19,10 +19,10 @@ export default function Navbar() {
   return (
     <>
       <header className="fixed w-full bg-white z-[100] shadow-sm">
-        <nav className="container mx-auto flex items-center justify-between py-4 px-4">
-          <div className="flex lg:flex-1">
+        <nav className="container mx-auto flex items-center justify-between py-3 sm:py-4 px-4 gap-3">
+          <div className="flex lg:flex-1 min-w-0">
             <Link href="/" className="flex items-center">
-              <div className="relative w-32 h-20">
+              <div className="relative w-24 sm:w-28 lg:w-32 h-14 sm:h-16 lg:h-20">
                 <Image
                   src="/brand/logo-white.png"
                   alt="Banyan Claims Logo"
@@ -43,39 +43,39 @@ export default function Navbar() {
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
-          <div className="hidden lg:flex lg:gap-x-12">
+          <div className="hidden lg:flex lg:gap-x-6 xl:gap-x-10">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-montserrat font-semibold leading-6 text-gray-900 hover:text-primary transition-colors"
+                className="text-sm font-montserrat font-semibold leading-6 text-gray-900 hover:text-primary transition-colors whitespace-nowrap"
               >
                 {item.name}
               </Link>
             ))}
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-6">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-3 xl:gap-4">
             <Link
               href="/portal"
-              className="px-4 py-2 text-base font-semibold text-white bg-[#1B4332] rounded-2xl hover:bg-[#15352a] transition-colors"
+              className="px-3 xl:px-4 py-2 text-sm xl:text-base font-semibold text-white bg-[#1B4332] rounded-2xl hover:bg-[#15352a] transition-colors whitespace-nowrap"
             >
               Claim Support Portal
             </Link>
             <Link
               href="/submit-claim"
-              className="px-4 py-2 text-base font-semibold text-white bg-[#E67635] rounded-2xl hover:bg-[#d16426] transition-colors"
+              className="px-3 xl:px-4 py-2 text-sm xl:text-base font-semibold text-white bg-[#E67635] rounded-2xl hover:bg-[#d16426] transition-colors whitespace-nowrap"
             >
               Start Claim Review
             </Link>
           </div>
         </nav>
       </header>
-      
+
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <>
-          <div 
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[150]" 
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[150]"
             aria-hidden="true"
             onClick={() => setMobileMenuOpen(false)}
           />
@@ -136,4 +136,4 @@ export default function Navbar() {
       )}
     </>
   );
-} 
+}
