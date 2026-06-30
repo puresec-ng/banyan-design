@@ -6,11 +6,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const steps = [
-  { id: 1, title: 'Claim Type', path: '/submit-claim' },
-  { id: 2, title: 'Basic Info', path: '/submit-claim/basic-info' },
-  { id: 3, title: 'Personal Info', path: '/submit-claim/personal-info' },
-  { id: 4, title: 'Requirements', path: '/submit-claim/requirements' },
-  { id: 5, title: 'Documents', path: '/submit-claim/documents' },
+  { id: 1, title: 'Support Type', path: '/submit-claim' },
+  { id: 2, title: 'Incident or Loss Summary', path: '/submit-claim/basic-info' },
+  { id: 3, title: 'Contact Details', path: '/submit-claim/personal-info' },
+  { id: 4, title: 'Documentation Checklist', path: '/submit-claim/requirements' },
+  { id: 5, title: 'Supporting Documents', path: '/submit-claim/documents' },
 ];
 
 export default function ClaimSubmissionLayout({

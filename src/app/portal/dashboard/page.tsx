@@ -209,7 +209,7 @@ const MOCK_CLAIMS: Claim[] = [
     ],
     history: [
       { date: '2024-03-17T11:20:00Z', status: 'SUBMITTED', note: 'Claim submitted successfully' },
-      { date: '2024-03-18T09:15:00Z', status: 'IN_REVIEW', note: 'Claim under review by claims adjuster' },
+      { date: '2024-03-18T09:15:00Z', status: 'IN_REVIEW', note: 'Documentation review in progress' },
       { date: '2024-03-18T15:30:00Z', status: 'PENDING_RESPONSE', note: 'Additional information requested from claimant' },
     ],
   },
@@ -224,7 +224,7 @@ const MOCK_CLAIMS: Claim[] = [
     history: [
       { date: '2024-03-15T10:30:00Z', status: 'SUBMITTED', note: 'Claim submitted successfully' },
       { date: '2024-03-15T15:45:00Z', status: 'DOCUMENTS_VERIFIED', note: 'All required documents verified' },
-      { date: '2024-03-16T14:20:00Z', status: 'IN_REVIEW', note: 'Claim under review by claims adjuster' },
+      { date: '2024-03-16T14:20:00Z', status: 'IN_REVIEW', note: 'Documentation review in progress' },
     ],
   },
   {
@@ -238,8 +238,8 @@ const MOCK_CLAIMS: Claim[] = [
     history: [
       { date: '2024-03-10T09:15:00Z', status: 'SUBMITTED', note: 'Claim submitted successfully' },
       { date: '2024-03-11T11:20:00Z', status: 'DOCUMENTS_VERIFIED', note: 'All required documents verified' },
-      { date: '2024-03-12T14:30:00Z', status: 'IN_REVIEW', note: 'Claim under review by claims adjuster' },
-      { date: '2024-03-14T16:30:00Z', status: 'APPROVED', note: 'Claim approved for payment' },
+      { date: '2024-03-12T14:30:00Z', status: 'IN_REVIEW', note: 'Documentation review in progress' },
+      { date: '2024-03-14T16:30:00Z', status: 'APPROVED', note: 'Documentation review completed' },
     ],
   },
 ];
@@ -320,17 +320,31 @@ const normalizeStatus = (status: string | undefined | null): StatusType => {
   return normalizedStatus;
 };
 
+const STATUS_DISPLAY_LABELS: Record<string, string> = {
+  'SUBMITTED': 'Support Request Received',
+  'IN_REVIEW': 'Documentation Review in Progress',
+  'PENDING_DOCUMENTS': 'Awaiting Supporting Documents',
+  'DOCUMENTS_REQUESTED': 'Awaiting Supporting Documents',
+  'DOCUMENT_REQUESTED': 'Awaiting Supporting Documents',
+  'PENDING_RESPONSE': 'Client Action Needed',
+  'PENDING': 'Client Action Needed',
+  'OFFER_ACCEPTED': 'Client-Authorised Communication Sent',
+  'OFFER_PAID': 'Awaiting Insurer or Relevant-Party Update',
+  'APPROVED': 'Documentation Review Completed',
+  'DOCUMENTS_VERIFIED': 'Documentation Review Completed',
+  'REJECTED': 'Support File Closed',
+  'DEFAULT': 'Support Request Received',
+};
+
 const StatusBadge = ({ status }: { status: StatusType }) => {
   const statusConfig = STATUS_BADGES[status] || STATUS_BADGES.DEFAULT;
   const StatusIcon = statusConfig?.icon || QuestionMarkCircleIcon;
-  
+
   // Format status text for display
   const getStatusText = () => {
-    if (status === 'OFFER_ACCEPTED') return 'OFFER ACCEPTED';
-    if (status === 'OFFER_PAID') return 'OFFER PAID';
-    return status ? status.replace(/_/g, ' ') : 'Unknown';
+    return STATUS_DISPLAY_LABELS[status] || (status ? status.replace(/_/g, ' ') : 'Unknown');
   };
-  
+
   return (
     <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${statusConfig?.color || 'bg-gray-100 text-gray-800'}`}>
       <StatusIcon className="w-4 h-4" />
@@ -732,7 +746,7 @@ const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: 
           <div className="flex items-center gap-3">
             <div className="h-6 w-6 flex items-center justify-center text-[#004D40] font-bold text-lg">₦</div>
             <div>
-              <h3 className="font-semibold text-gray-900">Settlement Offer</h3>
+              <h3 className="font-semibold text-gray-900">Insurer Offer Received</h3>
               <p className="text-sm text-gray-600">
                 Amount: <span className="font-medium">{formatCurrency(offer.offer_amount)}</span>
               </p>
@@ -884,8 +898,6 @@ const RequestResponseComponent = ({
           <h4 className="text-sm font-medium text-gray-900 mb-3">
             Respond to {requestType === 'additional_information' ? 'Information Request' : 'Document Request'}
           </h4>
-          <p className="text-xs text-gray-500 mb-2">Debug: requestType = &quot;{requestType}&quot;</p>
-          
           {requestType === 'additional_information' ? (
             <div>
               <textarea
@@ -1032,7 +1044,8 @@ export default function Dashboard() {
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-4">Submitted Claims</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">My Support Requests</h1>
+        <p className="text-sm text-gray-500 mb-4">Banyan provides claims advisory and documentation support only. Formal claim decisions remain with the insurer or other authorised party.</p>
         <div className="flex justify-end">
           <div className="relative">
             <select
@@ -1066,8 +1079,8 @@ export default function Dashboard() {
             <div className="mb-4">
               <ClipboardDocumentListIcon className="w-12 h-12 text-gray-400 mx-auto" />
             </div>
-            <p className="text-gray-600 text-lg">No claims found</p>
-            <p className="text-gray-500 mt-2">There are no claims matching your selected status.</p>
+            <p className="text-gray-600 text-lg">No support requests found</p>
+            <p className="text-gray-500 mt-2">There are no support requests matching your selected status.</p>
           </div>
         ) : (
           <div className="divide-y">
@@ -1185,9 +1198,9 @@ export default function Dashboard() {
                     {/* Offer Section */}
                     <OfferSection claimId={String(claim.id || claim.claim_number)} claimNumber={claim.claim_number} />
 
-                    {/* Claim History */}
+                    {/* Support History */}
                     <div className="mt-8">
-                      <h3 className="text-lg font-medium text-gray-900 mb-4">Claim History</h3>
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">Support History</h3>
                     <div className="relative">
                       <div className="absolute top-0 bottom-0 left-2 w-0.5 bg-gray-200"></div>
                       {
@@ -1237,7 +1250,7 @@ export default function Dashboard() {
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Document</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Supporting Documents</h2>
             <p className="text-gray-600 mb-4">Upload {selectedDocument}</p>
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-6">
               <input

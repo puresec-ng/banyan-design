@@ -160,7 +160,7 @@ export default function DocumentUpload() {
       console.log('selectedClaimType before submit:', claimTypeId, typeof claimTypeId);
       if (!claimTypeId || claimTypeId === '{}' || claimTypeId === '[object Object]') {
         localStorage.removeItem('selectedClaimType');
-        showToast('Please select a claim type before submitting.', 'error');
+        showToast('Please select a support type before submitting.', 'error');
         setLoading(false);
         return;
       }
@@ -193,7 +193,7 @@ export default function DocumentUpload() {
 
       // Store empty documents array to indicate user skipped
       localStorage.setItem('documents', JSON.stringify([]));
-      showToast('Claim review submitted successfully', 'success');
+      showToast('Support request received. We will review your information and contact you about next steps.', 'success');
       emptyStoredData();
 
       // Navigate to success page
@@ -201,7 +201,7 @@ export default function DocumentUpload() {
 
     } catch (error: any) {
       console.error('Error submitting claim:', error);
-      const errorMessage = handleApiError(error, 'Failed to submit your claim review. Please try again.');
+      const errorMessage = handleApiError(error, 'Unable to send support request. Please check the form and try again.');
       showToast(errorMessage, 'error');
       // Handle error appropriately
     } finally {
@@ -226,9 +226,9 @@ export default function DocumentUpload() {
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Upload Documents</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Supporting Documents</h2>
             <p className="text-gray-600">
-              Please upload the required documents for your claim. You can also add any supporting documents.
+              Upload supporting documents for review. Do not upload false, misleading or unauthorised third-party information.
             </p>
           </div>
         </div>
@@ -349,7 +349,7 @@ export default function DocumentUpload() {
           disabled={loading || documents.some(doc => !doc.file)}
           className="px-6 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Submitting...' : 'Start Claim Review'}
+          {loading ? 'Sending...' : 'Send Support Request'}
         </button>
       </div>
     </div>

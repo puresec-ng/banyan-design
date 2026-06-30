@@ -98,7 +98,7 @@ const MOCK_CLAIMS: { [key: string]: Claim } = {
     history: [
       { date: '2024-03-15T10:30:00Z', status: 'SUBMITTED', note: 'Claim submitted successfully' },
       { date: '2024-03-15T15:45:00Z', status: 'DOCUMENTS_VERIFIED', note: 'All required documents verified' },
-      { date: '2024-03-16T14:20:00Z', status: 'IN_REVIEW', note: 'Claim under review by claims adjuster' },
+      { date: '2024-03-16T14:20:00Z', status: 'IN_REVIEW', note: 'Documentation review in progress' },
     ],
   },
   'CLM003': {
@@ -168,13 +168,25 @@ const formatDate = (dateString: string) => {
   return result;
 };
 
+const STATUS_DISPLAY_LABELS: Record<string, string> = {
+  'SUBMITTED': 'Support Request Received',
+  'IN_REVIEW': 'Documentation Review in Progress',
+  'PENDING_DOCUMENTS': 'Awaiting Supporting Documents',
+  'DOCUMENTS_REQUESTED': 'Awaiting Supporting Documents',
+  'DOCUMENT_REQUESTED': 'Awaiting Supporting Documents',
+  'PENDING_RESPONSE': 'Client Action Needed',
+  'APPROVED': 'Documentation Review Completed',
+  'DOCUMENTS_VERIFIED': 'Documentation Review Completed',
+  'REJECTED': 'Support File Closed',
+};
+
 const StatusBadge = ({ status }: { status: StatusType }) => {
   const badge = STATUS_BADGES[status] || DEFAULT_BADGE;
   const StatusIcon = badge.icon;
   return (
     <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 ${badge.color}`}>
       <StatusIcon className="w-4 h-4" />
-      {status ? status.replace('_', ' ') : 'Unknown'}
+      {STATUS_DISPLAY_LABELS[status] || (status ? status.replace(/_/g, ' ') : 'Unknown')}
     </div>
   );
 };
@@ -508,7 +520,7 @@ const OfferSection = ({ claimId, claimNumber }: { claimId: string; claimNumber: 
           <div className="flex items-center gap-3">
             <CurrencyDollarIcon className="h-6 w-6 text-[#004D40]" />
             <div>
-              <h3 className="font-semibold text-gray-900">Settlement Offer</h3>
+              <h3 className="font-semibold text-gray-900">Insurer Offer Received</h3>
               <p className="text-sm text-gray-600">
                 Amount: <span className="font-medium">{formatCurrency(offer.offer_amount)}</span>
               </p>
@@ -660,8 +672,6 @@ const RequestResponseComponent = ({
           <h4 className="text-sm font-medium text-gray-900 mb-3">
             Respond to {requestType === 'additional_information' ? 'Information Request' : 'Document Request'}
           </h4>
-          <p className="text-xs text-gray-500 mb-2">Debug: requestType = &quot;{requestType}&quot;</p>
-          
           {requestType === 'additional_information' ? (
             <div>
               <textarea
@@ -1014,9 +1024,9 @@ export default function TrackClaim() {
             {/* Offer Section */}
             <OfferSection claimId={String(claim?.id || claim?.claim_number || claimId)} claimNumber={claim?.claim_number || claimId} />
 
-            {/* Claim History */}
+            {/* Support History */}
             <div className="p-6 mt-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Claim History</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Support History</h3>
               <div className="relative">
                 <div className="absolute top-0 bottom-0 left-2 w-0.5 bg-gray-200"></div>
                 {

@@ -86,7 +86,7 @@ export default function ReviewClaim() {
       // Navigate to success page
       router.push('/submit-claim/success');
     } catch (err) {
-      setError('Failed to submit your claim review. Please try again.');
+      setError('Unable to send support request. Please check the form and try again.');
     }
   };
 
@@ -96,10 +96,10 @@ export default function ReviewClaim() {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4 font-lato">
-          Review Your Claim
+          Review Your Support Request
         </h1>
         <p className="text-lg text-gray-600 font-roboto">
-          Please review all information before submitting your claim
+          Please review all information before sending your support request.
         </p>
       </div>
 
@@ -114,7 +114,7 @@ export default function ReviewClaim() {
         {/* Claim Type Section */}
         <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
           <div className="flex justify-between items-start mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Claim Type</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Support Type</h2>
             <button
               onClick={() => handleEdit('')}
               className="text-[#004D40] hover:text-[#003D30] font-medium"
@@ -128,7 +128,7 @@ export default function ReviewClaim() {
         {/* Basic Information Section */}
         <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
           <div className="flex justify-between items-start mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Incident or Loss Summary</h2>
             <button
               onClick={() => handleEdit('basic-info')}
               className="text-[#004D40] hover:text-[#003D30] font-medium"
@@ -210,8 +210,7 @@ export default function ReviewClaim() {
         {/* Terms and Conditions */}
         <div className="bg-blue-50 rounded-xl p-6">
           <p className="text-sm text-blue-800">
-            By submitting this claim, you confirm that all provided information is accurate and complete.
-            False or misleading information may result in the rejection of your claim and possible legal consequences.
+            I confirm the information and documents I provided are accurate to the best of my knowledge.
           </p>
         </div>
 
@@ -228,7 +227,7 @@ export default function ReviewClaim() {
             onClick={handleSubmit}
             className="px-6 py-3 bg-[#004D40] text-white font-medium rounded-xl hover:bg-[#003D30] transition-colors"
           >
-            Start Claim Review
+            Send Support Request
           </button>
         </div>
       </div>

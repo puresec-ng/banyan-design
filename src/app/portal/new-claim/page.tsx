@@ -124,7 +124,7 @@ export default function NewClaim() {
       if (formData.type !== '') {
         setCurrentStep(currentStep + 1);
       } else {
-        showToast('Please select a claim type', 'error');
+        showToast('Please select a support type', 'error');
       }
     }
     if (currentStep === 2) {
@@ -207,7 +207,7 @@ export default function NewClaim() {
       // Validate claim type
       if (!formData.type || formData.type === '' || typeof formData.type !== 'string') {
         console.error('CRITICAL ERROR: formData.type is invalid!');
-        showToast('Please select a valid claim type.', 'error');
+        showToast('Please select a valid support type.', 'error');
         setIsSubmitting(false);
         return;
       }
@@ -350,9 +350,9 @@ export default function NewClaim() {
                 <CheckCircleIcon className="w-10 h-10 text-green-600" />
               </div>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Claim Submitted Successfully!</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Support Request Sent Successfully!</h2>
             <p className="text-gray-600 mb-6">
-              Your claim has been submitted and is being processed. You will be redirected to your claims dashboard in a few seconds.
+              Your support request has been received and we will begin reviewing your documents. You will be redirected to your dashboard in a few seconds.
             </p>
             <div className="text-sm text-gray-500">
               Claim ID: {trackingNumber}
@@ -385,24 +385,24 @@ export default function NewClaim() {
             ))}
           </div>
           <div className="flex justify-between mt-2">
-            <span className="text-sm font-medium">Claim Type</span>
+            <span className="text-sm font-medium">Support Type</span>
             <span className="text-sm font-medium">Details</span>
             <span className="text-sm font-medium">Documents</span>
             <span className="text-sm font-medium">Review</span>
           </div>
         </div>
 
-        {/* Step 1: Claim Type */}
+        {/* Step 1: Support Type */}
         {currentStep === 1 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Claim Type</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Select Support Type</h2>
             {claimTypesLoading ? (
               <div className="flex items-center justify-center py-8">
                 <svg className="animate-spin h-8 w-8 text-[#004D40]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span className="ml-3 text-gray-600">Loading claim types...</span>
+                <span className="ml-3 text-gray-600">Loading support types...</span>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -433,10 +433,10 @@ export default function NewClaim() {
           </div>
         )}
 
-        {/* Step 2: Claim Details */}
+        {/* Step 2: Incident or Loss Summary */}
         {currentStep === 2 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Claim Details</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Incident or Loss Summary</h2>
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -551,10 +551,10 @@ export default function NewClaim() {
           </div>
         )}
 
-        {/* Step 3: Documents */}
+        {/* Step 3: Supporting Documents */}
         {currentStep === 3 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Documents</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Supporting Documents</h2>
             <div className="mb-6">
               <p className="text-sm text-gray-600">All documents are required</p>
             </div>
@@ -617,15 +617,15 @@ export default function NewClaim() {
         {/* Step 4: Review - Updated with comprehensive sections */}
         {currentStep === 4 && (
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Your Claim</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Review Your Support Request</h2>
 
             {/* Claim Information Section */}
             <div className="space-y-6">
               <div className="border-b pb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Claim Information</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Support Request Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="block text-sm text-gray-500">Claim Type</span>
+                    <span className="block text-sm text-gray-500">Support Type</span>
                     <span className="block text-base text-gray-900 mt-1">
                       {claimTypesData?.find(type => type.id?.toString() === formData.type)?.name}
                     </span>
@@ -685,7 +685,7 @@ export default function NewClaim() {
 
               {/* Documents Section */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Supporting Documents</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Documentation Checklist</h3>
                 {formData.documents.length > 0 && !skipDocuments ? (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <ul className="space-y-3">
@@ -711,7 +711,7 @@ export default function NewClaim() {
               {/* Confirmation Notice */}
               <div className="mt-6 bg-yellow-50 border border-yellow-100 rounded-lg p-4">
                 <p className="text-sm text-yellow-800">
-                  Please review all information carefully before submitting. Once submitted, you&apos;ll receive a confirmation email with your claim reference number.
+                  Please review all information carefully before sending. Once submitted, you&apos;ll receive a confirmation email with your support request reference number.
                 </p>
               </div>
             </div>
@@ -784,7 +784,7 @@ export default function NewClaim() {
                 </>
               ) : (
                 <>
-                  Start Claim Review
+                  Send Support Request
                   <CheckCircleIcon className="w-5 h-5" />
                 </>
               )}

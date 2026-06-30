@@ -91,7 +91,7 @@ export default function PersonalInfo() {
   return (
     <div className="max-w-2xl mx-auto">
       <form className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Contact Details</h2>
 
         <div className="space-y-6">
           {/* First Name */}

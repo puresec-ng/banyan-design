@@ -353,9 +353,10 @@ export default function Register() {
 
   const renderPersonalInfoStep = () => (
     <div className="bg-white shadow-md rounded-xl p-8">
-      <h1 className="text-2xl font-semibold text-gray-900 text-center mb-6">
-        Create Your Account
+      <h1 className="text-2xl font-semibold text-gray-900 text-center mb-2">
+        Create a Claim Support Account
       </h1>
+      <p className="text-sm text-gray-500 text-center mb-6">Create an account to request claim support, upload documents and track support updates.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">

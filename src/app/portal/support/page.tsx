@@ -7,24 +7,24 @@ import { PhoneIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, ChevronDownIcon, Chev
 // Add FAQ data
 const faqs = [
   {
-    question: "How do I file a new claim?",
-    answer: "To file a new claim, go to the 'New Claims' section in your dashboard. Click on 'File New Claim' and follow the step-by-step process to submit your claim details, including the incident description, supporting documents, and any other required information."
+    question: "How do I submit a new support request?",
+    answer: "To submit a new support request, go to the 'New Support Request' section in your dashboard. Follow the step-by-step process to select your support type, provide an incident or loss summary, and upload any available supporting documents."
   },
   {
-    question: "How long does it take to process a claim?",
-    answer: "The processing time varies depending on the type of claim and the complexity of the case. Generally, simple claims are processed within 5-7 business days, while more complex cases may take up to 14 business days. You can track your claim status in the 'Track Claims' section."
+    question: "How long does it take to review my documentation?",
+    answer: "Documentation review timelines vary depending on the support type and complexity of the case. Generally, initial reviews are completed within 5-7 business days, while more complex cases may take longer. You can track your support status in the 'Track Support' section."
   },
   {
-    question: "What documents do I need to submit with my claim?",
-    answer: "Required documents vary by claim type but typically include: valid ID, proof of ownership, incident report, medical reports (for health claims), police report (if applicable), and any other relevant supporting documents. Specific requirements will be listed during the claim submission process."
+    question: "What documents do I need to upload with my support request?",
+    answer: "Required documents vary by support type but typically include: valid ID, proof of ownership, incident report, medical reports (for health-related claims), police report (if applicable), and any other relevant supporting documents. Specific requirements will be listed during the support request process."
   },
   {
-    question: "How do I check my claim status?",
-    answer: "You can check your claim status by going to the 'Track Claims' section in your dashboard. Here you'll see a list of all your claims with their current status, including any updates or actions required from your side."
+    question: "How do I check my support request status?",
+    answer: "You can check your support request status by going to the 'Track Support' section in your dashboard. Here you will see a list of all your support requests with their current status, including any updates or actions required from your side."
   },
   {
-    question: "What payment methods are accepted?",
-    answer: "We accept various payment methods including bank transfers, credit/debit cards, and mobile money. You can manage your payment methods and view transaction history in the 'Wallet' section of your dashboard."
+    question: "Does Banyan make decisions on my claim?",
+    answer: "No. Banyan provides claims advisory and documentation support only. Formal claim decisions remain with the insurer or other authorised party. We help you organise, review and present your documentation effectively."
   },
   {
     question: "How do I update my personal information?",

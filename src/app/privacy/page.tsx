@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           <p>We are a claims consultancy and advisory firm, not an insurance provider, legal practice, or data broker.</p>
 
           <h2 className="text-xl font-semibold mt-6">2. Scope and Consent</h2>
-          <p>By accessing our website, using our mobile application, or engaging our services, you consent to the collection, use, storage, and sharing of your personal data as described in this Policy. This includes data shared during consultations, claims support, or through any of our digital platforms.</p>
+          <p>By accessing our website, using our client portal or digital services, or engaging our services, you consent to the collection, use, storage, and sharing of your personal data as described in this Policy. This includes data shared during consultations, claims support, or through any of our digital platforms.</p>
 
           <h2 className="text-xl font-semibold mt-6">3. Definitions</h2>
           <ul className="list-disc ml-6">
@@ -68,26 +68,20 @@ export default function PrivacyPage() {
           <h3 className="font-semibold mt-4">C. Cookies and Tracking</h3>
           <p>We use cookies for analytics, security, and functionality. You can manage cookies via your browser settings. If advanced tracking (e.g., Meta Pixel) is used, a separate cookie notice will be made available.</p>
           <h3 className="font-semibold mt-4">D. Third-Party Information</h3>
-          <p>We may receive information from professional partners (e.g., legal advisors, insurers, assessors) for the purposes of claims investigation or dispute resolution.</p>
+          <p>We may receive information from professional partners (e.g., legal advisors, insurers, assessors) where necessary to support claim documentation review, evidence organisation, client-authorised communication, service delivery, complaint handling or lawful compliance.</p>
 
           <h2 className="text-xl font-semibold mt-6">5. How We Use Your Information</h2>
           <ul className="list-disc ml-6">
             <li>To deliver, personalize, and improve our services</li>
             <li>To communicate with you regarding your service or inquiries</li>
-            <li>To support claims advisory, analysis, and negotiations</li>
-            <li>To comply with legal and regulatory requirements (e.g., NDPC, NAICOM)</li>
-            <li>For risk detection, fraud prevention, and dispute resolution</li>
+            <li>To support claims advisory, documentation review, evidence organisation, client-authorised communication support and preparation of claim information for review by insurers, brokers or other authorised parties</li>
+            <li>To comply with legal, regulatory, contractual or lawful authority requirements, including applicable data protection obligations</li>
+            <li>For service integrity, fraud-risk prevention, complaint handling and lawful record management</li>
           </ul>
           <p className="text-gray-600 italic">Disclaimer: We do not provide legal representation. If formal legal action is required, we may refer you to licensed legal professionals.</p>
 
           <h2 className="text-xl font-semibold mt-6">6. Sharing and Disclosure</h2>
-          <p>We only share your information when:</p>
-          <ul className="list-disc ml-6">
-            <li>It is necessary to perform our services</li>
-            <li>Mandated by law or regulatory authorities</li>
-            <li>You provide explicit, informed consent</li>
-            <li>With service providers under contractual confidentiality obligations</li>
-          </ul>
+          <p>We only share your information where necessary to perform our services, where you give explicit and informed consent, where required by law, or with service providers under contractual confidentiality and data protection obligations.</p>
           <p>We are not liable for the misuse of data by third parties beyond our control.</p>
 
           <h2 className="text-xl font-semibold mt-6">7. Children&apos;s Data</h2>
@@ -100,10 +94,10 @@ export default function PrivacyPage() {
             <li>Access control</li>
             <li>Secure storage practices</li>
           </ul>
-          <p>We will notify the NDPC within 72 hours and affected users where there is a data breach that may impact your rights.</p>
+          <p>We will notify the appropriate authority and affected individuals where required by applicable data protection law in the event of a data breach that may impact your rights.</p>
 
           <h2 className="text-xl font-semibold mt-6">9. Data Retention</h2>
-          <p>We retain personal data only for as long as required to meet legal, regulatory, and operational obligations. Residual backup data will be protected with equivalent safeguards.</p>
+          <p>We retain personal data only for as long as necessary for the purpose collected, our service engagement, legal or regulatory obligations, audit, complaint handling and legitimate record keeping. Residual backup data will be protected with equivalent safeguards.</p>
 
           <h2 className="text-xl font-semibold mt-6">10. International Transfers</h2>
           <p>Data may be transferred outside Nigeria in accordance with the Nigeria Data Protection Act, 2023, subject to appropriate legal and contractual safeguards.</p>

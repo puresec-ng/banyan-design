@@ -19,9 +19,9 @@ import cookie from '@/app/utils/cookie';
 import { useInactivityLogout } from './context/AuthContext';
 
 const menuItems = [
-  { name: 'Submitted Claims', href: '/portal/dashboard', icon: DocumentTextIcon },
-  { name: 'New Claim', href: '/portal/new-claim', icon: PlusCircleIcon },
-  { name: 'Track Claim', href: '/portal/track-claim', icon: MagnifyingGlassIcon },
+  { name: 'My Support Requests', href: '/portal/dashboard', icon: DocumentTextIcon },
+  { name: 'New Support Request', href: '/portal/new-claim', icon: PlusCircleIcon },
+  { name: 'Track Support', href: '/portal/track-claim', icon: MagnifyingGlassIcon },
   { name: 'Profile', href: '/portal/profile', icon: UserIcon },
   { name: 'Settings', href: '/portal/settings', icon: Cog6ToothIcon },
   { name: 'Support', href: '/portal/support', icon: QuestionMarkCircleIcon },

@@ -102,10 +102,16 @@ export default function ClaimTypeSelection() {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4 font-lato">
-            Select Claim Type
+            Select Support Type
           </h1>
-          <p className="text-lg text-gray-600 font-roboto">
-            Choose the type of claim you&apos;d like to submit
+          <p className="text-lg text-gray-600 font-roboto mb-4">
+            Tell us what claim support you need. Banyan will review the information provided for documentation and workflow support only.
+          </p>
+          <p className="text-sm text-gray-500 font-roboto">
+            Choose the type of claim support or documentation review you need.
+          </p>
+          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mt-4 font-roboto">
+            Banyan does not approve, reject, settle or pay claims. Your insurer, broker or other authorised party remains responsible for formal claim decisions.
           </p>
         </div>
 

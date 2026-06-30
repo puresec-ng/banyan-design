@@ -20,6 +20,10 @@ export default function ClientPortal() {
   const { showToast } = useToast();
   const { handleApiError } = useApiError();
 
+  useEffect(() => {
+    document.title = 'Claim Support Portal | Banyan Claims';
+  }, []);
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -134,9 +138,10 @@ export default function ClientPortal() {
           </div>
 
           <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl p-8">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-6">
-              Claim Support Portal Login
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-2">
+              Claim Support Portal
             </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">Sign in to view support requests, documents and updates.</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -212,7 +217,7 @@ export default function ClientPortal() {
                 disabled={isLoading || !formData.email || !formData.password}
                 className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
 
@@ -222,7 +227,7 @@ export default function ClientPortal() {
                   <div className="w-full border-t border-gray-300 dark:border-gray-600" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Don&apos;t have an account?</span>
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">New here?</span>
                 </div>
               </div>
 
@@ -231,7 +236,7 @@ export default function ClientPortal() {
                   href="/portal/register"
                   className="text-[#004D40] dark:text-[#4FD1C7] hover:text-[#003D30] dark:hover:text-[#38B2AC] font-medium"
                 >
-                  Register now
+                  Create support account
                 </Link>
               </div>
             </div>

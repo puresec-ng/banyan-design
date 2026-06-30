@@ -133,7 +133,7 @@ export default function BasicInfo() {
   return (
     <div className="max-w-2xl mx-auto">
       <form className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Basic Information</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Incident or Loss Summary</h2>
 
         <div className="space-y-6">
           {/* Insurance Provider */}
@@ -199,7 +199,7 @@ export default function BasicInfo() {
                   {incidentTypes.find((t) => t.name === formData.incidentType)?.description}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">Required Documents:</span>{' '}
+                  <span className="font-medium">Supporting Documents:</span>{' '}
                   {JSON.parse(incidentTypes.find((t) => t.name === formData.incidentType)?.required_documents || '[]').join(', ')}
                 </p>
               </div>

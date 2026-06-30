@@ -34,11 +34,11 @@ export default function SuccessPage() {
           </div>
 
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-            Claim Submitted Successfully
+            Support Request Received
           </h1>
 
           <p className="text-gray-600 mb-8">
-            Your claim has been submitted. Use this tracking number to check your claim status.
+            Support request received. We will review your information and contact you about next steps.
           </p>
 
           <div className="bg-gray-50 rounded-lg p-6 mb-8">

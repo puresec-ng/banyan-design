@@ -54,7 +54,7 @@ export default function TermsPage() {
             <li>Claims documentation and evidence review</li>
             <li>Claim readiness review</li>
             <li>Claims workflow and progress-tracking support</li>
-            <li>Communication support with insurers, brokers, or other relevant parties where authorised by clients</li>
+            <li>Communication support with insurers, brokers, or other relevant parties where specifically authorised by clients</li>
             <li>Review of insurer responses and documentation-related guidance</li>
             <li>Claims process guidance, templates, and advisory support</li>
           </ul>
@@ -71,13 +71,13 @@ export default function TermsPage() {
 
           <h2 className="text-xl font-semibold mt-6">6. Confidentiality & Data Protection</h2>
           <p>We adhere to the Nigeria Data Protection Act, 2023. Personal data collected during engagements is treated with the highest confidentiality and is only used for the purpose of delivering our services. Our full <a href="/privacy" className="underline text-blue-700">Privacy Policy</a> outlines your rights and our responsibilities.</p>
-          <p>By engaging our services or submitting your contact information, you consent to receive communication from Banyan Claims via email, SMS, or phone regarding your claim, advisory matters, or service updates. You may opt out of non-essential communications at any time.</p>
+          <p>By engaging our services or submitting your contact information, you consent to receive communication from Banyan Claims via email, SMS, or phone regarding your support request, documentation review, advisory matters, or service updates. You may opt out of non-essential communications at any time.</p>
 
           <h2 className="text-xl font-semibold mt-6">7. Limitation of Liability</h2>
-          <p>Banyan Claims shall not be held liable for any insurer&apos;s decision, action, or inaction regarding a submitted claim. Our responsibility is limited to the provision of accurate and professional advisory services.</p>
+          <p>Banyan Claims shall not be held liable for any insurer&apos;s decision, action, or inaction regarding an insurance claim associated with a client support request. Our responsibility is limited to the provision of accurate and professional advisory services.</p>
           <ul className="list-disc ml-6">
             <li>Claim denials by third parties</li>
-            <li>Delays in processing by insurers</li>
+            <li>Delays in review, handling or response by insurers or other relevant parties</li>
             <li>Financial losses arising from client non-disclosure or misrepresentation</li>
           </ul>
           <p>Banyan Claims does not underwrite or issue insurance policies and shall not be liable for insurer decisions or non-payment of claims.</p>
@@ -100,7 +100,7 @@ export default function TermsPage() {
           <p>These Terms are governed by the laws of the Federal Republic of Nigeria. Any disputes shall be resolved under the jurisdiction of Nigerian courts.</p>
 
           <h2 className="text-xl font-semibold mt-6">12A. Dispute Resolution</h2>
-          <p>In the event of any dispute arising out of or in connection with these Terms or our services, both parties agree to attempt to resolve the matter amicably through good-faith negotiations. Where resolution is not achieved, the parties may consider mediation or arbitration before pursuing litigation.</p>
+          <p>In the event of any dispute arising out of or in connection with these Terms or our services, both parties agree to attempt to resolve the matter amicably through good-faith discussions. Where resolution is not achieved, the parties may consider mediation or arbitration before pursuing litigation.</p>
 
           <h2 className="text-xl font-semibold mt-6">12B. Force Majeure</h2>
           <p>Banyan Claims shall not be held liable for any failure or delay in the performance of its obligations due to events beyond reasonable control, including but not limited to natural disasters, acts of government, internet outages, or civil unrest.</p>

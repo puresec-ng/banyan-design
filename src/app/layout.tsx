@@ -24,15 +24,18 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Banyan Claims Consultant Limited",
-  description: "Banyan Claims Consultant Limited provides claims documentation, workflow support and advisory services for individuals, SMEs and businesses in Nigeria.",
+  title: {
+    default: "Banyan Claims | Claims Support and Documentation Review in Nigeria",
+    template: "%s | Banyan Claims",
+  },
+  description: "Claims advisory and documentation support for individuals and businesses. Organise claim documents, identify gaps and track next steps before insurer review.",
   openGraph: {
     title: "Banyan Claims Consultant Limited",
-    description: "Claims documentation, workflow support and advisory services for individuals, SMEs and businesses in Nigeria.",
+    description: "Claims support, documentation review and workflow support for individuals, SMEs and business users.",
   },
   twitter: {
     title: "Banyan Claims Consultant Limited",
-    description: "Claims documentation, workflow support and advisory services for individuals, SMEs and businesses in Nigeria.",
+    description: "Claims support, documentation review and workflow support for individuals, SMEs and business users.",
   },
   icons: {
     icon: 'https://banyanclaims.com/real-favicon.ico',

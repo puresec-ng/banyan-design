@@ -104,7 +104,7 @@ export default function DocumentRequirements() {
       console.log('selectedClaimType before submit:', selectedClaimType, typeof selectedClaimType);
       if (!selectedClaimType || selectedClaimType === '{}' || selectedClaimType === '[object Object]') {
         localStorage.removeItem('selectedClaimType');
-        showToast('Please select a claim type before submitting.', 'error');
+        showToast('Please select a support type before submitting.', 'error');
         setIsSubmitting(false);
         return;
       }
@@ -123,7 +123,7 @@ export default function DocumentRequirements() {
       // FINAL SAFETY CHECK: Never send an empty object
       if (!samplePayload.claim_type || samplePayload.claim_type === '{}' || samplePayload.claim_type === '[object Object]') {
         console.error('CRITICAL ERROR: claim_type is still invalid after all checks!');
-        showToast('Invalid claim type. Please select a claim type again.', 'error');
+        showToast('Invalid support type. Please select a support type again.', 'error');
         router.push('/submit-claim');
         setIsSubmitting(false);
         return;
@@ -153,7 +153,7 @@ export default function DocumentRequirements() {
       localStorage.setItem('documents', JSON.stringify([]));
       
       // Show success message
-      showToast('Claim submitted successfully!', 'success');
+      showToast('Support request received. We will review your information and contact you about next steps.', 'success');
       
       // Navigate to success page immediately
       try {
@@ -168,7 +168,7 @@ export default function DocumentRequirements() {
         emptyStoredData();
       }, 2000);
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Failed to submit your claim review. Please try again.');
+      const errorMessage = handleApiError(error, 'Unable to send support request. Please check the form and try again.');
       showToast(errorMessage, 'error');
     } finally {
       setIsSubmitting(false);
@@ -187,9 +187,9 @@ export default function DocumentRequirements() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Required Documents</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Documentation Checklist</h2>
         <p className="text-gray-600 mb-6">
-          The following documents are required for your claim. You can upload them now or submit your claim and upload them later.
+          We will help identify documents that may support your claim file. Requirements may vary by insurer or policy.
         </p>
 
         <div className="space-y-4">
@@ -207,18 +207,8 @@ export default function DocumentRequirements() {
 
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800 mb-3">
-            <strong>Note:</strong> You can proceed without uploading documents now and submit them later through your dashboard.
+            <strong>Note:</strong> You can proceed without uploading supporting documents now and send your support request to continue later.
           </p>
-          <button
-            onClick={() => {
-              const payload = buildCurrentPayload();
-              console.log('Current Payload Preview:', payload);
-              alert('Check console for current payload preview');
-            }}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-          >
-            Preview Current Payload
-          </button>
         </div>
       </div>
 
@@ -246,7 +236,7 @@ export default function DocumentRequirements() {
                 Submitting...
               </>
             ) : (
-              'Submit Without Documents'
+              'Send Support Request Without Documents'
             )}
           </button>
           <button
