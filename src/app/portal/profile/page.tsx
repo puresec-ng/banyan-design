@@ -8,14 +8,17 @@ import cookie from '@/app/utils/cookie';
 import { useToast } from '@/app/context/ToastContext';
 import { getProfile, lookupBankAccount, storeBankAccount, updateProfile, setBvnVerificationMethod, validateBvnOtp, bvnLookup, } from '@/app/services/dashboard/user-management';
 import { useQuery } from "@tanstack/react-query";
-import { checkEmail, } from '../../services/auth';
 import { getBanks } from '../../services/public';
 import { useApiError } from '../../utils/http';
+import {
+  getAuthErrorMessage,
+  maskAccountNumber,
+  maskEmail,
+  maskPhone,
+  validateEmailFormat,
+} from '../../utils/security';
+import { useOtpResend, OTP_RESEND_COOLDOWN_SECONDS } from '../../utils/useOtpResend';
 import type { BankType } from '../../services/public';
-
-interface EmailCheckResponse {
-  exists: boolean;
-}
 
 interface BvnMethod {
   method: string;
@@ -67,6 +70,7 @@ export default function Profile() {
   const router = useRouter();
   const { showToast } = useToast();
   const { handleApiError } = useApiError();
+  const { countdown, canResend, startCooldown, formatTime } = useOtpResend(OTP_RESEND_COOLDOWN_SECONDS);
   // const userCookie = cookie().getCookie('user');
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ['user'],
@@ -118,7 +122,6 @@ export default function Profile() {
     }
 
     if (user) {
-      console.log(user, 'user111');
       setEmail(user?.email);
       setBankDetails({
         bankName: user?.bank_name,
@@ -152,24 +155,10 @@ export default function Profile() {
       return;
     }
 
-    if (newEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    if (newEmail && validateEmailFormat(newEmail)) {
       setIsCheckingEmail(true);
-      try {
-        const { data: response } = await checkEmail(newEmail);
-        console.log(response, 'response______');
-        // if (response.exists) {
-        //   setEmailError('This email address is already taken');
-        //   setIsEmailAvailable(false);
-        // } else {
-        //   setIsEmailAvailable(true);
-        // }
-        setIsEmailAvailable(true);
-      } catch (error: any) {
-        setEmailError(error?.message || 'Error checking email availability');
-        setIsEmailAvailable(false);
-      } finally {
-        setIsCheckingEmail(false);
-      }
+      setIsEmailAvailable(true);
+      setIsCheckingEmail(false);
     } else if (newEmail) {
       setEmailError('Please enter a valid email address');
     }
@@ -234,7 +223,6 @@ export default function Profile() {
   };
 
   const handleBankDetailsSave = async () => {
-    console.log('handleBankDetailsSave called');
     try {
       setIsUpdatingBankDetails(true);
       const resp2 = await storeBankAccount({
@@ -243,9 +231,7 @@ export default function Profile() {
         bank_account_name: bankDetails.accountName,
         bank_code: banks?.find(bank => bank.name === bankDetails.bankName)?.code
       });
-      console.log('API response:', resp2);
       const isSuccess = resp2 && resp2.account_name && resp2.account_bank;
-      console.log('isSuccess:', isSuccess);
       if (isSuccess) {
         setIsUpdatingBankDetails(false);
         showSuccessMessage('Bank details updated successfully');
@@ -299,12 +285,12 @@ export default function Profile() {
       //   return;
       // }
 
-      const response = await setBvnVerificationMethod({
+      await setBvnVerificationMethod({
         request_id: bvnSessionId,
         otp_method: method === "new-phone" ? "phone" : method,
         ...(method === "new-phone" && { phone: alternativePhone }),
       });
-      console.log(response, 'response______');
+      startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
 
       setVerificationStep('otp');
     } catch (error) {
@@ -322,20 +308,17 @@ export default function Profile() {
 
       // Simulate OTP verification
       // await new Promise(resolve => setTimeout(resolve, 2000));
-      const response = await validateBvnOtp({
+      await validateBvnOtp({
         request_id: bvnSessionId,
         otp: otp,
       });
-      console.log(response, 'response______');
-
 
       setIsBvnVerified(true);
       setVerificationStep('success');
       showSuccessMessage('BVN verified successfully');
 
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'An error occurred during verification. Please try again.');
-      showErrorMessage(errorMessage);
+      showErrorMessage(getAuthErrorMessage('otp', error));
     } finally {
       setIsVerifying(false);
     }
@@ -502,7 +485,31 @@ export default function Profile() {
       </button>
 
       <p className="text-sm text-gray-500 text-center">
-        Didn&apos;t receive code? <button className="text-[#004D40] hover:underline">Resend</button>
+        Didn&apos;t receive code?{' '}
+        <button
+          type="button"
+          className={`text-[#004D40] hover:underline ${!canResend ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={!canResend || isVerifying}
+          onClick={async () => {
+            if (!canResend || !selectedMethod) return;
+            try {
+              setIsVerifying(true);
+              await setBvnVerificationMethod({
+                request_id: bvnSessionId,
+                otp_method: selectedMethod === 'new-phone' ? 'phone' : selectedMethod,
+                ...(selectedMethod === 'new-phone' && { phone: alternativePhone }),
+              });
+              startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+              showSuccessMessage('Verification code resent');
+            } catch (error: any) {
+              showErrorMessage(getAuthErrorMessage('otp', error));
+            } finally {
+              setIsVerifying(false);
+            }
+          }}
+        >
+          {canResend ? 'Resend' : `Resend in ${formatTime(countdown)}`}
+        </button>
       </p>
     </div>
   );
@@ -557,7 +564,7 @@ export default function Profile() {
 
             <div>
               <label className="block text-sm font-medium text-gray-500 mb-1">Phone Number</label>
-              <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{user?.phone}</p>
+              <p className="text-gray-400 p-2 bg-gray-50 rounded-lg">{user?.phone ? maskPhone(user.phone) : ''}</p>
             </div>
 
             <div>
@@ -593,7 +600,7 @@ export default function Profile() {
                     )}
                   </>
                 ) : (
-                  <p className="flex-1 text-gray-900 p-2 bg-gray-50 rounded-lg">{email}</p>
+                  <p className="flex-1 text-gray-900 p-2 bg-gray-50 rounded-lg">{email ? maskEmail(email) : ''}</p>
                 )}
               </div>
 
@@ -681,7 +688,7 @@ export default function Profile() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
               <input
                 type="text"
-                value={bankDetails.accountNumber}
+                value={isEditingBank ? bankDetails.accountNumber : maskAccountNumber(bankDetails.accountNumber)}
                 onChange={handleAccountNumberChange}
                 className={`w-full p-2 border ${accountLookupError ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent`}
                 maxLength={10}

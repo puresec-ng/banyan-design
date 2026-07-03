@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import { checkEmail, login } from '../../services/auth';
 import { useToast } from '../../context/ToastContext';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
 
 export default function PersonalInfo() {
   const router = useRouter();
@@ -20,22 +20,21 @@ export default function PersonalInfo() {
 
   useEffect(() => {
     // Check if user has completed previous steps
-    const basicInfo = localStorage.getItem('basicInfo');
+    const basicInfo = claimDraftStorage.getItem('basicInfo');
     if (!basicInfo) {
       router.push('/submit-claim/basic-info');
       return;
     }
 
     // Load saved personal info if it exists
-    const savedPersonalInfo = localStorage.getItem('personalInfo');
-    console.log('savedPersonalInfo____', savedPersonalInfo);
+    const savedPersonalInfo = claimDraftStorage.getItem('personalInfo');
     if (savedPersonalInfo) {
       try {
         setFormData(JSON.parse(savedPersonalInfo));
       } catch (e) {
         console.error('Failed to parse personalInfo from localStorage', e);
         // Optionally clear invalid data
-        localStorage.removeItem('personalInfo');
+        claimDraftStorage.removeItem('personalInfo');
       }
     }
   }, [router]);
@@ -75,7 +74,7 @@ export default function PersonalInfo() {
 
   const handleContinue = () => {
     // Store form data
-    localStorage.setItem('personalInfo', JSON.stringify(formData));
+    claimDraftStorage.setItem('personalInfo', JSON.stringify(formData));
     // Navigate to requirements
     router.push('/submit-claim/requirements');
   };

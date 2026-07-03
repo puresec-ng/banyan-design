@@ -8,6 +8,7 @@ import {
   ExclamationCircleIcon,
   DocumentIcon,
 } from '@heroicons/react/24/outline';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
 
 const claimTypeLabels = {
   MOTOR: 'Motor Claims Support',
@@ -43,10 +44,10 @@ export default function ReviewClaim() {
 
   useEffect(() => {
     // Load all saved data
-    const savedType = localStorage.getItem('claimType');
-    const savedInfo = localStorage.getItem('basicInfo');
-    const savedPayment = localStorage.getItem('paymentModel');
-    const savedFiles = localStorage.getItem('uploadedDocuments');
+    const savedType = claimDraftStorage.getItem('claimType');
+    const savedInfo = claimDraftStorage.getItem('basicInfo');
+    const savedPayment = claimDraftStorage.getItem('paymentModel');
+    const savedFiles = claimDraftStorage.getItem('uploadedDocuments');
 
     if (!savedType || !savedInfo || !savedPayment || !savedFiles) {
       router.push('/submit-claim');
@@ -78,10 +79,10 @@ export default function ReviewClaim() {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Clear local storage after successful submission
-      localStorage.removeItem('claimType');
-      localStorage.removeItem('basicInfo');
-      localStorage.removeItem('paymentModel');
-      localStorage.removeItem('uploadedDocuments');
+      claimDraftStorage.removeItem('claimType');
+      claimDraftStorage.removeItem('basicInfo');
+      claimDraftStorage.removeItem('paymentModel');
+      claimDraftStorage.removeItem('uploadedDocuments');
 
       // Navigate to success page
       router.push('/submit-claim/success');

@@ -7,18 +7,16 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-  "dev": "next dev",
-  "prebuild": "git fetch origin && git reset --hard origin/main 2>/dev/null || true",
-  "build": "next build",
-  "start": "next start -p 3001",
-  "lint": "eslint .",
-  "postinstall": "git fetch origin && git reset --hard origin/main 2>/dev/null || true"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "eslint .",
+    "audit:security": "npm audit --audit-level=high"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.1",
     "@tanstack/react-query": "^5.74.11",
     "axios": "^1.13.2",
-    "emailjs-com": "^3.2.0",
     "framer-motion": "^11.0.8",
     "js-cookie": "^3.0.5",
     "moment": "^2.30.1",

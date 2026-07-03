@@ -23,6 +23,7 @@ import {
 import { uploadDocument } from '../services/public';
 import { useToast } from '../context/ToastContext';
 import { useApiError } from '../utils/http';
+import { validateUploadFile } from '../utils/security';
 
 interface AdditionalInfoRequestProps {
   claimId: string;
@@ -75,6 +76,14 @@ export default function AdditionalInfoRequestComponent({
   // Handle file upload
   const handleFileUpload = async (documentId: string, file: File) => {
     if (!requestData?.data) return;
+
+    const validation = validateUploadFile(file, {
+      maxSizeBytes: (requestData.data.documents?.find(d => d.id === documentId)?.maxSize ?? 10) * 1024 * 1024,
+    });
+    if (!validation.isValid) {
+      showToast(validation.message, 'error');
+      return;
+    }
 
     setUploadingFiles(prev => ({ ...prev, [documentId]: true }));
 
@@ -380,8 +389,12 @@ export default function AdditionalInfoRequestComponent({
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  if (file.size > doc.maxSize * 1024 * 1024) {
-                                    showToast(`File size must be less than ${doc.maxSize}MB`, 'error');
+                                  const validation = validateUploadFile(file, {
+                                    maxSizeBytes: doc.maxSize * 1024 * 1024,
+                                  });
+                                  if (!validation.isValid) {
+                                    showToast(validation.message, 'error');
+                                    e.target.value = '';
                                     return;
                                   }
                                   handleFileUpload(doc.id, file);

@@ -44,8 +44,6 @@ export const setBusinessDetails = (payload: {
 }) => Http.post(`/auth/set-details`, payload);
 
 export const login = (payload: { email: string; password: string }): Promise<RegisterResponse> => {
-  console.log('Login function called with payload:', payload);
-  console.log('Making API call to /auth/login...');
   return Http.post(`/auth/login`, payload);
 };
 
@@ -54,9 +52,6 @@ export const register = (payload: RegisterPayload): Promise<RegisterResponse> =>
 
 export const forgotPassword = (payload: { email: string }) =>
   Http.post(`/auth/forgot-password`, payload);
-
-export const googleAuth = (route: string) =>
-  Http.get(`/auth/google?route=${route}`);
 
 export const resendOtp = (payload: { email: string }) =>
   Http.post(`/auth/resend-otp`, payload);
@@ -73,18 +68,8 @@ export const getUserDetails = () => Http.get(`/user`);
 export const editProfile = (payload: any) =>
   Http.patch(`settings/profile`, payload);
 
-
-
 // create pin
 export const createPin = (payload: {
   pin: string;
   pin_confirmation: string;
 }) => Http.post(`/profile/create-pin`, payload);
-
-// check email
-export const checkEmail = (payload: any) =>
-  Http.post(`/auth/check-user`, payload);
-
-// check phone
-export const checkPhone = (payload: any) =>
-  Http.post(`/auth/check-user`, payload);

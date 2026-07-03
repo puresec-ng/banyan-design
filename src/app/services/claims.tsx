@@ -199,25 +199,17 @@ export interface AcceptRejectOfferResponse {
 export const getClaimOffer = async (claimId: string): Promise<OfferResponse> => {
   try {
     const response: any = await Http.get(`/claims/claim-offer/${claimId}`);
-    console.log('getClaimOffer response:', response);
-    
-    // Http interceptor already returns response.data from axios
-    // The API might return { data: Offer } or Offer directly
+
     if (response) {
-      // If response has a nested data property with offer fields
       if (response.data && typeof response.data === 'object' && (response.data.id || response.data.offer_amount)) {
         return { data: response.data };
       }
-      // If response itself is the offer (has offer fields)
       if ((response as any).id || (response as any).offer_amount) {
         return { data: response as Offer };
       }
     }
-    console.error('Invalid response structure:', response);
     throw new Error('No offer found for this claim');
   } catch (error: any) {
-    console.error('getClaimOffer error:', error);
-    console.error('Error response:', error?.response);
     throw error;
   }
 };

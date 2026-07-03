@@ -12,35 +12,28 @@ import {
 } from '@heroicons/react/24/outline';
 import { useToast } from '../../context/ToastContext';
 import { requestVerificationCode, resetPassword, forgotPassword } from '../../services/auth';
-import { useApiError } from '../../utils/http';
 import cookie from '../../utils/cookie';
-import React from 'react';
+import {
+  clearAuthSession,
+  getAuthErrorMessage,
+  validatePassword,
+} from '../../utils/security';
+import { useOtpResend, OTP_RESEND_COOLDOWN_SECONDS } from '../../utils/useOtpResend';
 
 type Step = 'email' | 'verify' | 'success';
 
 type ForgotPasswordResponse = { reset_id?: string; message?: string };
 
-const validatePassword = (password: string, confirmPassword: string) => ({
-  hasMinLength: password.length >= 8,
-  hasUpperCase: /[A-Z]/.test(password),
-  hasLowerCase: /[a-z]/.test(password),
-  hasNumber: /\d/.test(password),
-  hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-  matches: password === confirmPassword && password.length > 0,
-});
-
 export default function ForgotPassword() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { handleApiError } = useApiError();
+  const { countdown, canResend, startCooldown, formatTime } = useOtpResend(OTP_RESEND_COOLDOWN_SECONDS);
   const [currentStep, setCurrentStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [countdown, setCountdown] = useState(0);
-  const [canResend, setCanResend] = useState(false);
   const resetIdRef = useRef<string>('');
 
   const [formData, setFormData] = useState({
@@ -57,28 +50,6 @@ export default function ForgotPassword() {
     }
   }, [router]);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (countdown > 0) {
-      interval = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            setCanResend(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [countdown]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -88,7 +59,7 @@ export default function ForgotPassword() {
       const reset_id = response?.reset_id || '';
       if (reset_id) {
         resetIdRef.current = reset_id;
-        localStorage.setItem('reset_id', reset_id);
+        sessionStorage.setItem('reset_id', reset_id);
       }
       setFormData({
         newPassword: '',
@@ -96,12 +67,10 @@ export default function ForgotPassword() {
       });
       setOtp('');
       setCurrentStep('verify');
-      setCountdown(300);
-      setCanResend(false);
-      showToast('OTP sent successfully', 'success');
+      startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+      showToast('If the details provided are correct, further instructions will be sent.', 'success');
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Error sending OTP');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('forgotPassword', error), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -112,14 +81,11 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // Simulate API call to resend OTP
       await requestVerificationCode({ email });
-      setCountdown(300);
-      setCanResend(false);
-      showToast('OTP sent successfully', 'success');
+      startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+      showToast('If the details provided are correct, further instructions will be sent.', 'success');
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Error sending OTP');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('forgotPassword', error), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -130,23 +96,22 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      const reset_id = resetIdRef.current || localStorage.getItem('reset_id') || '';
+      const reset_id = resetIdRef.current || sessionStorage.getItem('reset_id') || '';
       await resetPassword({ reset_id, otp, password: formData.newPassword, password_confirmation: formData.confirmPassword });
       setCurrentStep('success');
+      sessionStorage.removeItem('reset_id');
+      clearAuthSession();
       showToast('Password reset successfully', 'success');
-      localStorage.removeItem('reset_id');
       setTimeout(() => {
         router.push('/portal');
       }, 1000);
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Error resetting password');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('passwordChange', error), 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Update password validation on input change
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
     setFormData((prev) => {
@@ -349,7 +314,7 @@ export default function ForgotPassword() {
       </div>
       <h2 className="text-2xl font-semibold text-gray-900 mb-2">Password Reset Successful!</h2>
       <p className="text-gray-600 mb-8">
-        Your password has been reset successfully. You will be redirected to the dashboard shortly.
+        Your password has been reset successfully. You will be redirected to the login page shortly.
       </p>
     </div>
   );

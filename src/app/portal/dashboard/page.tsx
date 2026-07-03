@@ -37,6 +37,7 @@ import { useApiError, Http } from '../../utils/http';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
 import cookie from '@/app/utils/cookie';
+import { validateUploadFile } from '../../utils/security';
 
 // API function for responding to information requests
 const respondToInformationRequest = async (payload: {
@@ -363,17 +364,13 @@ const MOCK_USER = {
 // Date formatting function
 const formatDate = (dateString: string) => {
   if (!dateString) {
-    console.log('formatDate: dateString is null/undefined:', dateString);
     return 'No date';
   }
   
-  console.log('formatDate: input dateString:', dateString);
   
   const date = new Date(dateString);
-  console.log('formatDate: parsed date:', date);
   
   if (isNaN(date.getTime())) {
-    console.log('formatDate: Invalid date detected');
     return 'Invalid date';
   }
   
@@ -388,7 +385,6 @@ const formatDate = (dateString: string) => {
   const hoursStr = hours.toString().padStart(2, '0');
   
   const result = `${day} ${month} ${year} ${hoursStr}:${minutes} ${ampm}`;
-  console.log('formatDate: result:', result);
   return result;
 };
 
@@ -406,10 +402,7 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
   const { data: allRequests, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
     queryKey: ['all-requests', claimId],
     queryFn: async () => {
-      console.log('=== MAKING SINGLE API CALL ===');
-      console.log('Claim ID:', claimId);
       const result = await Http.get(`/claims/additional-information-requests/${claimId}`);
-      console.log('All Requests API Call Result:', result);
       return result;
     },
     enabled: !!claimId,
@@ -437,25 +430,23 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
           return;
         }
 
+        const fileValidation = validateUploadFile(selectedFile);
+        if (!fileValidation.isValid) {
+          showToast(fileValidation.message, 'error');
+          return;
+        }
+
         // Upload file first
         const formData = new FormData();
         formData.append('file', selectedFile);
         
-        console.log('=== FILE UPLOAD DEBUG ===');
-        console.log('Selected file:', selectedFile);
-        console.log('FormData:', formData);
         
         try {
           const uploadResponse = await uploadDocument(formData);
-          console.log('Upload response:', uploadResponse);
-          console.log('Upload response data:', uploadResponse.data);
           
           const fileUrl = uploadResponse.data?.image_url || uploadResponse.data?.file_url || uploadResponse.data?.url;
-          console.log('Extracted file URL:', fileUrl);
 
           if (!fileUrl) {
-            console.log('File upload failed - no URL returned');
-            console.log('Available fields in response.data:', Object.keys(uploadResponse.data || {}));
             showToast('File upload failed - no URL returned', 'error');
             return;
           }
@@ -474,10 +465,8 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
 
       try {
         const response = await respondToInformationRequest(payload);
-        console.log('Response API result:', response);
         
         // Always refresh the requests after successful submission
-        console.log('Response successful, refreshing requests...');
         await refetchRequests();
         
         showToast('Response submitted successfully!', 'success');
@@ -531,13 +520,6 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
   }
 
   // Debug: Log the API response fields
-  console.log('=== API RESPONSE DEBUG ===');
-  console.log('All Requests Count:', allRequests?.data?.length || 0);
-  console.log('Total Processed requests:', requests.length);
-  console.log('All Requests:', allRequests?.data);
-  console.log('Final Processed requests:', requests);
-  console.log('=== API ENDPOINT CHECK ===');
-  console.log('API Endpoint used:', `/claims/additional-information-requests/${claimId}`);
 
 
   if (isLoadingRequests) {
@@ -630,7 +612,18 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
                 <div>
                   <input
                     type="file"
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file) {
+                        const validation = validateUploadFile(file);
+                        if (!validation.isValid) {
+                          showToast(validation.message, 'error');
+                          e.target.value = '';
+                          return;
+                        }
+                      }
+                      setSelectedFile(file);
+                    }}
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   />
@@ -912,7 +905,18 @@ const RequestResponseComponent = ({
             <div>
               <input
                 type="file"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file) {
+                    const validation = validateUploadFile(file);
+                    if (!validation.isValid) {
+                      showToast(validation.message, 'error');
+                      e.target.value = '';
+                      return;
+                    }
+                  }
+                  setSelectedFile(file);
+                }}
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               />
@@ -1003,8 +1007,14 @@ export default function Dashboard() {
         showToast("Please select a document to upload", "error");
         return;
       }
+
+      const validation = validateUploadFile(file);
+      if (!validation.isValid) {
+        showToast(validation.message, 'error');
+        return;
+      }
+
       setUploadingDocument(true);
-      console.log(selectedDocumentId, 'selectedDocument_______');
       // const resp = await uploadDocument(selectedDocument, file);
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
@@ -1015,18 +1025,14 @@ export default function Dashboard() {
 
       const uploadClaimDocumentResponse = await uploadClaimDocument(selectedDocumentId, responseData.image_url);
 
-      console.log(uploadClaimDocumentResponse, 'uploadClaimDocumentResponse');
-      console.log(responseData, 'responseData');
 
 
 
-      // console.log(response, 'resp______');
       showToast("Document uploaded successfully", "success");
       setUploadingDocument(false);
       window.location.reload();
     } catch (error: any) {
       setUploadingDocument(false);
-      console.log(error, 'error______');
       const errorMessage = handleApiError(error, 'Error uploading document');
       showToast(errorMessage, 'error');
     }
@@ -1085,15 +1091,6 @@ export default function Dashboard() {
         ) : (
           <div className="divide-y">
             {claims.data.data?.map((claim: ClaimData) => {
-              // Debug: Log the actual status from API
-              if (claim.status === 'default' || claim.status === 'DEFAULT' || !claim.status) {
-                console.log('Claim status debug:', {
-                  claim_number: claim.claim_number,
-                  status: claim.status,
-                  statusType: typeof claim.status,
-                  allClaimData: claim
-                });
-              }
               const normalizedStatus = normalizeStatus(claim.status);
               const isApproved = normalizedStatus === 'APPROVED' || normalizedStatus === 'OFFER_ACCEPTED';
               const claimId = String(claim.id || claim.claim_number);

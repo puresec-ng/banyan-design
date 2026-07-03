@@ -16,7 +16,6 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import { contactUs } from './services/public';
 import { useState } from 'react';
-import emailjs from 'emailjs-com';
 
 // Add social icons import
 import {
@@ -52,25 +51,17 @@ export default function Home() {
 
     try {
       const formData = new FormData(e.target as HTMLFormElement);
-      await emailjs.send(
-        'service_wmg43vp', // Service ID
-        'template_8jnqeup', // Template ID
-        {
-          from_name: formData.get('name'),      // Full Name
-          from_email: formData.get('email'),    // Email Address
-          message: `Email: ${formData.get('email')}
-
-${formData.get('message')}` // Message body includes email
-        },
-        'P0j4XeljA-hZrLyWO' // Public Key
-      );
+      await contactUs({
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        message: formData.get('message') as string,
+      });
       setSubmitStatus({
         type: 'success',
         message: 'Thank you for your message. We will get back to you soon!'
       });
       (e.target as HTMLFormElement).reset();
-    } catch (error) {
-      console.log('EmailJS error:', error);
+    } catch {
       setSubmitStatus({
         type: 'error',
         message: 'Failed to send message. Please try again later.'

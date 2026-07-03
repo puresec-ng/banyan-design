@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getInsurers, Insurer, getIncidentTypes, IncidentType } from '../../services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
 import Image from 'next/image';
 
 export default function BasicInfo() {
@@ -23,10 +24,8 @@ export default function BasicInfo() {
 
   useEffect(() => {
     if (insurers) {
-      console.log('Insurers data:', insurers);
     }
     if (incidentTypes) {
-      console.log('Incident Types data:', incidentTypes);
     }
   }, [insurers, incidentTypes]);
 
@@ -44,7 +43,7 @@ export default function BasicInfo() {
 
   useEffect(() => {
     // Check if user has completed previous steps
-    const selectedType = localStorage.getItem('selectedClaimType');
+    const selectedType = claimDraftStorage.getItem('selectedClaimType');
     if (!selectedType && window.location.pathname === '/submit-claim/basic-info') {
         // Redirect to claim selection if no claim type is selected
         router.push('/submit-claim');
@@ -52,7 +51,7 @@ export default function BasicInfo() {
     }
 
     // Load existing basic info if available
-    const existingBasicInfo = localStorage.getItem('basicInfo');
+    const existingBasicInfo = claimDraftStorage.getItem('basicInfo');
     if (existingBasicInfo) {
       try {
         const parsedInfo = JSON.parse(existingBasicInfo);
@@ -108,7 +107,7 @@ export default function BasicInfo() {
       }
       const insurer = insurers?.find((i: Insurer) => i.name === formData.insuranceProvider);
       const incidentType = incidentTypes?.find((t: IncidentType) => t.name === formData.incidentType);
-      localStorage.setItem('basicInfo', JSON.stringify({
+      claimDraftStorage.setItem('basicInfo', JSON.stringify({
         ...formData,
         insurer_id: insurer?.id,
         incident_type: incidentType?.id

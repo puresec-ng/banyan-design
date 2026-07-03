@@ -16,6 +16,7 @@ import {
 import { getClaimTypes } from '../services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../context/ToastContext';
+import { claimDraftStorage } from '../utils/claimDraftStorage';
 
 
 export default function ClaimTypeSelection() {
@@ -52,17 +53,17 @@ export default function ClaimTypeSelection() {
 
   useEffect(() => {
     // Migration: Remove invalid selectedClaimType values
-    const claimTypeId = localStorage.getItem('selectedClaimType');
+    const claimTypeId = claimDraftStorage.getItem('selectedClaimType');
     if (claimTypeId && (claimTypeId === '{}' || claimTypeId === '[object Object]')) {
-      localStorage.removeItem('selectedClaimType');
+      claimDraftStorage.removeItem('selectedClaimType');
     }
     // Clear all claim-related data when starting a new claim
-    localStorage.removeItem('personalInfo');
-    localStorage.removeItem('basicInfo');
-    localStorage.removeItem('selectedClaimType');
-    localStorage.removeItem('documents');
-    localStorage.removeItem('submissionDetails');
-    localStorage.removeItem('claimNumber');
+    claimDraftStorage.removeItem('personalInfo');
+    claimDraftStorage.removeItem('basicInfo');
+    claimDraftStorage.removeItem('selectedClaimType');
+    claimDraftStorage.removeItem('documents');
+    claimDraftStorage.removeItem('submissionDetails');
+    claimDraftStorage.removeItem('claimNumber');
     // Optionally clear any other claim-related keys here
     if (claimTypesData) {
       const formattedClaimTypes = claimTypesData.map(type => ({
@@ -81,7 +82,7 @@ export default function ClaimTypeSelection() {
 
   const handleTypeSelect = (typeId: string) => {
     setSelectedType(typeId);
-    localStorage.setItem('selectedClaimType', typeId.toString());
+    claimDraftStorage.setItem('selectedClaimType', typeId.toString());
     router.push('/submit-claim/basic-info');
   };
 

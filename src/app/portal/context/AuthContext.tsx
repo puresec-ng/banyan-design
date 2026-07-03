@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import cookie from '../../utils/cookie';
+import { clearAuthSession, setAuthFlash } from '../../utils/security';
 
 const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
 
@@ -9,14 +10,13 @@ export function useInactivityLogout() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Only run inactivity logic if user is logged in
     if (typeof window === 'undefined' || !cookie().getCookie('token')) {
       return;
     }
     const logout = () => {
-      cookie().deleteCookie('token');
-      cookie().deleteCookie('userType');
-      window.location.replace('/portal?error=' + encodeURIComponent('Logged out due to inactivity.'));
+      clearAuthSession();
+      setAuthFlash('Logged out due to inactivity.');
+      window.location.replace('/portal');
     };
 
     const resetTimer = () => {
@@ -33,4 +33,4 @@ export function useInactivityLogout() {
       events.forEach(event => window.removeEventListener(event, resetTimer));
     };
   }, [pathname]);
-} 
+}

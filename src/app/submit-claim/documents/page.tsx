@@ -6,6 +6,8 @@ import { DocumentTextIcon, XMarkIcon, ArrowUpTrayIcon } from '@heroicons/react/2
 import { IncidentType, getIncidentTypes, uploadDocument, submitClaim } from '@/app/services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
+import { validateUploadFile } from '../../utils/security';
 import { useApiError } from '../../utils/http';
 
 interface Document {
@@ -41,8 +43,8 @@ export default function DocumentUpload() {
   useEffect(() => {
 
     // Check if user has completed previous steps
-    const basicInfo = localStorage.getItem('basicInfo');
-    const personalInfo = localStorage.getItem('personalInfo');
+    const basicInfo = claimDraftStorage.getItem('basicInfo');
+    const personalInfo = claimDraftStorage.getItem('personalInfo');
 
     if (!basicInfo) {
       router.push('/submit-claim/basic-info');
@@ -57,7 +59,6 @@ export default function DocumentUpload() {
     const { incidentType } = JSON.parse(basicInfo);
     if (incidentType && incidentTypes) {
       const selectedIncidentType = incidentTypes.find(t => t.name === incidentType);
-      console.log(selectedIncidentType, 'selectedIncidentType');
       if (selectedIncidentType) {
         setDocuments(JSON.parse(selectedIncidentType?.required_documents || '[]').map((doc: any, index: number) => ({
           id: index,
@@ -78,16 +79,22 @@ export default function DocumentUpload() {
         setImageURL(prev => prev.filter((doc: any) => doc.id !== docId));
         return;
       }
+
+      const validation = validateUploadFile(file);
+      if (!validation.isValid) {
+        showToast(validation.message, 'error');
+        return;
+      }
+
       setUploading(true);
 
       const formData = new FormData();
       formData.append('file', file);
       formData.append('document_type', documents.find(doc => doc.id === docId)?.name || '');
-      formData.append('claim_number', localStorage.getItem('claimNumber') || '');
+      formData.append('claim_number', claimDraftStorage.getItem('claimNumber') || '');
 
       const response = await uploadDocument(formData);
       const responseData = response as unknown as UploadDocumentResponse;
-      console.log(responseData.image_url, 'response');
       const checkImageURL = imageURL.find((doc: any) => doc.id === docId);
       if (checkImageURL) {
         setImageURL(prev => prev.map((doc: any) =>
@@ -112,7 +119,18 @@ export default function DocumentUpload() {
 
   const handleAdditionalFiles = (files: FileList | null) => {
     if (files) {
-      setAdditionalDocs(prev => [...prev, ...Array.from(files)]);
+      const validFiles: File[] = [];
+      for (const file of Array.from(files)) {
+        const validation = validateUploadFile(file);
+        if (!validation.isValid) {
+          showToast(validation.message, 'error');
+          continue;
+        }
+        validFiles.push(file);
+      }
+      if (validFiles.length > 0) {
+        setAdditionalDocs(prev => [...prev, ...validFiles]);
+      }
     }
   };
 
@@ -122,9 +140,9 @@ export default function DocumentUpload() {
 
   // Function to build the current payload from localStorage
   const buildCurrentPayload = () => {
-    const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
-    const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-    const claimTypeId = localStorage.getItem('selectedClaimType') || '';
+    const personalInfo = JSON.parse(claimDraftStorage.getItem('personalInfo') || '{}');
+    const basicInfo = JSON.parse(claimDraftStorage.getItem('basicInfo') || '{}');
+    const claimTypeId = claimDraftStorage.getItem('selectedClaimType') || '';
     
     return {
       first_name: personalInfo.firstName,
@@ -151,15 +169,13 @@ export default function DocumentUpload() {
     try {
       setLoading(true);
 
-      console.log("got here");
 
 
-      const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
-      const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-      const claimTypeId = localStorage.getItem('selectedClaimType') || '';
-      console.log('selectedClaimType before submit:', claimTypeId, typeof claimTypeId);
+      const personalInfo = JSON.parse(claimDraftStorage.getItem('personalInfo') || '{}');
+      const basicInfo = JSON.parse(claimDraftStorage.getItem('basicInfo') || '{}');
+      const claimTypeId = claimDraftStorage.getItem('selectedClaimType') || '';
       if (!claimTypeId || claimTypeId === '{}' || claimTypeId === '[object Object]') {
-        localStorage.removeItem('selectedClaimType');
+        claimDraftStorage.removeItem('selectedClaimType');
         showToast('Please select a support type before submitting.', 'error');
         setLoading(false);
         return;
@@ -179,20 +195,18 @@ export default function DocumentUpload() {
         payment_model: 1,
         file_url: imageURL.map((doc: any) => doc.file)
       }
-      console.log('Submitting payload:', samplePayload);
 
 
       // Submit the claim
       const response = await submitClaim(samplePayload);
-      console.log(response, 'response_____');
-      const getSubmissionDetails = await localStorage.getItem('submissionDetails');
-      localStorage.setItem('submissionDetails', JSON.stringify({
+      const getSubmissionDetails = await claimDraftStorage.getItem('submissionDetails');
+      claimDraftStorage.setItem('submissionDetails', JSON.stringify({
         ...JSON.parse(getSubmissionDetails || '{}'),
         trackingNumber: response.data.claim_number
       }));
 
       // Store empty documents array to indicate user skipped
-      localStorage.setItem('documents', JSON.stringify([]));
+      claimDraftStorage.setItem('documents', JSON.stringify([]));
       showToast('Support request received. We will review your information and contact you about next steps.', 'success');
       emptyStoredData();
 
@@ -210,12 +224,12 @@ export default function DocumentUpload() {
   };
 
   const emptyStoredData = () => {
-    localStorage.removeItem('personalInfo');
-    localStorage.removeItem('basicInfo');
-    localStorage.removeItem('selectedClaimType');
-    localStorage.removeItem('documents');
-    localStorage.removeItem('submissionDetails');
-    localStorage.removeItem('claimNumber');
+    claimDraftStorage.removeItem('personalInfo');
+    claimDraftStorage.removeItem('basicInfo');
+    claimDraftStorage.removeItem('selectedClaimType');
+    claimDraftStorage.removeItem('documents');
+    claimDraftStorage.removeItem('submissionDetails');
+    claimDraftStorage.removeItem('claimNumber');
     setDocuments([]);
     setAdditionalDocs([]);
     setImageURL([]);

@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon, DocumentTextIcon, ArrowUpTrayIcon } from
 import { getIncidentTypes, IncidentType, submitClaim } from '../../services/public';
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
 import { useApiError } from '../../utils/http';
 
 
@@ -25,9 +26,9 @@ export default function DocumentRequirements() {
 
   useEffect(() => {
     // Check if user has completed previous steps
-    const personalInfo = localStorage.getItem('personalInfo');
-    const basicInfo = localStorage.getItem('basicInfo');
-    const claimTypeId = localStorage.getItem('selectedClaimType');
+    const personalInfo = claimDraftStorage.getItem('personalInfo');
+    const basicInfo = claimDraftStorage.getItem('basicInfo');
+    const claimTypeId = claimDraftStorage.getItem('selectedClaimType');
 
     if (!personalInfo) {
       router.push('/submit-claim/personal-info');
@@ -41,7 +42,6 @@ export default function DocumentRequirements() {
 
     // Only redirect if claim type is explicitly invalid (not just null)
     if (claimTypeId && (claimTypeId === '{}' || claimTypeId === '[object Object]')) {
-      console.log('Invalid claim type found, redirecting to claim selection');
       router.push('/submit-claim');
       return;
     }
@@ -72,9 +72,9 @@ export default function DocumentRequirements() {
 
   // Function to build the current payload from localStorage
   const buildCurrentPayload = () => {
-    const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
-    const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-    const selectedClaimType = localStorage.getItem('selectedClaimType') || '';
+    const personalInfo = JSON.parse(claimDraftStorage.getItem('personalInfo') || '{}');
+    const basicInfo = JSON.parse(claimDraftStorage.getItem('basicInfo') || '{}');
+    const selectedClaimType = claimDraftStorage.getItem('selectedClaimType') || '';
     
     return {
       first_name: personalInfo.firstName,
@@ -96,14 +96,13 @@ export default function DocumentRequirements() {
     try {
       setIsSubmitting(true);
       // Get all the required data from localStorage
-      const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}');
-      const basicInfo = JSON.parse(localStorage.getItem('basicInfo') || '{}');
-      const selectedClaimType = localStorage.getItem('selectedClaimType') || '';
+      const personalInfo = JSON.parse(claimDraftStorage.getItem('personalInfo') || '{}');
+      const basicInfo = JSON.parse(claimDraftStorage.getItem('basicInfo') || '{}');
+      const selectedClaimType = claimDraftStorage.getItem('selectedClaimType') || '';
       
       // Validate claim type
-      console.log('selectedClaimType before submit:', selectedClaimType, typeof selectedClaimType);
       if (!selectedClaimType || selectedClaimType === '{}' || selectedClaimType === '[object Object]') {
-        localStorage.removeItem('selectedClaimType');
+        claimDraftStorage.removeItem('selectedClaimType');
         showToast('Please select a support type before submitting.', 'error');
         setIsSubmitting(false);
         return;
@@ -111,14 +110,6 @@ export default function DocumentRequirements() {
 
       const samplePayload = buildCurrentPayload();
 
-      console.log('=== DEBUG INFO ===');
-      console.log('selectedClaimType from localStorage:', selectedClaimType);
-      console.log('typeof selectedClaimType:', typeof selectedClaimType);
-      console.log('selectedClaimType.toString():', selectedClaimType.toString());
-      console.log('samplePayload.claim_type:', samplePayload.claim_type);
-      console.log('typeof samplePayload.claim_type:', typeof samplePayload.claim_type);
-      console.log('Full samplePayload:', samplePayload);
-      console.log('=== END DEBUG ===');
 
       // FINAL SAFETY CHECK: Never send an empty object
       if (!samplePayload.claim_type || samplePayload.claim_type === '{}' || samplePayload.claim_type === '[object Object]') {
@@ -141,16 +132,16 @@ export default function DocumentRequirements() {
       const response = await submitClaim(claimPayload);
       
       // Store submission details
-      const getSubmissionDetails = localStorage.getItem('submissionDetails');
+      const getSubmissionDetails = claimDraftStorage.getItem('submissionDetails');
       const submissionDetails = {
         ...JSON.parse(getSubmissionDetails || '{}'),
         trackingNumber: response.data?.claim_number || 'N/A',
         submittedAt: new Date().toISOString()
       };
-      localStorage.setItem('submissionDetails', JSON.stringify(submissionDetails));
+      claimDraftStorage.setItem('submissionDetails', JSON.stringify(submissionDetails));
 
       // Store empty documents array to indicate user skipped
-      localStorage.setItem('documents', JSON.stringify([]));
+      claimDraftStorage.setItem('documents', JSON.stringify([]));
       
       // Show success message
       showToast('Support request received. We will review your information and contact you about next steps.', 'success');
@@ -176,12 +167,12 @@ export default function DocumentRequirements() {
   };
 
   const emptyStoredData = () => {
-    localStorage.removeItem('personalInfo');
-    localStorage.removeItem('basicInfo');
-    localStorage.removeItem('selectedClaimType');
-    localStorage.removeItem('documents');
-    localStorage.removeItem('submissionDetails');
-    localStorage.removeItem('claimNumber');
+    claimDraftStorage.removeItem('personalInfo');
+    claimDraftStorage.removeItem('basicInfo');
+    claimDraftStorage.removeItem('selectedClaimType');
+    claimDraftStorage.removeItem('documents');
+    claimDraftStorage.removeItem('submissionDetails');
+    claimDraftStorage.removeItem('claimNumber');
   }
 
   return (

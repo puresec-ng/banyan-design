@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
 
 interface SubmissionDetails {
   trackingNumber: string;
@@ -14,7 +15,7 @@ export default function SuccessPage() {
   const [trackingNumber, setTrackingNumber] = useState<string>('');
 
   useEffect(() => {
-    const submissionDetails = localStorage.getItem('submissionDetails');
+    const submissionDetails = claimDraftStorage.getItem('submissionDetails');
     if (submissionDetails) {
       const details = JSON.parse(submissionDetails);
       setTrackingNumber(details.trackingNumber);

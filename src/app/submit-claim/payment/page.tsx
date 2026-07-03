@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { claimDraftStorage } from '../../utils/claimDraftStorage';
 
 const paymentModels = [
   {
@@ -49,13 +50,13 @@ export default function PaymentModel() {
 
   useEffect(() => {
     // Load saved payment model if exists
-    const savedModel = localStorage.getItem('paymentModel');
+    const savedModel = claimDraftStorage.getItem('paymentModel');
     if (savedModel) {
       setSelectedModel(savedModel);
     }
 
     // Verify basic info exists
-    const basicInfo = localStorage.getItem('basicInfo');
+    const basicInfo = claimDraftStorage.getItem('basicInfo');
     if (!basicInfo) {
       router.push('/submit-claim/basic-info');
     }
@@ -64,7 +65,7 @@ export default function PaymentModel() {
   const handleModelSelect = (modelId: string) => {
     setSelectedModel(modelId);
     setError('');
-    localStorage.setItem('paymentModel', modelId);
+    claimDraftStorage.setItem('paymentModel', modelId);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

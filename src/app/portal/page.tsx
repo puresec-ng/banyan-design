@@ -9,16 +9,18 @@ import {
   EyeSlashIcon,
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
-import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../context/ToastContext';
 import { login } from '../services/auth';
 import cookie from '../utils/cookie';
-import { useApiError } from '../utils/http';
+import {
+  consumeAuthFlash,
+  getAuthErrorMessage,
+  persistAuthSession,
+} from '../utils/security';
 
 export default function ClientPortal() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { handleApiError } = useApiError();
 
   useEffect(() => {
     document.title = 'Claim Support Portal | Banyan Claims';
@@ -33,13 +35,18 @@ export default function ClientPortal() {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
+    const flashMessage = consumeAuthFlash();
+    if (flashMessage) {
+      showToast(flashMessage, 'error');
+    }
+
     const storedEmail = localStorage.getItem('rememberedEmail');
     const rememberMeChecked = localStorage.getItem('rememberMeChecked') === 'true';
     if (storedEmail) {
       setFormData(prev => ({ ...prev, email: storedEmail }));
     }
     setRememberMe(rememberMeChecked);
-  }, []);
+  }, [showToast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,25 +55,13 @@ export default function ClientPortal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with data:', formData);
-    console.log('About to call login API...');
-    
+
     try {
       setIsLoading(true);
-      console.log('Calling login function...');
       const response = await login(formData);
-      console.log('Login response:', response);
 
-      const savedResponse = {
-        token: response.token,
-        user: response.user,
-      };
-      localStorage.setItem('registrationData', JSON.stringify(savedResponse));
-      // Store auth state
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userPhone', formData.email);
+      persistAuthSession(response.token, response.user);
 
-      // Handle remember me
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', formData.email);
         localStorage.setItem('rememberMeChecked', 'true');
@@ -75,36 +70,16 @@ export default function ClientPortal() {
         localStorage.setItem('rememberMeChecked', 'false');
       }
 
-      // Set cookies as session cookies (expire when browser closes)
-      console.log('Setting cookies...');
-      cookie().setCookie('token', response.token); // Session cookie (no expiration)
-      cookie().setCookie('user', JSON.stringify(response.user)); // Session cookie (no expiration)
-      console.log('Cookies after setting:', document.cookie);
-
-      // Small delay to ensure cookies are set before redirect
-      setTimeout(() => {
-        // Redirect to dashboard
-        router.push('/portal/dashboard');
-      }, 100);
-
+      router.push('/portal/dashboard');
     } catch (error: any) {
-      console.log('Login error:', error);
-      console.log('Error details:', {
-        status: error.response?.status,
-        data: error.response?.data
-      });
-      const errorMessage = handleApiError(error, 'Invalid email or password');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('login', error), 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log('Checking cookies on mount...');
     const token = cookie().getCookie('token');
-    console.log('Current cookies:', document.cookie);
-    console.log('Token from cookie:', token);
     if (token) {
       router.push('/portal/dashboard');
     }
@@ -245,4 +220,4 @@ export default function ClientPortal() {
       </div>
     </main>
   );
-} 
+}

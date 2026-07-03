@@ -22,6 +22,7 @@ import { getAdditionalInfoRequest, checkRequestStatus, getClaimOffer } from '@/a
 import cookie from '@/app/utils/cookie';
 import { useToast } from '../../context/ToastContext';
 import { useApiError, Http } from '../../utils/http';
+import { validateUploadFile } from '../../utils/security';
 
 // API function for responding to information requests
 const respondToInformationRequest = async (payload: {
@@ -139,17 +140,13 @@ const DEFAULT_BADGE = { color: 'bg-gray-100 text-gray-800', icon: InformationCir
 // Utility function to format dates
 const formatDate = (dateString: string) => {
   if (!dateString) {
-    console.log('formatDate: dateString is null/undefined:', dateString);
     return 'No date';
   }
   
-  console.log('formatDate: input dateString:', dateString);
   
   const date = new Date(dateString);
-  console.log('formatDate: parsed date:', date);
   
   if (isNaN(date.getTime())) {
-    console.log('formatDate: Invalid date detected');
     return 'Invalid date';
   }
   
@@ -164,7 +161,6 @@ const formatDate = (dateString: string) => {
   const hoursStr = hours.toString().padStart(2, '0');
   
   const result = `${day} ${month} ${year} ${hoursStr}:${minutes} ${ampm}`;
-  console.log('formatDate: result:', result);
   return result;
 };
 
@@ -205,10 +201,7 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
   const { data: allRequests, isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
     queryKey: ['all-requests', claimId],
     queryFn: async () => {
-      console.log('=== MAKING SINGLE API CALL ===');
-      console.log('Claim ID:', claimId);
       const result = await Http.get(`/claims/additional-information-requests/${claimId}`);
-      console.log('All Requests API Call Result:', result);
       return result;
     },
     enabled: !!claimId,
@@ -236,6 +229,12 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
           return;
         }
 
+        const fileValidation = validateUploadFile(selectedFile);
+        if (!fileValidation.isValid) {
+          showToast(fileValidation.message, 'error');
+          return;
+        }
+
         // Upload file first
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -256,7 +255,6 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
       const apiResponse = await respondToInformationRequest(payload);
       
       // Always refresh the requests after successful submission
-      console.log('Response successful, refreshing requests...');
       await refetchRequests();
       
       showToast('Response submitted successfully!', 'success');
@@ -306,13 +304,6 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
   }
 
   // Debug: Log the API response fields
-  console.log('=== API RESPONSE DEBUG ===');
-  console.log('All Requests Count:', allRequests?.data?.length || 0);
-  console.log('Total Processed requests:', requests.length);
-  console.log('All Requests:', allRequests?.data);
-  console.log('Final Processed requests:', requests);
-  console.log('=== API ENDPOINT CHECK ===');
-  console.log('API Endpoint used:', `/claims/additional-information-requests/${claimId}`);
 
 
   if (isLoadingRequests) {
@@ -405,7 +396,18 @@ const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) => {
                 <div>
                   <input
                     type="file"
-                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file) {
+                        const validation = validateUploadFile(file);
+                        if (!validation.isValid) {
+                          showToast(validation.message, 'error');
+                          e.target.value = '';
+                          return;
+                        }
+                      }
+                      setSelectedFile(file);
+                    }}
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   />
@@ -596,6 +598,12 @@ const RequestResponseComponent = ({
           return;
         }
 
+        const fileValidation = validateUploadFile(selectedFile);
+        if (!fileValidation.isValid) {
+          showToast(fileValidation.message, 'error');
+          return;
+        }
+
         // Upload file first
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -686,7 +694,18 @@ const RequestResponseComponent = ({
             <div>
               <input
                 type="file"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file) {
+                    const validation = validateUploadFile(file);
+                    if (!validation.isValid) {
+                      showToast(validation.message, 'error');
+                      e.target.value = '';
+                      return;
+                    }
+                  }
+                  setSelectedFile(file);
+                }}
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               />
@@ -791,7 +810,6 @@ export default function TrackClaim() {
     setIsSearching(true);
     try {
       const response = await trackClaim(claimId);
-      console.log(response?.data, 'response_____');
       setClaim(response.data);
       // Simulate API call delay
       // setTimeout(() => {
@@ -810,7 +828,6 @@ export default function TrackClaim() {
       const errorMessage = handleApiError(error, 'No claim found with this ID. Please check the ID and try again.');
       setError(errorMessage);
       setClaim(null);
-      console.log(error, 'error_____');
     } finally {
       setIsSearching(false);
     }

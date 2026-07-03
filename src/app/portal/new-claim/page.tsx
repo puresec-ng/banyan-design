@@ -17,6 +17,7 @@ import { getClaimTypes, authSubmitClaim, getInsurers, Insurer, getIncidentTypes,
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from '@/app/context/ToastContext';
 import { useApiError } from '../../utils/http';
+import { validateUploadFile } from '../../utils/security';
 
 // type ClaimType = 'MOTOR' | 'GADGET' | 'PROPERTY' | 'BUSINESS';
 type ClaimType = string;
@@ -109,7 +110,6 @@ export default function NewClaim() {
   useEffect(() => {
     // Clean up any invalid formData.type values
     if (formData.type && (typeof formData.type !== 'string' || formData.type === '{}' || formData.type === '[object Object]')) {
-      console.log('Cleaning up invalid formData.type:', formData.type);
       setFormData(prev => ({ ...prev, type: '' }));
     }
 
@@ -167,7 +167,6 @@ export default function NewClaim() {
       }
 
       const selectedIncidentType = incidentTypes?.find(t => t.name === formData.incidentType);
-      console.log(JSON.parse(selectedIncidentType?.required_documents || '[]'), 'selectedIncidentType');
       if (selectedIncidentType) {
         setFormData({ ...formData, documents: JSON.parse(selectedIncidentType?.required_documents || '[]')?.map((doc: any, index: number) => ({ name: doc, id: index.toString() })) || [] });
       }
@@ -191,18 +190,12 @@ export default function NewClaim() {
     setIsSubmitting(true);
     try {
       // Here you would typically send the form data to your API
-      console.log('Submitting claim:', formData);
       const selectedIncidentType = incidentTypes?.find(t => t.name === formData.incidentType);
       const selectedIncidentTypeId = selectedIncidentType?.id;
       const insurerId = insurers?.find(i => i.name === formData.insuranceProvider)?.id;
       // const selectedClaimType = claimTypesData?.find(t => t.id === formData.type);
       // const selectedClaimTypeId = selectedClaimType?.id;
       // DEBUG: Check formData.type before creating payload
-      console.log('=== PORTAL DEBUG ===');
-      console.log('formData.type:', formData.type);
-      console.log('typeof formData.type:', typeof formData.type);
-      console.log('formData.type === "":', formData.type === '');
-      console.log('JSON.stringify(formData.type):', JSON.stringify(formData.type));
       
       // Validate claim type
       if (!formData.type || formData.type === '' || typeof formData.type !== 'string') {
@@ -227,13 +220,10 @@ export default function NewClaim() {
         payment_model: 1,
         file_url: imageURL.map((doc: any) => doc.file)
       }
-      console.log('Final samplePayload:', samplePayload);
-      console.log('=== END PORTAL DEBUG ===');
 
 
       const response = await authSubmitClaim(samplePayload);
       setTrackingNumber(response.data.claim_number);
-      console.log(response, 'response_____');
 
       // Store claim data in localStorage for demo purposes
       // const claims = JSON.parse(localStorage.getItem('claims') || '[]');
@@ -284,6 +274,13 @@ export default function NewClaim() {
         setImageURL(prev => prev.filter((doc: any) => doc.id !== docId));
         return;
       }
+
+      const validation = validateUploadFile(file);
+      if (!validation.isValid) {
+        showToast(validation.message, 'error');
+        return;
+      }
+
       setUploading(true);
 
       const uploadFormData = new FormData();
@@ -292,7 +289,6 @@ export default function NewClaim() {
 
       const response = await uploadDocument(uploadFormData);
       const responseData = response as unknown as UploadDocumentResponse;
-      console.log(responseData.image_url, 'response');
       const checkImageURL = imageURL.find((doc: any) => doc.id === docId);
       if (checkImageURL) {
         setImageURL(prev => prev.map((doc: any) =>
@@ -318,7 +314,6 @@ export default function NewClaim() {
   };
 
   const handleFileClick = (id: string) => {
-    console.log(id, 'id');
     const findFile = imageURL.find((doc: any) => doc.id === id);
     if (findFile) {
       window.open(findFile?.file, '_blank');

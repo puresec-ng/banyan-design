@@ -4,20 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useQuery } from "@tanstack/react-query";
 import { useToast } from '../../context/ToastContext';
-import { register, requestVerificationCode, verifyEmail, createPin, checkEmail, checkPhone } from '../../services/auth';
-import cookie from '@/app/utils/cookie';
-import { useApiError } from '../../utils/http';
-
-// Add debounce function
-const debounce = (func: Function, wait: number) => {
-  let timeout: NodeJS.Timeout;
-  return (...args: any[]) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
+import { register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
+import {
+  getAuthErrorMessage,
+  persistAuthSession,
+  validateEmailFormat,
+  validatePassword,
+  validatePin,
+} from '../../utils/security';
+import { useOtpResend, OTP_RESEND_COOLDOWN_SECONDS } from '../../utils/useOtpResend';
 
 interface FormData {
   firstName: string;
@@ -26,15 +22,6 @@ interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
-}
-
-interface PasswordValidation {
-  hasMinLength: boolean;
-  hasUpperCase: boolean;
-  hasLowerCase: boolean;
-  hasNumber: boolean;
-  hasSpecialChar: boolean;
-  matches: boolean;
 }
 
 interface PhoneValidation {
@@ -46,11 +33,9 @@ interface PhoneValidation {
 interface FieldValidation {
   isValid: boolean;
   message: string;
-  isChecking: boolean;
 }
 
 const validateNigerianPhoneNumber = (phone: string): PhoneValidation => {
-  // Remove any spaces, dashes, or parentheses
   const cleanedPhone = phone.replace(/[\s\-\(\)]/g, '');
 
   return {
@@ -61,31 +46,19 @@ const validateNigerianPhoneNumber = (phone: string): PhoneValidation => {
   };
 };
 
-const validatePassword = (password: string, confirmPassword: string): PasswordValidation => {
-  return {
-    hasMinLength: password.length >= 8,
-    hasUpperCase: /[A-Z]/.test(password),
-    hasLowerCase: /[a-z]/.test(password),
-    hasNumber: /[0-9]/.test(password),
-    hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-    matches: password === confirmPassword
-  };
-};
-
 export default function Register() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { handleApiError } = useApiError();
+  const { countdown, canResend, startCooldown, formatTime } = useOtpResend(OTP_RESEND_COOLDOWN_SECONDS);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [otp, setOtp] = useState('');
-  const [countdown, setCountdown] = useState(300);
-  const [canResend, setCanResend] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [pinValidation, setPinValidation] = useState({ isValid: false, message: '' });
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -94,14 +67,7 @@ export default function Register() {
     password: '',
     confirmPassword: '',
   });
-  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
-    hasMinLength: false,
-    hasUpperCase: false,
-    hasLowerCase: false,
-    hasNumber: false,
-    hasSpecialChar: false,
-    matches: false
-  });
+  const [passwordValidation, setPasswordValidation] = useState(validatePassword('', ''));
   const [phoneValidation, setPhoneValidation] = useState<PhoneValidation>({
     hasValidPrefix: false,
     hasValidLength: false,
@@ -110,12 +76,10 @@ export default function Register() {
   const [phoneFieldValidation, setPhoneFieldValidation] = useState<FieldValidation>({
     isValid: false,
     message: '',
-    isChecking: false
   });
   const [emailValidation, setEmailValidation] = useState<FieldValidation>({
     isValid: false,
     message: '',
-    isChecking: false
   });
 
   // Add function to check if form is valid
@@ -129,63 +93,23 @@ export default function Register() {
     );
   };
 
-  // Modify the debounced email check
-  const debouncedEmailCheck = debounce(async (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(email)) {
-      setEmailValidation(prev => ({ ...prev, isChecking: true }));
-      try {
-        await checkEmail({ email });
-        setEmailValidation({
-          isValid: true,
-          message: '',
-          isChecking: false
-        });
-      } catch (error) {
-        setEmailValidation({
-          isValid: false,
-          message: 'This email is already registered',
-          isChecking: false
-        });
-      }
+  const validateEmailField = (email: string) => {
+    if (validateEmailFormat(email)) {
+      setEmailValidation({ isValid: true, message: '' });
     } else {
-      setEmailValidation({
-        isValid: false,
-        message: 'Please enter a valid email address',
-        isChecking: false
-      });
+      setEmailValidation({ isValid: false, message: 'Please enter a valid email address' });
     }
-  }, 1000);
+  };
 
-  // Modify the debounced phone check
-  const debouncedPhoneCheck = debounce(async (phone: string) => {
+  const validatePhoneField = (phone: string) => {
     const validation = validateNigerianPhoneNumber(phone);
     setPhoneValidation(validation);
-
     if (validation.hasValidFormat) {
-      setPhoneFieldValidation(prev => ({ ...prev, isChecking: true }));
-      try {
-        await checkPhone({ phone });
-        setPhoneFieldValidation({
-          isValid: true,
-          message: '',
-          isChecking: false
-        });
-      } catch (error) {
-        setPhoneFieldValidation({
-          isValid: false,
-          message: 'This phone number is already registered',
-          isChecking: false
-        });
-      }
+      setPhoneFieldValidation({ isValid: true, message: '' });
     } else {
-      setPhoneFieldValidation({
-        isValid: false,
-        message: 'Please enter a valid phone number',
-        isChecking: false
-      });
+      setPhoneFieldValidation({ isValid: false, message: 'Please enter a valid phone number' });
     }
-  }, 1000);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -204,13 +128,12 @@ export default function Register() {
       if (name === 'phoneNumber') {
         setPhoneValidation(validateNigerianPhoneNumber(value));
         if (value) {
-          debouncedPhoneCheck(value);
+          validatePhoneField(value);
         }
       }
 
-      // Check email availability when email changes
       if (name === 'email' && value) {
-        debouncedEmailCheck(value);
+        validateEmailField(value);
       }
 
       return newData;
@@ -246,50 +169,25 @@ export default function Register() {
         password_confirmation: formData.confirmPassword,
       }
       const response = await register(payload);
-      console.log(response);
-      const savedResponse = {
-        token: response.token,
-        user: response.user,
-      };
-      cookie().setCookie('token', response.token); // Session cookie (no expiration)
-      cookie().setCookie('user', JSON.stringify(response.user)); // Session cookie (no expiration)
+      persistAuthSession(response.token, response.user);
 
-      // Store form data in localStorage for the next steps
-      localStorage.setItem('registrationData', JSON.stringify(savedResponse));
-
-      // Move to OTP verification step
       setCurrentStep(2);
+      startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Error during registration');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('register', error), 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (countdown > 0 && !canResend) {
-      timer = setInterval(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
-    } else if (countdown === 0) {
-      setCanResend(true);
-    }
-    return () => clearInterval(timer);
-  }, [countdown, canResend]);
-
   const handleResendOtp = async () => {
-    // Simulate resending OTP
-    setCountdown(300);
-    setCanResend(false);
-    // In a real app, you would make an API call to resend OTP
+    if (!canResend) return;
     try {
       await requestVerificationCode({ email: formData.email });
+      startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
       showToast('Verification code sent successfully', 'success');
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Failed to send verification code');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('otp', error), 'error');
     }
   };
 
@@ -299,26 +197,19 @@ export default function Register() {
 
     try {
       // Simulate OTP verification
-      const response = await verifyEmail({
+      await verifyEmail({
         email: formData.email,
         otp: otp,
         otp_type: 'email'
       });
-      console.log(response);
 
-      // Move to PIN creation step
-      // setCurrentStep(3);
-
-      // Move to success screen
       setCurrentStep(4);
 
-      // Redirect to dashboard after 5 seconds
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Error verifying OTP');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('otp', error), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -326,26 +217,32 @@ export default function Register() {
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const pinCheck = validatePin(pin);
+    if (!pinCheck.isValid) {
+      showToast(pinCheck.message, 'error');
+      return;
+    }
+    if (pin !== confirmPin) {
+      showToast('PINs do not match', 'error');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Simulate PIN creation
-      const response = await createPin({
+      await createPin({
         pin: pin,
         pin_confirmation: confirmPin
       });
-      console.log(response);
 
-      // Move to success screen
       setCurrentStep(4);
 
-      // Redirect to dashboard after 5 seconds
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
     } catch (error: any) {
-      const errorMessage = handleApiError(error, 'Error creating PIN');
-      showToast(errorMessage, 'error');
+      showToast(getAuthErrorMessage('pinChange', error), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -402,22 +299,15 @@ export default function Register() {
               onChange={handleChange}
               placeholder="+234XXXXXXXXXX or 0XXXXXXXXXX"
               className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.phoneNumber
-                ? phoneFieldValidation.isChecking
-                  ? 'border-yellow-500'
-                  : phoneFieldValidation.isValid
-                    ? 'border-green-500'
-                    : 'border-red-500'
+                ? phoneFieldValidation.isValid
+                  ? 'border-green-500'
+                  : 'border-red-500'
                 : 'border-gray-300'
                 }`}
             />
             {formData.phoneNumber && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                {phoneFieldValidation.isChecking ? (
-                  <svg className="animate-spin h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : phoneFieldValidation.isValid ? (
+                {phoneFieldValidation.isValid ? (
                   <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
@@ -447,22 +337,15 @@ export default function Register() {
               value={formData.email}
               onChange={handleChange}
               className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent ${formData.email
-                ? emailValidation.isChecking
-                  ? 'border-yellow-500'
-                  : emailValidation.isValid
-                    ? 'border-green-500'
-                    : 'border-red-500'
+                ? emailValidation.isValid
+                  ? 'border-green-500'
+                  : 'border-red-500'
                 : 'border-gray-300'
                 }`}
             />
             {formData.email && (
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                {emailValidation.isChecking ? (
-                  <svg className="animate-spin h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : emailValidation.isValid ? (
+                {emailValidation.isValid ? (
                   <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
@@ -630,7 +513,7 @@ export default function Register() {
             <div className="flex items-center justify-center gap-1">
               <span className="text-gray-600">Resend code in</span>
               <span className="font-medium text-[#004D40]">
-                {Math.floor(countdown / 60)}:{(countdown % 60).toString().padStart(2, '0')}
+                {formatTime(countdown)}
               </span>
             </div>
           )}
@@ -664,7 +547,11 @@ export default function Register() {
             id="pin"
             type="password"
             value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+              setPin(value);
+              setPinValidation(validatePin(value));
+            }}
             maxLength={4}
             className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent text-center text-lg tracking-widest"
           />
@@ -692,7 +579,7 @@ export default function Register() {
 
         <button
           type="submit"
-          disabled={isLoading || pin.length !== 4 || confirmPin.length !== 4}
+          disabled={isLoading || pin.length !== 4 || confirmPin.length !== 4 || !pinValidation.isValid || pin !== confirmPin}
           className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Creating PIN...' : 'Create PIN'}

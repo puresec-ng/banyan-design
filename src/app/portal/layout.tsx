@@ -16,6 +16,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import cookie from '@/app/utils/cookie';
+import { clearAuthSession } from '@/app/utils/security';
 import { useInactivityLogout } from './context/AuthContext';
 
 const menuItems = [
@@ -75,28 +76,18 @@ export default function PortalLayout({
   }
 
   const handleLogout = () => {
-    // Store remember me data before clearing
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     const rememberMeChecked = localStorage.getItem('rememberMeChecked');
-    
-    // Clear all localStorage except remember me data
-    localStorage.clear();
-    
-    // Restore remember me data if it existed
+
+    clearAuthSession();
+
     if (rememberedEmail) {
       localStorage.setItem('rememberedEmail', rememberedEmail);
     }
     if (rememberMeChecked) {
       localStorage.setItem('rememberMeChecked', rememberMeChecked);
     }
-    
-    // Clear all user-related cookies
-    cookie().deleteCookie('token');
-    cookie().deleteCookie('user');
-    // Add more cookies here if needed
-    // Invalidate or refetch queries here if using React Query
-    // Example: queryClient.clear() or queryClient.invalidateQueries()
-    // Redirect to login
+
     router.push('/portal');
   };
 
