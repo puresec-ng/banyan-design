@@ -80,7 +80,7 @@ export default function Support() {
 
           <div className="space-y-6">
             {/* Phone Call */}
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer" onClick={handlePhoneCall}>
+            <div role="button" tabIndex={0} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#004D40]" onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={handlePhoneCall}>
               <div className="flex items-center gap-3">
                 <div className="bg-[#004D40] p-2 rounded-full">
                   <PhoneIcon className="w-6 h-6 text-white" />
@@ -96,7 +96,7 @@ export default function Support() {
             </div>
 
             {/* WhatsApp */}
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer" onClick={handleWhatsApp}>
+            <div role="button" tabIndex={0} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#004D40]" onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={handleWhatsApp}>
               <div className="flex items-center gap-3">
                 <div className="bg-[#004D40] p-2 rounded-full">
                   <ChatBubbleLeftRightIcon className="w-6 h-6 text-white" />
@@ -112,7 +112,7 @@ export default function Support() {
             </div>
 
             {/* Email */}
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer" onClick={handleEmail}>
+            <div role="button" tabIndex={0} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#004D40]" onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={handleEmail}>
               <div className="flex items-center gap-3">
                 <div className="bg-[#004D40] p-2 rounded-full">
                   <EnvelopeIcon className="w-6 h-6 text-white" />
@@ -128,7 +128,7 @@ export default function Support() {
             </div>
 
             {/* Address */}
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer" onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=EridanSpace,+The+Philippi+Centre,+Oluwalogbon+House,+Plot+A+Obafemi+Awolowo+Way,+Alausa,+Ikeja,+Lagos', '_blank')}>
+            <div role="button" tabIndex={0} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-[#004D40] hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#004D40]" onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } }} onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=EridanSpace,+The+Philippi+Centre,+Oluwalogbon+House,+Plot+A+Obafemi+Awolowo+Way,+Alausa,+Ikeja,+Lagos', '_blank')}>
               <div className="flex items-center gap-3">
                 <div className="bg-[#004D40] p-2 rounded-full">
                   {/* Location icon solid */}

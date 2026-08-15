@@ -69,7 +69,7 @@ export default function Settings() {
       setPasswordValidation(validatePassword('', ''));
       clearAuthSession();
       router.push('/portal');
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('passwordChange', error), 'error');
     } finally {
       setIsProcessing(false);
@@ -94,9 +94,10 @@ export default function Settings() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+              <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
               <div className="relative">
                 <input
+                  id="current-password"
                   type={showPasswords.currentPassword ? 'text' : 'password'}
                   value={formData.currentPassword}
                   onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
@@ -116,9 +117,10 @@ export default function Settings() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
               <div className="relative">
                 <input
+                  id="new-password"
                   type={showPasswords.newPassword ? 'text' : 'password'}
                   value={formData.newPassword}
                   onChange={(e) => {
@@ -167,9 +169,10 @@ export default function Settings() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+              <label htmlFor="confirm-new-password" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
               <div className="relative">
                 <input
+                  id="confirm-new-password"
                   type={showPasswords.confirmPassword ? 'text' : 'password'}
                   value={formData.confirmPassword}
                   onChange={(e) => {
