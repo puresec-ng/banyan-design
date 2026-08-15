@@ -18,9 +18,10 @@ export type AuthErrorContext = keyof typeof AUTH_ERROR_MESSAGES;
 
 export function getAuthErrorMessage(
   context: AuthErrorContext,
-  error?: { response?: { status?: number } }
+  error?: unknown
 ): string {
-  if (error?.response?.status === 429) {
+  const status = (error as { response?: { status?: number } } | undefined)?.response?.status;
+  if (status === 429) {
     return 'Too many requests. Please try again later.';
   }
   return AUTH_ERROR_MESSAGES[context] ?? AUTH_ERROR_MESSAGES.default;
@@ -113,10 +114,12 @@ export function clearAuthSession() {
   cookie().deleteCookie('token');
   cookie().deleteCookie('user');
   cookie().deleteCookie('userType');
-  sessionStorage.removeItem('reset_id');
-  localStorage.removeItem('registrationData');
-  localStorage.removeItem('isAuthenticated');
-  localStorage.removeItem('userPhone');
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('reset_id');
+    localStorage.removeItem('registrationData');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userPhone');
+  }
 }
 
 export function setAuthFlash(message: string) {

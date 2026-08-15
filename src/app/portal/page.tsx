@@ -71,7 +71,7 @@ export default function ClientPortal() {
       }
 
       router.push('/portal/dashboard');
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('login', error), 'error');
     } finally {
       setIsLoading(false);

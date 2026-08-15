@@ -209,7 +209,7 @@ export const getClaimOffer = async (claimId: string): Promise<OfferResponse> => 
       }
     }
     throw new Error('No offer found for this claim');
-  } catch (error: any) {
+  } catch (error) {
     throw error;
   }
 };

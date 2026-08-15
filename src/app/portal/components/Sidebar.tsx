@@ -19,9 +19,13 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
+    const rememberMeChecked = localStorage.getItem('rememberMeChecked');
     clearAuthSession();
     if (rememberedEmail) {
       localStorage.setItem('rememberedEmail', rememberedEmail);
+    }
+    if (rememberMeChecked) {
+      localStorage.setItem('rememberMeChecked', rememberMeChecked);
     }
     router.push('/portal');
   };

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import cookie from "./cookie";
 import {
   clearAuthSession,
@@ -6,12 +6,24 @@ import {
   setAuthFlash,
 } from "./security";
 
-const REACT_APP_API_BASEURL = process.env.NODE_ENV === 'development' 
-  ? "/api/v1" 
-  : "https://api.banyanclaims.com/api/v1";
+const REACT_APP_API_BASEURL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === 'development'
+    ? "/api/v1"
+    : "https://api.banyanclaims.com/api/v1");
+
+interface ApiErrorData {
+  message?: string;
+  error?: string | { message?: string };
+  errors?: string[] | Record<string, unknown>;
+  statusText?: string;
+  statusCode?: number;
+}
+
+export type ApiError = AxiosError<ApiErrorData> & { extractedMessage?: string };
 
 // Utility function to extract error message from API response
-export const extractErrorMessage = (error: any): string => {
+export const extractErrorMessage = (error: ApiError): string => {
   const status = error.response?.status;
 
   // Check for network errors
@@ -20,12 +32,12 @@ export const extractErrorMessage = (error: any): string => {
   }
 
   // Check for timeout errors
-  if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+  if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
     return sanitizeClientErrorMessage('Request timed out. Please try again.', status);
   }
 
   // Check for CORS errors
-  if (error.message.includes('CORS')) {
+  if (error.message?.includes('CORS')) {
     return sanitizeClientErrorMessage('Cross-origin request blocked. Please try again.', status);
   }
 
@@ -91,12 +103,13 @@ export const extractErrorMessage = (error: any): string => {
 
 // Custom hook for consistent error handling
 export const useApiError = () => {
-  const handleApiError = (error: any, fallbackMessage?: string): string => {
-    if (error.extractedMessage) {
-      return error.extractedMessage;
+  const handleApiError = (error: unknown, fallbackMessage?: string): string => {
+    const apiError = error as ApiError;
+    if (apiError.extractedMessage) {
+      return apiError.extractedMessage;
     }
-    
-    const errorMessage = extractErrorMessage(error);
+
+    const errorMessage = extractErrorMessage(apiError);
     return errorMessage || fallbackMessage || 'An error occurred. Please try again.';
   };
 
@@ -112,7 +125,7 @@ export const Http = axios.create({
   },
 });
 
-Http.interceptors.request.use((config: any) => {
+Http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = cookie().getCookie("token");
   const userType = cookie().getCookie("userType");
 
@@ -127,28 +140,28 @@ Http.interceptors.request.use((config: any) => {
 });
 
 Http.interceptors.response.use(
-  (response: any) => {
+  (response: AxiosResponse) => {
     return response.data;
   },
-  (error: any) => {
+  (error: ApiError) => {
     const errorMessage = extractErrorMessage(error);
-    
-    if (error.response?.status) {
-      if (
-        error.response.status === 401 ||
-        error.response.status === 403 ||
-        error?.response?.data?.statusCode == 401 ||
-        error?.response?.data?.statusCode == 403
-      ) {
-        clearAuthSession();
-        setAuthFlash('Session expired. Please log in again.');
+
+    // 401 (or an API body flagging 401) means the session is gone; a 403 is a
+    // per-action permission failure and must not wipe the session.
+    if (
+      error.response?.status === 401 ||
+      error.response?.data?.statusCode === 401
+    ) {
+      clearAuthSession();
+      setAuthFlash('Session expired. Please log in again.');
+      if (typeof window !== 'undefined') {
         window.location.replace('/portal');
       }
     }
 
     error.extractedMessage = errorMessage;
     error.message = errorMessage;
-    
+
     return Promise.reject(error);
   }
 );

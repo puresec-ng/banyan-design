@@ -158,7 +158,7 @@ export default function DocumentRequirements() {
       setTimeout(() => {
         emptyStoredData();
       }, 2000);
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = handleApiError(error, 'Unable to send support request. Please check the form and try again.');
       showToast(errorMessage, 'error');
     } finally {

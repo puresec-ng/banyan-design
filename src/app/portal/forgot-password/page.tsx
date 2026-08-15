@@ -69,7 +69,7 @@ export default function ForgotPassword() {
       setCurrentStep('verify');
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
       showToast('If the details provided are correct, further instructions will be sent.', 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('forgotPassword', error), 'error');
     } finally {
       setIsLoading(false);
@@ -84,7 +84,7 @@ export default function ForgotPassword() {
       await requestVerificationCode({ email });
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
       showToast('If the details provided are correct, further instructions will be sent.', 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('forgotPassword', error), 'error');
     } finally {
       setIsLoading(false);
@@ -105,7 +105,7 @@ export default function ForgotPassword() {
       setTimeout(() => {
         router.push('/portal');
       }, 1000);
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('passwordChange', error), 'error');
     } finally {
       setIsLoading(false);
