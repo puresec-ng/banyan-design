@@ -20,10 +20,10 @@ import { useState } from 'react';
 // Add social icons import
 import {
   FaLinkedin,
-  FaTwitter,
   FaInstagram,
-  FaFacebook,
+  FaWhatsapp,
 } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 
 // Types
 type NavigationItem = {
@@ -311,7 +311,7 @@ export default function Home() {
               <h4 className="text-lg font-bold mb-4">Connect With Us</h4>
               <div className="flex space-x-4">
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/company/banyanclaims/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
@@ -320,16 +320,16 @@ export default function Home() {
                   <FaLinkedin className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://twitter.com"
+                  href="https://x.com/banyanclaims"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
                 >
-                  <span className="sr-only">Twitter</span>
-                  <FaTwitter className="w-6 h-6" />
+                  <span className="sr-only">X</span>
+                  <FaXTwitter className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/banyanclaims"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
@@ -338,13 +338,13 @@ export default function Home() {
                   <FaInstagram className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://facebook.com"
+                  href="https://wa.me/2348138559101"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-200 hover:text-white transition-colors"
                 >
-                  <span className="sr-only">Facebook</span>
-                  <FaFacebook className="w-6 h-6" />
+                  <span className="sr-only">WhatsApp</span>
+                  <FaWhatsapp className="w-6 h-6" />
                 </a>
               </div>
             </div>
