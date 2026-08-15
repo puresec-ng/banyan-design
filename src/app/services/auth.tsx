@@ -19,7 +19,7 @@ interface VerifyEmailPayload {
 // register response
 interface RegisterResponse {
   token: string;
-  user: any;
+  user: Record<string, unknown>;
 }
 
 export const requestVerificationCode = (payload: { email: string }) =>
@@ -35,12 +35,12 @@ export const setPassword = (payload: {
 }) => Http.post(`/auth/set-password`, payload);
 
 export const setBusinessDetails = (payload: {
-  signUpToken: "string";
-  firstName: "string";
-  lastName: "string";
-  businessName: "string";
-  businessType: "string";
-  industry: "string";
+  signUpToken: string;
+  firstName: string;
+  lastName: string;
+  businessName: string;
+  businessType: string;
+  industry: string;
 }) => Http.post(`/auth/set-details`, payload);
 
 export const login = (payload: { email: string; password: string }): Promise<RegisterResponse> => {
@@ -65,7 +65,7 @@ export const resetPassword = (payload: {
 
 export const getUserDetails = () => Http.get(`/user`);
 
-export const editProfile = (payload: any) =>
+export const editProfile = (payload: Record<string, unknown>) =>
   Http.patch(`settings/profile`, payload);
 
 // create pin

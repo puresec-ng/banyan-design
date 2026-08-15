@@ -1,7 +1,9 @@
 import Cookie from "js-cookie";
 
 const dev = process.env.NODE_ENV === "development";
-const parentDomain = dev ? "localhost" : "banyanclaims.com";
+const parentDomain = dev
+  ? "localhost"
+  : process.env.NEXT_PUBLIC_COOKIE_DOMAIN || "banyanclaims.com";
 
 const cookie = () => {
   /**

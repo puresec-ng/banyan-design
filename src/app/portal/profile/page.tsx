@@ -37,14 +37,6 @@ interface BvnDetails {
   phoneNumber: string;
 }
 
-// Mock BVN lookup response
-const MOCK_BVN_DETAILS = {
-  email: 'john@example.com',
-  phoneNumber: '+234 801 234 5678',
-  firstName: 'John',
-  lastName: 'Doe',
-};
-
 type VerificationMethod = 'email' | 'phone' | 'new-phone';
 
 // Add Snackbar component
@@ -175,7 +167,7 @@ export default function Profile() {
         await updateProfile({ email });
         // setIsEditing(false);
         showSuccessMessage('Email updated successfully');
-      } catch (error: any) {
+      } catch (error) {
         const errorMessage = handleApiError(error, 'An error occurred during email update. Please try again.');
         setEmailError(errorMessage);
       } finally {
@@ -210,8 +202,8 @@ export default function Profile() {
           ...prev,
           accountName: response.account_name
         }));
-      } catch (error: any) {
-        setAccountLookupError(error?.message || 'Failed to lookup account. Please verify the details.');
+      } catch (error) {
+        setAccountLookupError((error instanceof Error && error.message) || 'Failed to lookup account. Please verify the details.');
         setBankDetails(prev => ({
           ...prev,
           accountName: ''
@@ -241,7 +233,7 @@ export default function Profile() {
         const errorMessage = handleApiError(resp2, 'Failed to update bank details. Please try again.');
         showErrorMessage(errorMessage);
       }
-    } catch (error: any) {
+    } catch (error) {
       setIsUpdatingBankDetails(false);
       const errorMessage = handleApiError(error, 'Failed to update bank details. Please try again.');
       showErrorMessage(errorMessage);
@@ -266,7 +258,7 @@ export default function Profile() {
       });
       setBvnSessionId(response?.data?.session_id || '');
       setVerificationStep('method');
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = handleApiError(error, 'An error occurred during BVN lookup. Please try again.');
       showErrorMessage(errorMessage);
     } finally {
@@ -317,7 +309,7 @@ export default function Profile() {
       setVerificationStep('success');
       showSuccessMessage('BVN verified successfully');
 
-    } catch (error: any) {
+    } catch (error) {
       showErrorMessage(getAuthErrorMessage('otp', error));
     } finally {
       setIsVerifying(false);
@@ -336,9 +328,10 @@ export default function Profile() {
   const renderBvnStep = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Bank Verification Number (BVN)</label>
+        <label htmlFor="bank-verification-number-bvn" className="block text-sm font-medium text-gray-700 mb-1">Bank Verification Number (BVN)</label>
         <div className="flex gap-2">
           <input
+            id="bank-verification-number-bvn"
             type="text"
             value={bvn}
             onChange={(e) => setBvn(e.target.value)}
@@ -501,7 +494,7 @@ export default function Profile() {
               });
               startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
               showSuccessMessage('Verification code resent');
-            } catch (error: any) {
+            } catch (error) {
               showErrorMessage(getAuthErrorMessage('otp', error));
             } finally {
               setIsVerifying(false);
@@ -568,11 +561,12 @@ export default function Profile() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <div className="relative">
                 {isEditing ? (
                   <>
                     <input
+                      id="email-address"
                       type="email"
                       value={email}
                       onChange={handleEmailChange}
@@ -659,8 +653,9 @@ export default function Profile() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+              <label htmlFor="bank-name" className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
               <select
+                id="bank-name"
                 value={bankDetails.bankName}
                 onChange={(e) => {
                   if (isEditingBank) {
@@ -685,8 +680,9 @@ export default function Profile() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+              <label htmlFor="account-number" className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
               <input
+                id="account-number"
                 type="text"
                 value={isEditingBank ? bankDetails.accountNumber : maskAccountNumber(bankDetails.accountNumber)}
                 onChange={handleAccountNumberChange}
@@ -707,8 +703,9 @@ export default function Profile() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+              <label htmlFor="account-name" className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
               <input
+                id="account-name"
                 type="text"
                 value={bankDetails.accountName}
                 readOnly

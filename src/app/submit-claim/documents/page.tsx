@@ -108,7 +108,7 @@ export default function DocumentUpload() {
         doc.id === docId ? { ...doc, file } : doc
       ));
       showToast('File uploaded successfully', 'success');
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = handleApiError(error, 'Failed to upload file. Please try again.');
       showToast(errorMessage, 'error');
       console.error('Error uploading file:', error);
@@ -213,7 +213,7 @@ export default function DocumentUpload() {
       // Navigate to success page
       router.push('/submit-claim/success');
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting claim:', error);
       const errorMessage = handleApiError(error, 'Unable to send support request. Please check the form and try again.');
       showToast(errorMessage, 'error');

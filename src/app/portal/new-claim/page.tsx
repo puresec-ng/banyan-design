@@ -251,7 +251,7 @@ export default function NewClaim() {
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting claim:', error);
       const errorMessage = handleApiError(error, 'Failed to submit your claim review. Please try again.');
       showToast(errorMessage, 'error');
@@ -304,7 +304,7 @@ export default function NewClaim() {
         )
       })
       showToast('File uploaded successfully', 'success');
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = handleApiError(error, 'Failed to upload file. Please try again.');
       showToast(errorMessage, 'error');
       console.error('Error uploading file:', error);
@@ -434,10 +434,11 @@ export default function NewClaim() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Incident or Loss Summary</h2>
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="insurance-provider" className="block text-sm font-medium text-gray-700 mb-1">
                   Insurance Provider
                 </label>
                 <select
+                  id="insurance-provider"
                   value={formData.insuranceProvider}
                   onChange={(e) => setFormData({ ...formData, insuranceProvider: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
@@ -452,10 +453,11 @@ export default function NewClaim() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="incident-type" className="block text-sm font-medium text-gray-700 mb-1">
                   Incident Type
                 </label>
                 <select
+                  id="incident-type"
                   value={formData.incidentType}
                   onChange={(e) => setFormData({ ...formData, incidentType: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent"
@@ -471,10 +473,11 @@ export default function NewClaim() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="incident-date" className="block text-sm font-medium text-gray-700 mb-1">
                     Incident Date
                   </label>
                   <input
+                    id="incident-date"
                     type="date"
                     value={formData.incidentDate}
                     onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
@@ -483,10 +486,11 @@ export default function NewClaim() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="incident-time" className="block text-sm font-medium text-gray-700 mb-1">
                     Incident Time
                   </label>
                   <input
+                    id="incident-time"
                     type="time"
                     value={formData.incidentTime}
                     onChange={(e) => {
@@ -504,10 +508,11 @@ export default function NewClaim() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="incident-location" className="block text-sm font-medium text-gray-700 mb-1">
                   Incident Location
                 </label>
                 <input
+                  id="incident-location"
                   type="text"
                   value={formData.incidentLocation}
                   onChange={(e) => setFormData({ ...formData, incidentLocation: e.target.value })}
@@ -517,10 +522,11 @@ export default function NewClaim() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="incident-description" className="block text-sm font-medium text-gray-700 mb-1">
                   Description of Incident
                 </label>
                 <textarea
+                  id="incident-description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={4}
@@ -530,10 +536,11 @@ export default function NewClaim() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="policy-number" className="block text-sm font-medium text-gray-700 mb-1">
                   Policy Number
                 </label>
                 <input
+                  id="policy-number"
                   type="text"
                   value={formData.policyNumber}
                   onChange={(e) => setFormData({ ...formData, policyNumber: e.target.value })}

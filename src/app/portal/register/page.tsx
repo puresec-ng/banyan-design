@@ -173,7 +173,7 @@ export default function Register() {
 
       setCurrentStep(2);
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('register', error), 'error');
     } finally {
       setIsLoading(false);
@@ -186,7 +186,7 @@ export default function Register() {
       await requestVerificationCode({ email: formData.email });
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
       showToast('Verification code sent successfully', 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('otp', error), 'error');
     }
   };
@@ -208,7 +208,7 @@ export default function Register() {
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('otp', error), 'error');
     } finally {
       setIsLoading(false);
@@ -241,7 +241,7 @@ export default function Register() {
       setTimeout(() => {
         router.push('/portal/dashboard');
       }, 5000);
-    } catch (error: any) {
+    } catch (error) {
       showToast(getAuthErrorMessage('pinChange', error), 'error');
     } finally {
       setIsLoading(false);

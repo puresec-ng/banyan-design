@@ -19,6 +19,8 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
 
   return (
     <div
+      role={type === "error" ? "alert" : "status"}
+      aria-live={type === "error" ? "assertive" : "polite"}
       className={
         type === "error"
           ? `${styles.notify} ${styles.notify__failed} font-satoshi`
@@ -29,8 +31,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
         <p>{message}</p>
       </div>
       <div className={styles.notify__action}>
-        <button onClick={() => {}}>Ok</button>
-        <button onClick={() => {}}>Dismiss</button>
+        <button onClick={onClose}>Dismiss</button>
       </div>
     </div>
   );
