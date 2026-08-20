@@ -8,20 +8,18 @@ import {
 import { FaXTwitter } from 'react-icons/fa6';
 
 const navigation = [
-  { name: 'Home', href: '/#home' },
-  { name: 'Services', href: '/#services' },
-  { name: 'Process', href: '/#process' },
-  { name: 'About', href: '/#about' },
-  { name: 'Contact', href: '/#contact' },
+  { name: 'Home', href: '/' },
+  { name: 'Services', href: '/services' },
+  { name: 'Training & Research', href: '/training-research' },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 const services = [
-  'SME Claims Support',
-  'Motor Claims Support',
-  'Gadget Claims Support',
-  'Householder Claims Support',
-  'Claims Documentation Support',
-  'Claims Workflow Support',
+  { name: 'Claims Advisory', href: '/services/claims-advisory' },
+  { name: 'Documentation Support', href: '/services/documentation-support' },
+  { name: 'Workflow & Tracking', href: '/services/workflow-tracking' },
+  { name: 'Training & Research', href: '/training-research' },
 ];
 
 const socials = [
@@ -67,9 +65,9 @@ export default function Footer() {
             <h4 className="text-lg font-bold mb-4">Services</h4>
             <ul className="space-y-2">
               {services.map((title) => (
-                <li key={title}>
-                  <Link href="/#services" className="text-gray-200 hover:text-white transition-colors">
-                    {title}
+                <li key={title.name}>
+                  <Link href={title.href} className="text-gray-200 hover:text-white transition-colors">
+                    {title.name}
                   </Link>
                 </li>
               ))}
@@ -95,12 +93,13 @@ export default function Footer() {
         </div>
         <div className="mt-12 pt-8 border-t border-[#2d5445] text-center text-gray-200">
           <p className="max-w-4xl mx-auto text-sm leading-relaxed">
-            Banyan Claims Consultant Limited provides claims advisory, documentation, workflow support and related consultancy services only. We do not underwrite insurance, sell insurance products, act as brokers, perform statutory loss adjusting, decide claims on behalf of insurers, receive insurer settlement funds or guarantee claim outcomes.
+            Banyan Claims Consultant Limited provides claims advisory, documentation, workflow, training and research consultancy services only. We do not underwrite or sell insurance, act as brokers, perform statutory loss-adjusting functions or decide claims.
           </p>
           <p className="mt-6">&copy; {new Date().getFullYear()} Banyan Claims Consultant Limited. All rights reserved.</p>
           <div className="mt-2 flex justify-center gap-6 text-sm">
-            <Link href="/terms" className="underline hover:text-white">Terms & Conditions</Link>
-            <Link href="/privacy" className="underline hover:text-white">Privacy Policy</Link>
+            <Link href="/terms" className="underline hover:text-white">Terms</Link>
+            <Link href="/privacy" className="underline hover:text-white">Privacy</Link>
+            <Link href="/cookies" className="underline hover:text-white">Cookie Notice</Link>
           </div>
         </div>
       </div>

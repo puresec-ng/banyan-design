@@ -72,6 +72,43 @@ export const uploadDocument = (payload: FormData) => {
 // public/contact-us
 export const contactUs = (payload: any) => Http.post(`/public/contact-us`, payload);
 
+export const requestSupport = (payload: {
+    service: FormDataEntryValue | null;
+    name: FormDataEntryValue | null;
+    organisation: FormDataEntryValue | null;
+    email: FormDataEntryValue | null;
+    phone: FormDataEntryValue | null;
+    summary: FormDataEntryValue | null;
+    audience: FormDataEntryValue | null;
+    preferred_date: FormDataEntryValue | null;
+    location: FormDataEntryValue | null;
+    participant_estimate: FormDataEntryValue | null;
+    message: FormDataEntryValue | null;
+}) => {
+    const isOrganisationRequest = payload.service === 'Training / Capacity Building' || payload.service === 'Research / Process Review';
+    const detail = isOrganisationRequest
+        ? [
+            `Audience or objective: ${payload.audience || 'Not provided'}`,
+            `Preferred date: ${payload.preferred_date || 'Not provided'}`,
+            `Location / virtual: ${payload.location || 'Not provided'}`,
+            `Participant estimate: ${payload.participant_estimate || 'Not provided'}`,
+        ]
+        : [`Summary: ${payload.summary || 'Not provided'}`];
+
+    return Http.post(`/public/contact-us`, {
+        name: payload.name,
+        organisation: payload.organisation,
+        email: payload.email,
+        phone: payload.phone,
+        enquiry_type: payload.service,
+        message: [
+            `Service: ${payload.service}`,
+            ...detail,
+            `Additional message: ${payload.message || 'None'}`,
+        ].join('\n'),
+    });
+};
+
 // public/faq
 export const getFaq = () => Http.get(`/public/faq`);
 
@@ -79,4 +116,3 @@ export type BankType = { code: string; name: string };
 export interface BanksApiResponse { banks: BankType[] }
 
 export const getBanks = (): Promise<BanksApiResponse> => Http.get(`/banks`);
-

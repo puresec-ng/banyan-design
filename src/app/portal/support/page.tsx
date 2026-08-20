@@ -8,7 +8,7 @@ import { PhoneIcon, ChatBubbleLeftRightIcon, EnvelopeIcon, ChevronDownIcon, Chev
 const faqs = [
   {
     question: "How do I submit a new support request?",
-    answer: "To submit a new support request, go to the 'New Support Request' section in your dashboard. Follow the step-by-step process to select your support type, provide an incident or loss summary, and upload any available supporting documents."
+    answer: "To create a new support request, go to the 'New Support Request' section in your dashboard. Choose the service you need and share only the information needed at first contact."
   },
   {
     question: "How long does it take to review my documentation?",
@@ -16,7 +16,7 @@ const faqs = [
   },
   {
     question: "What documents do I need to upload with my support request?",
-    answer: "Required documents vary by support type but typically include: valid ID, proof of ownership, incident report, medical reports (for health-related claims), police report (if applicable), and any other relevant supporting documents. Specific requirements will be listed during the support request process."
+    answer: "Document needs vary by service. Start with only the records you are authorised to share; Banyan will explain any further information needed for an agreed support scope."
   },
   {
     question: "How do I check my support request status?",
@@ -200,4 +200,4 @@ export default function Support() {
       )}
     </main>
   );
-} 
+}
