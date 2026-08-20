@@ -57,4 +57,16 @@
   .heading-md {
     @apply text-2xl md:text-3xl lg:text-4xl font-bold;
   }
+
+  .eyebrow {
+    @apply font-montserrat text-sm font-semibold uppercase tracking-[0.18em] text-[#E67635];
+  }
+
+  .form-label {
+    @apply mb-2 block text-sm font-semibold text-gray-800;
+  }
+
+  .form-input {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20;
+  }
 }

@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Home', href: '/#home' },
-  { name: 'Services', href: '/#services' },
-  { name: 'Process', href: '/#process' },
-  { name: 'About', href: '/#about' },
-  { name: 'Contact', href: '/#contact' },
+  { name: 'Home', href: '/' },
+  { name: 'Services', href: '/services' },
+  { name: 'Training & Research', href: '/training-research' },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 export default function Navbar() {
@@ -24,7 +24,7 @@ export default function Navbar() {
             <Link href="/" className="flex items-center">
               <div className="relative w-24 sm:w-28 lg:w-32 h-14 sm:h-16 lg:h-20">
                 <Image
-                  src="/brand/logo-white.png"
+                  src="/brand/logo-black.png"
                   alt="Banyan Claims Logo"
                   fill
                   style={{ objectFit: 'contain' }}
@@ -48,9 +48,10 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-montserrat font-semibold leading-6 text-gray-900 hover:text-primary transition-colors whitespace-nowrap"
+                className="inline-flex items-center gap-1 text-sm font-montserrat font-semibold leading-6 text-gray-900 hover:text-primary transition-colors whitespace-nowrap"
               >
                 {item.name}
+                {item.name === 'Services' && <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />}
               </Link>
             ))}
           </div>
@@ -62,10 +63,10 @@ export default function Navbar() {
               Claim Support Portal
             </Link>
             <Link
-              href="/submit-claim"
+              href="/request-support"
               className="px-3 xl:px-4 py-2 text-sm xl:text-base font-semibold text-white bg-[#E67635] rounded-2xl hover:bg-[#d16426] transition-colors whitespace-nowrap"
             >
-              Start Claim Review
+              Request Support
             </Link>
           </div>
         </nav>
@@ -85,7 +86,7 @@ export default function Navbar() {
                 <Link href="/" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
                   <div className="relative w-28 h-16">
                     <Image
-                      src="/brand/logo-white.png"
+                      src="/brand/logo-black.png"
                       alt="Banyan Claims Logo"
                       fill
                       style={{ objectFit: 'contain' }}
@@ -122,11 +123,11 @@ export default function Navbar() {
                     Claim Support Portal
                   </Link>
                   <Link
-                    href="/submit-claim"
+                    href="/request-support"
                     className="block w-full px-4 py-2 text-base font-semibold text-white bg-[#E67635] rounded-2xl hover:bg-[#d16426] transition-colors text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Start Claim Review
+                    Request Support
                   </Link>
                 </div>
               </div>

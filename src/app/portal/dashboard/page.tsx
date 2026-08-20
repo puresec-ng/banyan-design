@@ -7,7 +7,6 @@ import {
   ChevronRightIcon,
   ClipboardDocumentListIcon,
   PaperClipIcon,
-  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { getSubmitedClaims, ClaimData, uploadClaimDocument } from '../../services/dashboard';
 import { uploadDocument } from '../../services/public';
@@ -153,8 +152,6 @@ export default function Dashboard() {
           <div className="divide-y">
             {claims.data.data?.map((claim: ClaimData) => {
               const normalizedStatus = normalizeStatus(claim.status);
-              const isApproved = normalizedStatus === 'APPROVED' || normalizedStatus === 'OFFER_ACCEPTED';
-              const claimId = String(claim.id || claim.claim_number);
 
               return (
               <div key={claim.claim_number} className="p-6">
@@ -171,15 +168,6 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {isApproved && (
-                      <button
-                        onClick={() => router.push(`/portal/offer?claimId=${claimId}`)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors text-sm font-medium"
-                      >
-                        View Offer
-                        <ArrowRightIcon className="h-4 w-4" />
-                      </button>
-                    )}
                     <button
                       onClick={() => handleClaimSelect(claim.claim_number)}
                       aria-label={selectedClaim === claim.claim_number ? 'Collapse claim details' : 'Expand claim details'}

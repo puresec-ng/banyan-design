@@ -11,13 +11,11 @@ import {
   QuestionMarkCircleIcon,
   ExclamationCircleIcon,
   PaperClipIcon,
-  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '@/app/context/ToastContext';
 import { useApiError, Http } from '@/app/utils/http';
 import { uploadDocument } from '@/app/services/public';
-import { getClaimOffer } from '@/app/services/claims';
 import { validateUploadFile } from '@/app/utils/security';
 
 // API function for responding to information requests
@@ -115,16 +113,16 @@ export const normalizeStatus = (status: string | undefined | null): StatusType =
 
 export const STATUS_DISPLAY_LABELS: Record<string, string> = {
   SUBMITTED: 'Support Request Received',
-  IN_REVIEW: 'Documentation Review in Progress',
-  PENDING_DOCUMENTS: 'Awaiting Supporting Documents',
-  DOCUMENTS_REQUESTED: 'Awaiting Supporting Documents',
-  DOCUMENT_REQUESTED: 'Awaiting Supporting Documents',
-  PENDING_RESPONSE: 'Client Action Needed',
-  PENDING: 'Client Action Needed',
+  IN_REVIEW: 'Review in Progress',
+  PENDING_DOCUMENTS: 'Awaiting Client Information',
+  DOCUMENTS_REQUESTED: 'Awaiting Client Information',
+  DOCUMENT_REQUESTED: 'Awaiting Client Information',
+  PENDING_RESPONSE: 'Awaiting Client Information',
+  PENDING: 'Scope Confirmation Needed',
   OFFER_ACCEPTED: 'Client-Authorised Communication Sent',
-  OFFER_PAID: 'Awaiting Insurer or Relevant-Party Update',
-  APPROVED: 'Documentation Review Completed',
-  DOCUMENTS_VERIFIED: 'Documentation Review Completed',
+  OFFER_PAID: 'Awaiting External Update',
+  APPROVED: 'Deliverable Ready',
+  DOCUMENTS_VERIFIED: 'Deliverable Ready',
   REJECTED: 'Support File Closed',
   DEFAULT: 'Support Request Received',
 };
@@ -441,99 +439,15 @@ export const AdditionalInfoRequestsSection = ({ claimId }: { claimId: string }) 
   );
 };
 
-// Component for displaying offers
-export const OfferSection = ({ claimId, className = 'mt-6 mb-6' }: { claimId: string; className?: string }) => {
-  const router = useRouter();
-
-  // Fetch offer for this claim
-  const { data: offerData, isLoading: isLoadingOffer, error: offerError } = useQuery({
-    queryKey: ['claim-offer', claimId],
-    queryFn: () => getClaimOffer(claimId),
-    enabled: !!claimId,
-    retry: 1,
-  });
-
-  // Handle errors silently for 404 (no offer exists yet)
-  useEffect(() => {
-    if (offerError && (offerError as { response?: { status?: number } })?.response?.status !== 404) {
-      console.error('Error fetching offer:', offerError);
-    }
-  }, [offerError]);
-
-  const offer = offerData?.data;
-
-  if (isLoadingOffer) {
-    return null; // Don't show loading state, just hide the section
-  }
-
-  if (!offer) {
-    return null; // No offer available
-  }
-
-  const formatCurrency = (amount: string | number) => {
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-    if (isNaN(numAmount)) return '₦0';
-    return `₦${numAmount.toLocaleString('en-NG', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    })}`;
-  };
-
-  const isOfferExpired = () => {
-    if (offer.expired !== undefined) {
-      return offer.expired;
-    }
-    if (!offer.expiry_period) return false;
-    return new Date(offer.expiry_period) < new Date();
-  };
-
-  const getOfferStatus = () => {
-    return offer.status || 'pending';
-  };
-
-  const getOfferStatusColor = () => {
-    const statusLower = getOfferStatus().toLowerCase();
-    if (statusLower === 'accepted' || statusLower === 'client_accepted') return 'bg-green-50 border-green-200';
-    if (statusLower === 'rejected') return 'bg-red-50 border-red-200';
-    if (statusLower === 'expired' || isOfferExpired()) return 'bg-gray-50 border-gray-200';
-    if (statusLower === 'paid') return 'bg-emerald-50 border-emerald-200';
-    return 'bg-blue-50 border-blue-200';
-  };
-
-  const getOfferStatusText = () => {
-    const status = getOfferStatus();
-    const statusLower = status.toLowerCase();
-    if (statusLower === 'client_accepted') return 'Accepted';
-    if (statusLower === 'settlement_approved') return 'Pending';
-    if (statusLower === 'paid') return 'Paid';
-    return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
-  };
-
-  return (
-    <div className={className}>
-      <div className={`border rounded-lg p-4 ${getOfferStatusColor()}`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-6 flex items-center justify-center text-[#004D40] font-bold text-lg">₦</div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Insurer Offer Received</h3>
-              <p className="text-sm text-gray-600">
-                Amount: <span className="font-medium">{formatCurrency(offer.offer_amount)}</span>
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Status: <span className="font-medium">{getOfferStatusText()}</span>
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => router.push(`/portal/offer?claimId=${claimId}`)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] transition-colors text-sm font-medium"
-          >
-            View Offer
-            <ArrowRightIcon className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+// External updates remain an authority-gated workflow. The legacy offer UI is
+// intentionally not rendered until the backend authority contract is verified.
+export const OfferSection = ({ claimId, className = 'mt-6 mb-6' }: { claimId: string; className?: string }) => (
+  <div className={className} data-support-request={claimId}>
+    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <h3 className="font-semibold text-gray-900">Awaiting External Update</h3>
+      <p className="mt-1 text-sm leading-6 text-gray-600">
+        Banyan will record relevant updates and contact support parties only where client authority is recorded and the action falls within the agreed scope.
+      </p>
     </div>
-  );
-};
+  </div>
+);

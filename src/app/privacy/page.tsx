@@ -1,111 +1,45 @@
 import type { Metadata } from 'next';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import PublicPage from '../components/PublicPage';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description:
-    'How Banyan Claims Consultant Limited collects, uses and protects your personal data in compliance with the Nigeria Data Protection Act, 2023.',
+  title: 'Privacy Notice | Banyan Claims',
+  description: 'How Banyan Claims Consultant Limited uses and protects personal data across its website, portal and services.',
+  alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen">
-      <Navbar />
-      
-      <div className="max-w-2xl mx-auto py-16 px-4 pt-32">
-        <h1 className="text-3xl font-bold mb-6">Banyan Claims Consultant Ltd: Privacy Policy</h1>
-        <div className="space-y-4 text-gray-700">
-          <h2 className="text-xl font-semibold mt-6">1. Introduction</h2>
-          <p>Banyan Claims Consultant Limited (&quot;Banyan Claims&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting the privacy and security of the personal information of our clients, employees, partners, and website visitors (&quot;you&quot; or &quot;your&quot;). This Privacy Policy outlines how we collect, use, disclose, and safeguard your personal data in compliance with the Nigeria Data Protection Act, 2023 and other applicable regulations.</p>
-          <p>We are a claims consultancy and advisory firm, not an insurance provider, legal practice, or data broker.</p>
-
-          <h2 className="text-xl font-semibold mt-6">2. Scope and Consent</h2>
-          <p>By accessing our website, using our client portal or digital services, or engaging our services, you consent to the collection, use, storage, and sharing of your personal data as described in this Policy. This includes data shared during consultations, claims support, or through any of our digital platforms.</p>
-
-          <h2 className="text-xl font-semibold mt-6">3. Definitions</h2>
-          <ul className="list-disc ml-6">
-            <li><strong>Data Subject:</strong> An individual whose personal data is collected.</li>
-            <li><strong>Data Controller:</strong> Banyan Claims Consultant Ltd, which determines how and why personal data is processed.</li>
-            <li><strong>Data Administrator:</strong> Persons within Banyan Claims who manage data operations.</li>
-            <li><strong>Data Protection Officer:</strong> A designated officer responsible for overseeing compliance.</li>
-          </ul>
-
-          <h2 className="text-xl font-semibold mt-6">4. Information We Collect</h2>
-          <h3 className="font-semibold mt-4">A. Information You Provide</h3>
-          <ul className="list-disc ml-6">
-            <li>Personal Information (e.g., name, email, phone number, date of birth)</li>
-            <li>Identification Data (e.g., NIN, passport number, voter&apos;s card, driver&apos;s license)</li>
-            <li>Financial Information (e.g., BVN, bank details where required)</li>
-            <li>Sensitive Data (e.g., marital status, medical records where necessary for claims support)</li>
-          </ul>
-          <h3 className="font-semibold mt-4">B. Automatically Collected Data</h3>
-          <ul className="list-disc ml-6">
-            <li>IP address, browser type, device ID, operating system</li>
-            <li>Usage patterns (e.g., session duration, clickstream data)</li>
-          </ul>
-          <h3 className="font-semibold mt-4">C. Cookies and Tracking</h3>
-          <p>We use cookies for analytics, security, and functionality. You can manage cookies via your browser settings. If advanced tracking (e.g., Meta Pixel) is used, a separate cookie notice will be made available.</p>
-          <h3 className="font-semibold mt-4">D. Third-Party Information</h3>
-          <p>We may receive information from professional partners (e.g., legal advisors, insurers, assessors) where necessary to support claim documentation review, evidence organisation, client-authorised communication, service delivery, complaint handling or lawful compliance.</p>
-
-          <h2 className="text-xl font-semibold mt-6">5. How We Use Your Information</h2>
-          <ul className="list-disc ml-6">
-            <li>To deliver, personalize, and improve our services</li>
-            <li>To communicate with you regarding your service or inquiries</li>
-            <li>To support claims advisory, documentation review, evidence organisation, client-authorised communication support and preparation of claim information for review by insurers, brokers or other authorised parties</li>
-            <li>To comply with legal, regulatory, contractual or lawful authority requirements, including applicable data protection obligations</li>
-            <li>For service integrity, fraud-risk prevention, complaint handling and lawful record management</li>
-          </ul>
-          <p className="text-gray-600 italic">Disclaimer: We do not provide legal representation. If formal legal action is required, we may refer you to licensed legal professionals.</p>
-
-          <h2 className="text-xl font-semibold mt-6">6. Sharing and Disclosure</h2>
-          <p>We only share your information where necessary to perform our services, where you give explicit and informed consent, where required by law, or with service providers under contractual confidentiality and data protection obligations.</p>
-          <p>We are not liable for the misuse of data by third parties beyond our control.</p>
-
-          <h2 className="text-xl font-semibold mt-6">7. Children&apos;s Data</h2>
-          <p>We do not knowingly collect data from individuals under the age of 18. If such data is inadvertently collected, it will be deleted upon discovery.</p>
-
-          <h2 className="text-xl font-semibold mt-6">8. Data Security</h2>
-          <p>We adopt industry-standard measures including:</p>
-          <ul className="list-disc ml-6">
-            <li>Data encryption</li>
-            <li>Access control</li>
-            <li>Secure storage practices</li>
-          </ul>
-          <p>We will notify the appropriate authority and affected individuals where required by applicable data protection law in the event of a data breach that may impact your rights.</p>
-
-          <h2 className="text-xl font-semibold mt-6">9. Data Retention</h2>
-          <p>We retain personal data only for as long as necessary for the purpose collected, our service engagement, legal or regulatory obligations, audit, complaint handling and legitimate record keeping. Residual backup data will be protected with equivalent safeguards.</p>
-
-          <h2 className="text-xl font-semibold mt-6">10. International Transfers</h2>
-          <p>Data may be transferred outside Nigeria in accordance with the Nigeria Data Protection Act, 2023, subject to appropriate legal and contractual safeguards.</p>
-
-          <h2 className="text-xl font-semibold mt-6">11. Your Rights</h2>
-          <p>You have the right to:</p>
-          <ul className="list-disc ml-6">
-            <li>Access your data</li>
-            <li>Request corrections or deletion</li>
-            <li>Object to or restrict processing</li>
-            <li>Request data portability</li>
-            <li>Withdraw consent at any time</li>
-            <li>Lodge complaints with the NDPC or our DPO</li>
-          </ul>
-
-          <h2 className="text-xl font-semibold mt-6">12. Policy Updates</h2>
-          <p>This Policy may be updated periodically. All revisions will be posted on our website.</p>
-
-          <h2 className="text-xl font-semibold mt-6">13. Contact Us</h2>
-          <p>Data Protection Officer<br/>
-          Banyan Claims Consultant Limited<br/>
-          Email: <a href="mailto:enquiries@banyanclaims.com" className="underline text-blue-700">enquiries@banyanclaims.com</a><br/>
-          Website: <a href="https://www.banyanclaims.com" className="underline text-blue-700">www.banyanclaims.com</a></p>
-          <p className="mt-8">Thank you for trusting Banyan Claims Consultant Limited.</p>
-          <p className="text-xs text-gray-500 mt-4">Effective Date: June 2025<br/>Last Updated: June 2025</p>
+    <PublicPage>
+      <section className="bg-[#1B4332] pt-36 pb-20 text-white sm:pt-40">
+        <div className="container">
+          <p className="eyebrow text-[#F2A65A]">Privacy information</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl">Privacy Notice</h1>
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-100">How Banyan handles personal data across its website, support portal and agreed services.</p>
         </div>
-      </div>
+      </section>
 
-      <Footer />
-    </main>
+      <section className="section">
+        <div className="container max-w-3xl space-y-8 text-gray-700">
+          <p className="rounded-xl border border-[#E67635]/40 bg-[#FFF8F2] p-5 text-sm leading-6 text-gray-700">
+            This draft is staged for privacy adviser/DPCO or Nigerian legal review. It must not be treated as the final approved Privacy Notice until the required review is complete.
+          </p>
+
+          <div><h2 className="heading-md mb-4">1. Who we are</h2><p className="leading-7">Banyan Claims Consultant Limited is a Nigerian claims advisory and support consultancy. We determine how personal data is used for our services and digital platforms unless another arrangement is stated.</p></div>
+          <div><h2 className="heading-md mb-4">2. What this notice covers</h2><p className="leading-7">This notice applies when you use our website, client portal, contact us, request support, attend a programme or engage Banyan for advisory, documentation, workflow, research or training services.</p></div>
+          <div><h2 className="heading-md mb-4">3. Information we may collect</h2><p className="leading-7">Depending on the service, we may collect contact details, organisation details, claim-related information, correspondence, documents you choose to provide, portal and security records, and technical website information. Identity, financial, medical or other sensitive information should be collected only where necessary for the agreed service and permitted by law.</p></div>
+          <div><h2 className="heading-md mb-4">4. Why we use information</h2><p className="leading-7">We use information to respond to enquiries, take pre-contract steps, deliver agreed services, review and organise documents, provide workflow support, make client-authorised communications, manage training or research projects, keep records, protect our systems, handle complaints and meet legal obligations.</p></div>
+          <div><h2 className="heading-md mb-4">5. Lawful basis</h2><p className="leading-7">Processing may rely on contract or steps requested before a contract, legal obligation, legitimate interests, consent where appropriate, and any additional basis required for sensitive information. The final lawful-basis wording must match the approved data-processing register.</p></div>
+          <div><h2 className="heading-md mb-4">6. Sharing</h2><p className="leading-7">We may share information with service providers, professional advisers, insurers, brokers or other relevant parties where necessary for an agreed service, authorised by you, or required by law. Appropriate contractual, security and legal safeguards should be used.</p></div>
+          <div><h2 className="heading-md mb-4">7. Retention</h2><p className="leading-7">We keep personal data only for as long as needed for the relevant purpose, legal obligations, complaints, security and record-keeping. Detailed retention periods should be maintained in Banyan’s internal retention schedule.</p></div>
+          <div><h2 className="heading-md mb-4">8. Security and incidents</h2><p className="leading-7">We use proportionate technical and organisational safeguards. Suspected personal-data incidents will be assessed, contained and reported where required by applicable law and regulator guidance.</p></div>
+          <div><h2 className="heading-md mb-4">9. International transfers</h2><p className="leading-7">Where personal data is transferred outside Nigeria, Banyan will use the safeguards required by applicable Nigerian data-protection law.</p></div>
+          <div><h2 className="heading-md mb-4">10. Your rights</h2><p className="leading-7">Subject to applicable law, you may ask to access, correct, delete, restrict or object to certain processing, request portability, withdraw consent where consent is relied on, or raise a concern with Banyan or the Nigeria Data Protection Commission.</p></div>
+          <div><h2 className="heading-md mb-4">11. Cookies</h2><p className="leading-7">Essential cookies may be used to operate and secure the site. Analytics or marketing cookies should be used only according to the approved consent configuration. See the <a href="/cookies" className="font-semibold text-[#1B4332] underline">Cookie Notice</a> for details and choices.</p></div>
+          <div><h2 className="heading-md mb-4">12. Contact</h2><p className="leading-7">Privacy enquiries: <a className="font-semibold text-[#1B4332] underline" href="mailto:enquiries@banyanclaims.com">enquiries@banyanclaims.com</a>. The final page should identify the approved privacy contact or DPO details if formally appointed.</p></div>
+
+          <p className="border-t border-gray-200 pt-6 text-sm text-gray-500">Effective date: To be set after professional approval.</p>
+        </div>
+      </section>
+    </PublicPage>
   );
-} 
+}

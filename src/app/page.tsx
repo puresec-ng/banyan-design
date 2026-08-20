@@ -1,292 +1,121 @@
-'use client'
-import {
-  BuildingOfficeIcon,
-  TruckIcon,
-  DevicePhoneMobileIcon,
-  HomeIcon,
-  PhoneIcon,
-  UserGroupIcon,
-  BoltIcon,
-  ShieldCheckIcon,
-  ChartBarIcon,
-} from '@heroicons/react/24/outline';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { servicePillars } from './content/services';
 import Footer from './components/Footer';
-import { contactUs } from './services/public';
-import { useState } from 'react';
+import Hero from './components/Hero';
+import Navbar from './components/Navbar';
+import CookieBanner from './components/CookieBanner';
+
+export const metadata: Metadata = {
+  title: 'Banyan Claims | Claims Advisory and Support in Nigeria',
+  description:
+    'Claims advisory, documentation support, workflow tracking, training and research for individuals, businesses and organisations in Nigeria.',
+  alternates: { canonical: '/' },
+};
 
 export default function Home() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
-
-  // handle contact us
-  const handleContactUs = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
-
-    try {
-      const formData = new FormData(e.target as HTMLFormElement);
-      await contactUs({
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        message: formData.get('message') as string,
-      });
-      setSubmitStatus({
-        type: 'success',
-        message: 'Thank you for your message. We will get back to you soon!'
-      });
-      (e.target as HTMLFormElement).reset();
-    } catch {
-      setSubmitStatus({
-        type: 'error',
-        message: 'Failed to send message. Please try again later.'
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white">
       <Navbar />
       <Hero />
 
-      {/* Divider */}
-      <div className="w-full max-w-6xl mx-auto px-4">
-        <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-      </div>
-
-      {/* Services Section */}
-      <section id="services" className="section bg-white scroll-mt-24">
+      <section id="services" className="section scroll-mt-24">
         <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="heading-lg mb-6">How We Help</h2>
-            <p className="text-lg text-gray-600">
-              Get practical support to prepare clearer claim files and keep track of what is needed.
-            </p>
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <p className="eyebrow">Four ways to get clearer support</p>
+            <h2 className="heading-lg mt-3">Practical support, structured around your need</h2>
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service) => (
-              <div
-                key={service.title}
-                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <service.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{service.title}</h3>
-                <p className="text-gray-600">{service.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section id="process" className="section bg-gray-50 scroll-mt-24">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="heading-lg mb-6">A Simple Support Process</h2>
-            <p className="text-lg text-gray-600">
-              A clearer way to organise claim documents and track next steps.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step, index) => (
-              <div key={step.title} className="text-center">
-                <div className="w-16 h-16 rounded-full bg-primary text-white text-2xl font-bold flex items-center justify-center mx-auto mb-6">
-                  {index + 1}
-                </div>
-                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="section bg-white scroll-mt-24">
-        <div className="container">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="heading-lg mb-6 text-center">About Banyan Claims</h2>
-            <div className="space-y-6">
-              <div className="text-center">
-                <p className="text-lg text-gray-600">
-                  Banyan Claims Consultant Limited is a claims support and consultancy business. We help clients prepare better claim files, organise supporting documents and follow the process more clearly.
-                </p>
-                <p className="text-lg text-gray-600 mt-4">
-                  Our team combines practical claims knowledge with structured support to help clients understand what is needed and what still needs attention.
-                </p>
-              </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-                <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <UserGroupIcon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Experienced Team</h3>
-                  <p className="text-gray-600">Practical claims knowledge and professional support.</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <BoltIcon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Structured Review</h3>
-                  <p className="text-gray-600">Clearer documents, better organisation and easier follow-up.</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <ShieldCheckIcon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Trusted Support</h3>
-                  <p className="text-gray-600">Transparent support throughout the claim documentation process.</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                    <ChartBarIcon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Workflow Visibility</h3>
-                  <p className="text-gray-600">A clearer view of what has been done and what still needs attention.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="section bg-gray-50 scroll-mt-24">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="heading-lg mb-6">Need help with claim documents?</h2>
-              <p className="text-lg text-gray-600 mb-8">
-                Contact us to request claim support or ask about next steps.
-              </p>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Visit Us</h3>
-                  <p className="text-gray-600">EridanSpace, The Philippi Centre, Oluwalogbon House, Plot A Obafemi Awolowo Way, Alausa, Ikeja, Lagos</p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Contact</h3>
-                  <p className="text-gray-600">Phone: 02013306325</p>
-                  <p className="text-gray-600">Email: enquiries@banyanclaims.com</p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Hours</h3>
-                  <p className="text-gray-600">Monday - Friday: 9am - 5pm</p>
-                  <p className="text-gray-600">Online Support Available</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <form onSubmit={handleContactUs} className="space-y-6">
-                {submitStatus.type && (
-                  <div className={`p-4 rounded-lg ${submitStatus.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                    }`}>
-                    {submitStatus.message}
-                  </div>
-                )}
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    required
-                    rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {servicePillars.map((service) => {
+              const Icon = service.icon;
+              return (
+                <Link
+                  key={service.slug}
+                  href={service.href}
+                  className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#E67635]"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </button>
-              </form>
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-[#E7F1ED] text-[#1B4332]">
+                    <Icon className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="mb-3 text-xl font-bold text-[#1B4332]">{service.title}</h3>
+                  <p className="leading-7 text-gray-600">{service.shortDescription}</p>
+                  <span className="mt-5 inline-flex font-montserrat text-sm font-semibold text-[#E67635] group-hover:underline">
+                    Explore service <span aria-hidden="true" className="ml-1">→</span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#F8FAF9] py-12">
+        <div className="container">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="eyebrow">Common support areas</p>
+              <p className="mt-2 text-gray-700">Examples only. Support is subject to scope and competence.</p>
             </div>
+            <div className="flex flex-wrap gap-3">
+              {['Motor', 'SME', 'Gadget', 'Householder', 'Other business needs'].map((item) => (
+                <span key={item} className="rounded-full border border-[#BBD2C6] bg-white px-4 py-2 text-sm font-medium text-[#1B4332]">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="process" className="section scroll-mt-24">
+        <div className="container">
+          <div className="mx-auto mb-12 max-w-3xl text-center">
+            <p className="eyebrow">A clear starting point</p>
+            <h2 className="heading-lg mt-3">How support works</h2>
+          </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              ['1', 'Tell Us What You Need', 'Choose the support you need and share the essential information.'],
+              ['2', 'We Confirm Scope', 'We confirm what we can do, the deliverables, fees and any authority required.'],
+              ['3', 'We Deliver Support', 'You receive the agreed guidance, review, tracker, workshop or project output.'],
+            ].map(([number, title, description]) => (
+              <div key={number} className="rounded-2xl border border-gray-100 bg-white p-7 shadow-sm">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1B4332] font-montserrat font-bold text-white">{number}</span>
+                <h3 className="mt-6 text-xl font-bold text-[#1B4332]">{title}</h3>
+                <p className="mt-3 leading-7 text-gray-600">{description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="about" className="bg-[#1B4332] py-16 text-white scroll-mt-24">
+        <div className="container flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="eyebrow text-[#F2A65A]">About Banyan</p>
+            <p className="mt-4 text-xl leading-9 text-gray-100">
+              Banyan Claims Consultant Limited is a Nigerian claims advisory and support consultancy built around clarity, structure and practical support.
+            </p>
+          </div>
+          <Link href="/services" className="btn-secondary inline-flex shrink-0">Explore Our Services</Link>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="rounded-3xl bg-[#F3F7F5] px-6 py-12 text-center sm:px-12">
+            <p className="eyebrow">Need a starting point?</p>
+            <h2 className="heading-md mt-3">Not sure what support you need?</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-600">
+              Tell us what you are trying to achieve. We will confirm the right next step.
+            </p>
+            <Link href="/request-support" className="btn-secondary mt-8 inline-flex">Talk to Banyan</Link>
           </div>
         </div>
       </section>
 
       <Footer />
+      <CookieBanner />
     </main>
   );
 }
-
-// Data
-const services = [
-  {
-    title: 'SME Claims Support',
-    description: 'Support with business claim documents, evidence and follow-up tracking.',
-    icon: BuildingOfficeIcon,
-  },
-  {
-    title: 'Motor Claims Support',
-    description: 'Help organising motor claim information, photos, reports and supporting documents.',
-    icon: TruckIcon,
-  },
-  {
-    title: 'Gadget Claims Support',
-    description: 'Support with device claim documents, receipts, photos and incident details.',
-    icon: DevicePhoneMobileIcon,
-  },
-  {
-    title: 'Householder Claims Support',
-    description: 'Help preparing home claim documents, evidence and next-step records.',
-    icon: HomeIcon,
-  },
-  {
-    title: 'Claims Workflow Support',
-    description: 'A clearer way to track documents, requests and claim-related updates.',
-    icon: PhoneIcon,
-  },
-];
-
-const steps = [
-  {
-    title: 'Start a Review',
-    description: 'Tell us what support you need and upload available documents.',
-  },
-  {
-    title: 'We Check the File',
-    description: 'We review the information, identify gaps and help organise the claim file.',
-  },
-  {
-    title: 'Track Next Steps',
-    description: 'You receive clearer guidance on outstanding documents, updates and follow-up actions.',
-  },
-];
-

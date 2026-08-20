@@ -22,6 +22,16 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/submit-claim',
+        destination: '/request-support',
+        permanent: true,
+      },
+      {
+        source: '/submit-claim/:path*',
+        destination: '/request-support',
+        permanent: true,
+      },
+      {
         source: '/favicon.ico',
         destination: '/real-favicon.ico',
         permanent: true,
@@ -30,6 +40,15 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        source: '/portal/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, noarchive',
+          },
+        ],
+      },
       {
         source: '/favicon.ico',
         headers: [

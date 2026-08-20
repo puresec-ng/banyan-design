@@ -3,6 +3,7 @@ import { Lato, Roboto, Montserrat } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "./utils/ReactQueryProvider";
 import { ToastProvider } from "./context/ToastContext";
+import { siteConfig } from './site';
 
 
 const lato = Lato({
@@ -25,22 +26,26 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: "Banyan Claims | Claims Support and Documentation Review in Nigeria",
-    template: "%s | Banyan Claims",
+    default: "Banyan Claims | Claims Advisory and Support in Nigeria",
+    template: "%s",
   },
-  description: "Claims advisory and documentation support for individuals and businesses. Organise claim documents, identify gaps and track next steps before insurer review.",
+  metadataBase: new URL(siteConfig.url),
+  description: siteConfig.description,
   openGraph: {
-    title: "Banyan Claims Consultant Limited",
-    description: "Claims support, documentation review and workflow support for individuals, SMEs and business users.",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    type: 'website',
   },
   twitter: {
-    title: "Banyan Claims Consultant Limited",
-    description: "Claims support, documentation review and workflow support for individuals, SMEs and business users.",
+    title: siteConfig.name,
+    description: siteConfig.description,
   },
   icons: {
-    icon: 'https://banyanclaims.com/real-favicon.ico',
-    shortcut: 'https://banyanclaims.com/real-favicon.ico',
-    apple: 'https://banyanclaims.com/real-favicon.ico',
+    icon: '/real-favicon.ico',
+    shortcut: '/real-favicon.ico',
+    apple: '/real-favicon.ico',
   },
 };
 
