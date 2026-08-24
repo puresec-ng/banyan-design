@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { contactUs } from '../services/public';
+import { contactUs, SupportServiceCode } from '../services/public';
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,16 +16,18 @@ export default function ContactForm() {
     const formData = new FormData(form);
 
     try {
-      await contactUs({
-        name: formData.get('name'),
-        organisation: formData.get('organisation'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        enquiry_type: formData.get('enquiry_type'),
-        message: formData.get('message'),
+      const response = await contactUs({
+        service_code: String(formData.get('enquiry_type') || 'general_enquiry') as SupportServiceCode,
+        name: String(formData.get('name') || ''),
+        organisation: formData.get('organisation') ? String(formData.get('organisation')) : null,
+        email: String(formData.get('email') || ''),
+        phone: formData.get('phone') ? String(formData.get('phone')) : null,
+        message: String(formData.get('message') || ''),
+        privacy_consent: formData.get('privacy_consent') === 'true',
       });
       form.reset();
-      setStatus({ type: 'success', message: 'Thank you. Your enquiry has been received and we will contact you about next steps.' });
+      const reference = response.data?.reference;
+      setStatus({ type: 'success', message: reference ? `Enquiry ${reference} received. We will contact you about next steps.` : 'Thank you. Your enquiry has been received and we will contact you about next steps.' });
     } catch {
       setStatus({ type: 'error', message: 'We could not send your enquiry. Please check the form and try again.' });
     } finally {
@@ -64,18 +66,22 @@ export default function ContactForm() {
         <label htmlFor="contact-enquiry-type" className="form-label">Enquiry type</label>
         <select id="contact-enquiry-type" name="enquiry_type" required className="form-input">
           <option value="">Choose an option</option>
-          <option>Claims Advisory</option>
-          <option>Documentation Support</option>
-          <option>Workflow &amp; Tracking</option>
-          <option>Training</option>
-          <option>Research / Process Review</option>
-          <option>General Enquiry</option>
+          <option value="claims_advisory">Claims Advisory</option>
+          <option value="documentation_support">Documentation Support</option>
+          <option value="workflow_tracking">Workflow &amp; Tracking</option>
+          <option value="training_capacity_building">Training</option>
+          <option value="research_process_review">Research / Process Review</option>
+          <option value="general_enquiry">General Enquiry</option>
         </select>
       </div>
       <div>
         <label htmlFor="contact-message" className="form-label">Message</label>
         <textarea id="contact-message" name="message" required rows={5} className="form-input" />
       </div>
+      <label className="flex items-start gap-3 text-sm leading-6 text-gray-600">
+        <input type="checkbox" name="privacy_consent" value="true" required className="mt-1 h-4 w-4 rounded border-gray-300 text-[#1B4332] focus:ring-[#1B4332]" />
+        <span>I confirm that the information provided is accurate to the best of my knowledge and that I have read the <a href="/privacy" className="font-medium text-[#1B4332] underline">Privacy Notice</a>.</span>
+      </label>
       <button type="submit" disabled={isSubmitting} className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60">
         {isSubmitting ? 'Sending…' : 'Send Enquiry'}
       </button>

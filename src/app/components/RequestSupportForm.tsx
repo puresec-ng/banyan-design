@@ -1,25 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { requestSupport } from '../services/public';
+import { requestSupport, SupportServiceCode } from '../services/public';
 
 const serviceOptions = [
-  'Claims Advisory',
-  'Documentation Support',
-  'Workflow & Tracking',
-  'Training / Capacity Building',
-  'Research / Process Review',
-  'General Enquiry',
-];
+  { code: 'claims_advisory', label: 'Claims Advisory' },
+  { code: 'documentation_support', label: 'Documentation Support' },
+  { code: 'workflow_tracking', label: 'Workflow & Tracking' },
+  { code: 'training_capacity_building', label: 'Training / Capacity Building' },
+  { code: 'research_process_review', label: 'Research / Process Review' },
+  { code: 'general_enquiry', label: 'General Enquiry' },
+] as const;
 
-const organisationServices = new Set(['Training / Capacity Building', 'Research / Process Review']);
+const organisationServices = new Set<SupportServiceCode>(['training_capacity_building', 'research_process_review']);
+
+function getTextField(formData: FormData, name: string) {
+  const value = formData.get(name);
+  return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
 
 export default function RequestSupportForm() {
-  const [service, setService] = useState('');
+  const [service, setService] = useState<SupportServiceCode | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
-  const isOrganisationRequest = organisationServices.has(service);
+  const isOrganisationRequest = service !== '' && organisationServices.has(service);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,24 +33,30 @@ export default function RequestSupportForm() {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const participantText = getTextField(formData, 'participant_estimate');
+    const participantEstimate = participantText ? Number.parseInt(participantText, 10) : null;
 
     try {
-      await requestSupport({
-        service,
-        name: formData.get('name'),
-        organisation: formData.get('organisation'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        summary: formData.get('summary'),
-        audience: formData.get('audience'),
-        preferred_date: formData.get('preferred_date'),
-        location: formData.get('location'),
-        participant_estimate: formData.get('participant_estimate'),
-        message: formData.get('message'),
+      const response = await requestSupport({
+        service_code: service as SupportServiceCode,
+        name: getTextField(formData, 'name') || '',
+        organisation: getTextField(formData, 'organisation'),
+        email: getTextField(formData, 'email') || '',
+        phone: getTextField(formData, 'phone'),
+        summary: isOrganisationRequest ? null : getTextField(formData, 'summary'),
+        objective: isOrganisationRequest ? getTextField(formData, 'objective') : null,
+        preferred_date: getTextField(formData, 'preferred_date'),
+        location: getTextField(formData, 'location'),
+        participant_estimate: isOrganisationRequest && Number.isInteger(participantEstimate) ? participantEstimate : null,
+        message: getTextField(formData, 'message'),
+        privacy_consent: formData.get('privacy_consent') === 'true',
+        privacy_notice_version: '2026-08-17',
+        source: 'website',
       });
       form.reset();
       setService('');
-      setStatus({ type: 'success', message: 'Support request received. We will review the information provided and contact you about next steps.' });
+      const reference = response.data?.reference;
+      setStatus({ type: 'success', message: reference ? `Support request ${reference} received. We will contact you about next steps.` : 'Support request received. We will review the information provided and contact you about next steps.' });
     } catch {
       setStatus({ type: 'error', message: 'We could not send your support request. Please check the form and try again.' });
     } finally {
@@ -63,9 +74,9 @@ export default function RequestSupportForm() {
 
       <div>
         <label htmlFor="support-service" className="form-label">What support do you need?</label>
-        <select id="support-service" name="service" required value={service} onChange={(event) => setService(event.target.value)} className="form-input">
+        <select id="support-service" name="service" required value={service} onChange={(event) => setService(event.target.value as SupportServiceCode | '')} className="form-input">
           <option value="">Choose a service</option>
-          {serviceOptions.map((option) => <option key={option}>{option}</option>)}
+          {serviceOptions.map((option) => <option key={option.code} value={option.code}>{option.label}</option>)}
         </select>
       </div>
 
@@ -94,8 +105,8 @@ export default function RequestSupportForm() {
       {isOrganisationRequest ? (
         <>
           <div>
-            <label htmlFor="support-audience" className="form-label">Audience or objective</label>
-            <textarea id="support-audience" name="audience" required rows={4} className="form-input" placeholder="Tell us who the programme is for and what you want to achieve." />
+            <label htmlFor="support-objective" className="form-label">Audience or objective</label>
+            <textarea id="support-objective" name="objective" required rows={4} className="form-input" placeholder="Tell us who the programme is for and what you want to achieve." />
           </div>
           <div className="grid gap-5 sm:grid-cols-3">
             <div>
@@ -133,7 +144,7 @@ export default function RequestSupportForm() {
       </div>
 
       <label className="flex items-start gap-3 text-sm leading-6 text-gray-600">
-        <input type="checkbox" required className="mt-1 h-4 w-4 rounded border-gray-300 text-[#1B4332] focus:ring-[#1B4332]" />
+        <input type="checkbox" name="privacy_consent" value="true" required className="mt-1 h-4 w-4 rounded border-gray-300 text-[#1B4332] focus:ring-[#1B4332]" />
         <span>I confirm that the information provided is accurate to the best of my knowledge and that I have read the <a href="/privacy" className="font-medium text-[#1B4332] underline">Privacy Notice</a>.</span>
       </label>
 
