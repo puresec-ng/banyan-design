@@ -20,10 +20,6 @@ export default function PrivacyPage() {
 
       <section className="section">
         <div className="container max-w-3xl space-y-8 text-gray-700">
-          <p className="rounded-xl border border-[#E67635]/40 bg-[#FFF8F2] p-5 text-sm leading-6 text-gray-700">
-            This draft is staged for privacy adviser/DPCO or Nigerian legal review. It must not be treated as the final approved Privacy Notice until the required review is complete.
-          </p>
-
           <div><h2 className="heading-md mb-4">1. Who we are</h2><p className="leading-7">Banyan Claims Consultant Limited is a Nigerian claims advisory and support consultancy. We determine how personal data is used for our services and digital platforms unless another arrangement is stated.</p></div>
           <div><h2 className="heading-md mb-4">2. What this notice covers</h2><p className="leading-7">This notice applies when you use our website, client portal, contact us, request support, attend a programme or engage Banyan for advisory, documentation, workflow, research or training services.</p></div>
           <div><h2 className="heading-md mb-4">3. Information we may collect</h2><p className="leading-7">Depending on the service, we may collect contact details, organisation details, claim-related information, correspondence, documents you choose to provide, portal and security records, and technical website information. Identity, financial, medical or other sensitive information should be collected only where necessary for the agreed service and permitted by law.</p></div>
@@ -37,7 +33,7 @@ export default function PrivacyPage() {
           <div><h2 className="heading-md mb-4">11. Cookies</h2><p className="leading-7">Essential cookies may be used to operate and secure the site. Analytics or marketing cookies should be used only according to the approved consent configuration. See the <a href="/cookies" className="font-semibold text-[#1B4332] underline">Cookie Notice</a> for details and choices.</p></div>
           <div><h2 className="heading-md mb-4">12. Contact</h2><p className="leading-7">Privacy enquiries: <a className="font-semibold text-[#1B4332] underline" href="mailto:enquiries@banyanclaims.com">enquiries@banyanclaims.com</a>. The final page should identify the approved privacy contact or DPO details if formally appointed.</p></div>
 
-          <p className="border-t border-gray-200 pt-6 text-sm text-gray-500">Effective date: To be set after professional approval.</p>
+          <p className="border-t border-gray-200 pt-6 text-sm text-gray-500">Published: 4 September 2026</p>
         </div>
       </section>
     </PublicPage>

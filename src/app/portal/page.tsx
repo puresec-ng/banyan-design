@@ -10,7 +10,7 @@ import {
   ArrowLeftIcon,
 } from '@heroicons/react/24/outline';
 import { useToast } from '../context/ToastContext';
-import { login } from '../services/auth';
+import { getAuthSession, login } from '../services/auth';
 import cookie from '../utils/cookie';
 import {
   consumeAuthFlash,
@@ -59,8 +59,12 @@ export default function ClientPortal() {
     try {
       setIsLoading(true);
       const response = await login(formData);
+      const session = getAuthSession(response);
+      if (!session) {
+        throw new Error('The sign-in response did not include a session.');
+      }
 
-      persistAuthSession(response.token, response.user);
+      persistAuthSession(session.token, session.user);
 
       if (rememberMe) {
         localStorage.setItem('rememberedEmail', formData.email);

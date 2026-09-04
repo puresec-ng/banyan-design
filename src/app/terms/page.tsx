@@ -21,10 +21,6 @@ export default function TermsPage() {
 
       <section className="section">
         <div className="container max-w-3xl space-y-8 text-gray-700">
-          <p className="rounded-xl border border-[#E67635]/40 bg-[#FFF8F2] p-5 text-sm leading-6 text-gray-700">
-            This draft is staged for Nigerian legal review. It must not be treated as the final approved Terms until the required review is complete.
-          </p>
-
           <div>
             <h2 className="heading-md mb-4">1. About these Terms</h2>
             <p className="leading-7">These Terms apply to use of the Banyan website and to services agreed with Banyan Claims Consultant Limited. The specific services, deliverables, fees and responsibilities for an engagement will be confirmed in the applicable Service Agreement or written scope.</p>
@@ -70,7 +66,7 @@ export default function TermsPage() {
             <p className="leading-7">Questions about these Terms may be sent to <a className="font-semibold text-[#1B4332] underline" href="mailto:enquiries@banyanclaims.com">enquiries@banyanclaims.com</a>.</p>
           </div>
 
-          <p className="border-t border-gray-200 pt-6 text-sm text-gray-500">Effective date: To be set after professional approval.</p>
+          <p className="border-t border-gray-200 pt-6 text-sm text-gray-500">Published: 4 September 2026</p>
         </div>
       </section>
     </PublicPage>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useToast } from '../../context/ToastContext';
-import { register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
+import { AuthSession, getAuthSession, register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
 import {
   getAuthErrorMessage,
   persistAuthSession,
@@ -58,6 +58,8 @@ export default function Register() {
   const [otp, setOtp] = useState('');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [pendingSession, setPendingSession] = useState<AuthSession | null>(null);
+  const [successDestination, setSuccessDestination] = useState<'dashboard' | 'login'>('dashboard');
   const [pinValidation, setPinValidation] = useState({ isValid: false, message: '' });
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
@@ -81,6 +83,17 @@ export default function Register() {
     isValid: false,
     message: '',
   });
+
+  useEffect(() => {
+    if (currentStep !== 4) {
+      return;
+    }
+
+    const destination = successDestination === 'dashboard' ? '/portal/dashboard' : '/portal';
+    const redirectTimer = window.setTimeout(() => router.push(destination), 5000);
+
+    return () => window.clearTimeout(redirectTimer);
+  }, [currentStep, router, successDestination]);
 
   // Add function to check if form is valid
   const isFormValid = () => {
@@ -169,10 +182,11 @@ export default function Register() {
         password_confirmation: formData.confirmPassword,
       }
       const response = await register(payload);
-      persistAuthSession(response.token, response.user);
+      setPendingSession(getAuthSession(response));
 
       setCurrentStep(2);
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
+      showToast('Account created. Check your email for the verification code.', 'success');
     } catch (error) {
       showToast(getAuthErrorMessage('register', error), 'error');
     } finally {
@@ -196,18 +210,20 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      // Simulate OTP verification
-      await verifyEmail({
+      const response = await verifyEmail({
         email: formData.email,
         otp: otp,
         otp_type: 'email'
       });
 
+      const session = getAuthSession(response) ?? pendingSession;
+      if (session) {
+        persistAuthSession(session.token, session.user);
+        setSuccessDestination('dashboard');
+      } else {
+        setSuccessDestination('login');
+      }
       setCurrentStep(4);
-
-      setTimeout(() => {
-        router.push('/portal/dashboard');
-      }, 5000);
     } catch (error) {
       showToast(getAuthErrorMessage('otp', error), 'error');
     } finally {
@@ -236,11 +252,8 @@ export default function Register() {
         pin_confirmation: confirmPin
       });
 
+      setSuccessDestination('dashboard');
       setCurrentStep(4);
-
-      setTimeout(() => {
-        router.push('/portal/dashboard');
-      }, 5000);
     } catch (error) {
       showToast(getAuthErrorMessage('pinChange', error), 'error');
     } finally {
@@ -589,7 +602,7 @@ export default function Register() {
   );
 
   const renderSuccessStep = () => (
-    <div className="bg-white shadow-md rounded-xl p-8 text-center">
+    <div className="bg-white shadow-md rounded-xl p-8 text-center" role="status" aria-live="polite">
       <div className="flex justify-center mb-6">
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
           <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -603,8 +616,21 @@ export default function Register() {
       </h1>
 
       <p className="text-gray-600">
-        You will be redirected to your dashboard in a few seconds.
+        {successDestination === 'dashboard'
+          ? 'Your email is verified and your Claim Support account is ready.'
+          : 'Your email is verified. Sign in to access your Claim Support account.'}
       </p>
+      <p className="mt-2 text-sm text-gray-500">
+        {successDestination === 'dashboard'
+          ? 'Taking you to your dashboard in a few seconds.'
+          : 'Taking you to sign in in a few seconds.'}
+      </p>
+      <Link
+        href={successDestination === 'dashboard' ? '/portal/dashboard' : '/portal'}
+        className="mt-6 inline-flex font-medium text-[#004D40] underline underline-offset-4 hover:text-[#003D30]"
+      >
+        {successDestination === 'dashboard' ? 'Continue to dashboard' : 'Continue to sign in'}
+      </Link>
     </div>
   );
 
@@ -618,4 +644,4 @@ export default function Register() {
       </div>
     </main>
   );
-} 
+}
