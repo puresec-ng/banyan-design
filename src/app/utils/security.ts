@@ -20,10 +20,22 @@ export function getAuthErrorMessage(
   context: AuthErrorContext,
   error?: unknown
 ): string {
-  const status = (error as { response?: { status?: number } } | undefined)?.response?.status;
+  const apiError = error as {
+    response?: { status?: number };
+    extractedMessage?: unknown;
+  } | undefined;
+  const status = apiError?.response?.status;
   if (status === 429) {
     return 'Too many requests. Please try again later.';
   }
+
+  // Registration errors are actionable: the API can identify the field or
+  // duplicate value that needs attention. The HTTP layer has already removed
+  // unsafe server details before this message reaches the browser.
+  if (context === 'register' && typeof apiError?.extractedMessage === 'string') {
+    return apiError.extractedMessage;
+  }
+
   return AUTH_ERROR_MESSAGES[context] ?? AUTH_ERROR_MESSAGES.default;
 }
 
@@ -272,9 +284,6 @@ export function sanitizeClientErrorMessage(message: string, status?: number): st
   }
   if (status === 429) {
     return 'Too many requests. Please try again later.';
-  }
-  if (status === 422) {
-    return 'Please check your input and try again.';
   }
   if (status && status >= 500) {
     return 'Server error. Please try again later.';

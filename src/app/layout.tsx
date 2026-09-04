@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Lato, Roboto, Montserrat } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "./utils/ReactQueryProvider";
@@ -65,6 +66,14 @@ export default function RootLayout({
             {children}
           </ToastProvider>
         </ReactQueryProvider>
+        <Script id="zoho-salesiq-config" strategy="afterInteractive">
+          {`window.$zoho = window.$zoho || {}; window.$zoho.salesiq = window.$zoho.salesiq || { ready: function () {} };`}
+        </Script>
+        <Script
+          id="zsiqscript"
+          src="https://salesiq.zohopublic.com/widget?wc=siq19c436bf10fb92b0176b13350429aa51512a3d2eb85b0a48dab4d1184e7d96fcafbd86e7b7b321da3b4329de3462aef4"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
