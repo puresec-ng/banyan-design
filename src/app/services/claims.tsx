@@ -197,21 +197,17 @@ export interface AcceptRejectOfferResponse {
 
 // Get offer for a claim (user-facing endpoint)
 export const getClaimOffer = async (claimId: string): Promise<OfferResponse> => {
-  try {
-    const response: any = await Http.get(`/claims/claim-offer/${claimId}`);
+  const response: any = await Http.get(`/claims/claim-offer/${claimId}`);
 
-    if (response) {
-      if (response.data && typeof response.data === 'object' && (response.data.id || response.data.offer_amount)) {
-        return { data: response.data };
-      }
-      if ((response as any).id || (response as any).offer_amount) {
-        return { data: response as Offer };
-      }
+  if (response) {
+    if (response.data && typeof response.data === 'object' && (response.data.id || response.data.offer_amount)) {
+      return { data: response.data };
     }
-    throw new Error('No offer found for this claim');
-  } catch (error) {
-    throw error;
+    if ((response as any).id || (response as any).offer_amount) {
+      return { data: response as Offer };
+    }
   }
+  throw new Error('No offer found for this claim');
 };
 
 // Accept an offer
