@@ -85,9 +85,6 @@ export const register = (payload: RegisterPayload): Promise<ApiResponse> =>
 export const forgotPassword = (payload: { email: string }) =>
   Http.post(`/auth/forgot-password`, payload);
 
-export const resendOtp = (payload: { email: string }) =>
-  Http.post(`/auth/resend-otp`, payload);
-
 export const resetPassword = (payload: {
   otp: string;
   reset_id: string;
