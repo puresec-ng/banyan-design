@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useToast } from '../../context/ToastContext';
-import { AuthSession, getAuthSession, register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
+import { AuthSession, getAuthSession, register, resendOtp, verifyEmail, createPin } from '../../services/auth';
 import {
   getAuthErrorMessage,
   persistAuthSession,
@@ -194,19 +195,24 @@ export default function Register() {
     }
   };
 
-  const handleResendOtp = async () => {
-    if (!canResend) return;
+  const handleResendOtp = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!canResend || isLoading) return;
     try {
-      await requestVerificationCode({ email: formData.email });
+      await resendOtp({ email: formData.email });
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
       showToast('Verification code sent successfully', 'success');
     } catch (error) {
-      showToast(getAuthErrorMessage('otp', error), 'error');
+      showToast(getAuthErrorMessage('otpResend', error), 'error');
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (otp.length !== 5) {
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -512,26 +518,27 @@ export default function Register() {
         >
           {isLoading ? 'Verifying...' : 'Verify OTP'}
         </button>
-
-        <div className="mt-4 text-center">
-          {canResend ? (
-            <button
-              type="button"
-              onClick={handleResendOtp}
-              className="text-[#004D40] hover:text-[#003D30] font-medium"
-            >
-              Resend Code
-            </button>
-          ) : (
-            <div className="flex items-center justify-center gap-1">
-              <span className="text-gray-600">Resend code in</span>
-              <span className="font-medium text-[#004D40]">
-                {formatTime(countdown)}
-              </span>
-            </div>
-          )}
-        </div>
       </form>
+
+      <div className="mt-4 text-center">
+        {canResend ? (
+          <button
+            type="button"
+            onClick={handleResendOtp}
+            disabled={isLoading}
+            className="text-[#004D40] hover:text-[#003D30] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Resend Code
+          </button>
+        ) : (
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-gray-600">Resend code in</span>
+            <span className="font-medium text-[#004D40]">
+              {formatTime(countdown)}
+            </span>
+          </div>
+        )}
+      </div>
 
       <div className="mt-6 text-center">
         <button
@@ -637,6 +644,15 @@ export default function Register() {
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
+        <Link href="/" className="flex justify-center mb-6">
+          <Image
+            src="/brand/logo-black.png"
+            alt="Banyan Claims Logo"
+            width={150}
+            height={40}
+            priority
+          />
+        </Link>
         {currentStep === 1 && renderPersonalInfoStep()}
         {currentStep === 2 && renderOtpStep()}
         {currentStep === 3 && renderPinStep()}
