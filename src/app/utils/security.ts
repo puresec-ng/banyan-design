@@ -7,6 +7,7 @@ export const AUTH_ERROR_MESSAGES = {
   forgotPassword:
     'If the details provided are correct, further instructions will be sent.',
   otp: 'Invalid or expired code. Please try again.',
+  otpResend: 'Unable to resend the code. Please try again.',
   register: 'Unable to complete registration. Please check your details and try again.',
   checkUser: 'Please use a different email or phone number.',
   passwordChange: 'Unable to change password. Please check your details and try again.',
