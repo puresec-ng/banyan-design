@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useToast } from '../../context/ToastContext';
-import { AuthSession, getAuthSession, register, resendOtp, verifyEmail, createPin } from '../../services/auth';
+import { AuthSession, getAuthSession, register, requestVerificationCode, verifyEmail, createPin } from '../../services/auth';
 import {
   getAuthErrorMessage,
   persistAuthSession,
@@ -200,7 +200,7 @@ export default function Register() {
     e.stopPropagation();
     if (!canResend || isLoading) return;
     try {
-      await resendOtp({ email: formData.email });
+      await requestVerificationCode({ email: formData.email });
       startCooldown(OTP_RESEND_COOLDOWN_SECONDS);
       showToast('Verification code sent successfully', 'success');
     } catch (error) {
