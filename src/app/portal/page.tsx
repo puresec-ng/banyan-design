@@ -95,15 +95,17 @@ export default function ClientPortal() {
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-4">
-            <Link href="/" className="inline-block">
-              <Image
-                src="/brand/logo-black.png"
-                alt="Banyan Claims Logo"
-                width={150}
-                height={40}
-                priority
-                className="mx-auto dark:invert"
-              />
+            <Link href="/" className="inline-block mix-blend-multiply">
+              <span className="relative mx-auto block h-20 w-36">
+                <Image
+                  src="/brand/logo-black.png"
+                  alt="Banyan Claims Logo"
+                  fill
+                  sizes="144px"
+                  className="object-contain mx-auto dark:invert"
+                  priority
+                />
+              </span>
             </Link>
           </div>
 

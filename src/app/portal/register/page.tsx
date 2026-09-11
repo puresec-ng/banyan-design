@@ -489,11 +489,14 @@ export default function Register() {
 
   const renderOtpStep = () => (
     <div className="bg-white shadow-md rounded-xl p-8">
-      <h1 className="text-2xl font-semibold text-gray-900 text-center mb-6">
+      <h1 className="text-2xl font-semibold text-gray-900 text-center mb-2">
         Verify Your Account
       </h1>
+      <p className="text-sm text-gray-500 text-center mb-6">
+        Enter the 5-digit code sent to {formData.email || 'your email'}.
+      </p>
 
-      <form onSubmit={handleOtpSubmit} className="space-y-6">
+      <form onSubmit={handleOtpSubmit} className="space-y-5">
         <div>
           <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
             Enter OTP
@@ -502,10 +505,12 @@ export default function Register() {
             id="otp"
             name="otp"
             type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
             maxLength={5}
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 5))}
-            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#004D40] focus:border-transparent text-center text-lg tracking-widest"
+            className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#004D40] focus:border-transparent text-center text-lg tracking-[0.35em]"
             placeholder="Enter 5-digit OTP"
             required
           />
@@ -514,40 +519,28 @@ export default function Register() {
         <button
           type="submit"
           disabled={isLoading || otp.length !== 5}
-          className="w-full px-4 py-2 bg-[#004D40] text-white rounded-lg hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 px-4 bg-[#004D40] text-white rounded-xl hover:bg-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Verifying...' : 'Verify OTP'}
         </button>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-5 text-center text-sm">
         {canResend ? (
           <button
             type="button"
             onClick={handleResendOtp}
             disabled={isLoading}
-            className="text-[#004D40] hover:text-[#003D30] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="font-medium text-[#004D40] hover:text-[#003D30] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Resend Code
           </button>
         ) : (
-          <div className="flex items-center justify-center gap-1">
-            <span className="text-gray-600">Resend code in</span>
-            <span className="font-medium text-[#004D40]">
-              {formatTime(countdown)}
-            </span>
-          </div>
+          <p className="text-gray-500">
+            Resend code in{' '}
+            <span className="font-medium text-[#004D40]">{formatTime(countdown)}</span>
+          </p>
         )}
-      </div>
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={() => setCurrentStep(1)}
-          className="text-[#004D40] hover:text-[#003D30] font-medium inline-flex items-center gap-2"
-        >
-          <ArrowLeftIcon className="w-5 h-5" />
-          Back
-        </button>
       </div>
     </div>
   );
@@ -642,21 +635,50 @@ export default function Register() {
   );
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <Link href="/" className="flex justify-center mb-6">
-          <Image
-            src="/brand/logo-black.png"
-            alt="Banyan Claims Logo"
-            width={150}
-            height={40}
-            priority
-          />
-        </Link>
-        {currentStep === 1 && renderPersonalInfoStep()}
-        {currentStep === 2 && renderOtpStep()}
-        {currentStep === 3 && renderPinStep()}
-        {currentStep === 4 && renderSuccessStep()}
+    <main className="min-h-screen bg-white flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-4">
+            <Link href="/" className="inline-block mix-blend-multiply">
+              <span className="relative mx-auto block h-20 w-36">
+                <Image
+                  src="/brand/logo-black.png"
+                  alt="Banyan Claims Logo"
+                  fill
+                  sizes="144px"
+                  className="object-contain"
+                  priority
+                />
+              </span>
+            </Link>
+          </div>
+
+          <div className="mb-4">
+            {currentStep === 2 ? (
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="inline-flex items-center text-[#004D40] hover:text-[#003D30] font-medium"
+              >
+                <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                Back
+              </button>
+            ) : (
+              <Link
+                href="/"
+                className="inline-flex items-center text-[#004D40] hover:text-[#003D30] font-medium"
+              >
+                <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                Return to Website
+              </Link>
+            )}
+          </div>
+
+          {currentStep === 1 && renderPersonalInfoStep()}
+          {currentStep === 2 && renderOtpStep()}
+          {currentStep === 3 && renderPinStep()}
+          {currentStep === 4 && renderSuccessStep()}
+        </div>
       </div>
     </main>
   );
