@@ -139,6 +139,20 @@ Http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+const PUBLIC_AUTH_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/resend-otp',
+  '/auth/verify-account',
+  '/auth/reset-password',
+];
+
+const isPublicAuthRequest = (error: ApiError): boolean => {
+  const requestUrl = `${error.config?.baseURL ?? ''}${error.config?.url ?? ''}`;
+  return PUBLIC_AUTH_PATHS.some((path) => requestUrl.includes(path));
+};
+
 Http.interceptors.response.use(
   (response: AxiosResponse) => {
     return response.data;
@@ -146,11 +160,13 @@ Http.interceptors.response.use(
   (error: ApiError) => {
     const errorMessage = extractErrorMessage(error);
 
-    // 401 (or an API body flagging 401) means the session is gone; a 403 is a
-    // per-action permission failure and must not wipe the session.
+    // 401 on a protected call means the session is gone. A 401 from login or
+    // other public auth endpoints is a credentials failure and must not reload
+    // the page or the user never sees the error.
     if (
-      error.response?.status === 401 ||
-      error.response?.data?.statusCode === 401
+      !isPublicAuthRequest(error) &&
+      (error.response?.status === 401 ||
+        error.response?.data?.statusCode === 401)
     ) {
       clearAuthSession();
       setAuthFlash('Session expired. Please log in again.');

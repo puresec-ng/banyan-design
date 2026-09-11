@@ -17,6 +17,7 @@ import {
   getAuthErrorMessage,
   persistAuthSession,
 } from '../utils/security';
+import { isValidAuthToken } from '../utils/authToken';
 
 export default function ClientPortal() {
   const router = useRouter();
@@ -84,7 +85,7 @@ export default function ClientPortal() {
 
   useEffect(() => {
     const token = cookie().getCookie('token');
-    if (token) {
+    if (isValidAuthToken(token)) {
       router.push('/portal/dashboard');
     }
   }, [router]);
